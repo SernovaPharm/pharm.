@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
-    <title> شركة نسيرنوفا فارماسيوتكالز - تصميم مهندس بولس سمير جرس</title>
+    <title>شركة سيرنوفا فارماسيوتكالز - تصميم مهندس بولس سمير جرس</title>
     
     <!-- Bootstrap 5 RTL + Icons + Fonts -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
@@ -25,10 +25,11 @@
             --light-bg: #1a1a2e;
             --card-bg: rgba(22, 33, 62, 0.9);
             --glass-bg: rgba(22, 33, 62, 0.85);
-            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.15);
             --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
             --text: #e0e0e0;
             --text-light: #b0b0b0;
+            --text-white: #ffffff;
             --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
             --shadow-md: 0 4px 20px rgba(0,0,0,0.4);
             --shadow-lg: 0 10px 40px rgba(0,0,0,0.5);
@@ -49,6 +50,12 @@
             overflow-x: hidden;
             color: var(--text);
             position: relative;
+            animation: bgPulse 8s infinite alternate;
+        }
+        
+        @keyframes bgPulse {
+            0% { background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #16213e 100%); }
+            100% { background: linear-gradient(135deg, #0f0f1a 0%, #16213e 50%, #1a1a2e 100%); }
         }
         
         body::before {
@@ -59,11 +66,17 @@
             right: 0;
             bottom: 0;
             background: 
-                radial-gradient(circle at 20% 50%, rgba(233,69,96,0.08) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(15,52,96,0.1) 0%, transparent 50%),
-                radial-gradient(circle at 50% 80%, rgba(233,69,96,0.05) 0%, transparent 50%);
+                radial-gradient(circle at 20% 50%, rgba(233,69,96,0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(15,52,96,0.12) 0%, transparent 50%),
+                radial-gradient(circle at 50% 80%, rgba(233,69,96,0.06) 0%, transparent 50%);
             pointer-events: none;
             z-index: 0;
+            animation: orbMove 15s infinite alternate;
+        }
+        
+        @keyframes orbMove {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.15); }
         }
 
         /* Modern Sidebar with Glass Effect */
@@ -106,11 +119,27 @@
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             border: 1px solid rgba(255,255,255,0.08);
+            animation: slideInLeft 0.5s ease forwards;
+            opacity: 0;
         }
+        
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .sidebar .nav-link:nth-child(1) { animation-delay: 0.1s; }
+        .sidebar .nav-link:nth-child(2) { animation-delay: 0.2s; }
+        .sidebar .nav-link:nth-child(3) { animation-delay: 0.3s; }
+        .sidebar .nav-link:nth-child(4) { animation-delay: 0.4s; }
+        .sidebar .nav-link:nth-child(5) { animation-delay: 0.5s; }
+        .sidebar .nav-link:nth-child(6) { animation-delay: 0.6s; }
+        .sidebar .nav-link:nth-child(7) { animation-delay: 0.7s; }
+        .sidebar .nav-link:nth-child(8) { animation-delay: 0.8s; }
         
         .sidebar .nav-link:hover {
             background: rgba(255,255,255,0.15);
-            transform: translateX(-5px);
+            transform: translateX(-8px);
             color: white;
             box-shadow: 0 8px 25px rgba(0,0,0,0.5);
             border-color: rgba(255,255,255,0.2);
@@ -120,8 +149,15 @@
             background: linear-gradient(135deg, #e94560 0%, #c23152 100%);
             color: white;
             font-weight: 700;
-            box-shadow: 0 8px 25px rgba(233,69,96,0.4);
+            box-shadow: 0 8px 25px rgba(233,69,96,0.5);
             border-color: rgba(255,255,255,0.3);
+            animation: activePulse 2s infinite;
+        }
+        
+        @keyframes activePulse {
+            0% { box-shadow: 0 8px 25px rgba(233,69,96,0.5); }
+            50% { box-shadow: 0 8px 35px rgba(233,69,96,0.8); }
+            100% { box-shadow: 0 8px 25px rgba(233,69,96,0.5); }
         }
         
         .sidebar .nav-link i {
@@ -165,8 +201,31 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(135deg, rgba(233,69,96,0.05), rgba(15,52,96,0.05));
+            background: linear-gradient(135deg, rgba(233,69,96,0.08), rgba(15,52,96,0.08));
             pointer-events: none;
+        }
+        
+        .company-name-animated {
+            background: linear-gradient(90deg, #e94560, #f59e0b, #6366f1, #e94560);
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 4s ease infinite, floatText 3s ease-in-out infinite;
+            font-weight: 800;
+            font-size: 1.5rem;
+            white-space: nowrap;
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        @keyframes floatText {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
         }
 
         /* Cards with Glass Effect */
@@ -183,6 +242,18 @@
             cursor: pointer;
             position: relative;
             overflow: hidden;
+            animation: fadeInUp 0.6s ease forwards;
+            opacity: 0;
+        }
+        
+        .stat-card:nth-child(1) { animation-delay: 0.1s; }
+        .stat-card:nth-child(2) { animation-delay: 0.2s; }
+        .stat-card:nth-child(3) { animation-delay: 0.3s; }
+        .stat-card:nth-child(4) { animation-delay: 0.4s; }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .stat-card::before {
@@ -198,9 +269,9 @@
         }
         
         .stat-card:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
-            border-color: rgba(255,255,255,0.2);
+            transform: translateY(-10px) scale(1.03);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+            border-color: rgba(255,255,255,0.25);
         }
         
         .stat-card:hover::before {
@@ -211,12 +282,12 @@
             font-size: 2.5rem;
             position: relative;
             z-index: 1;
-            transition: transform 0.3s;
+            transition: transform 0.4s;
             filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
         }
         
         .stat-card:hover .icon {
-            transform: scale(1.15) rotate(-8deg);
+            transform: scale(1.2) rotate(-10deg);
         }
         
         .stat-card .value {
@@ -258,6 +329,12 @@
         .table tbody td {
             color: #e0e0e0;
             background: rgba(22, 33, 62, 0.5);
+            transition: all 0.3s;
+        }
+        
+        .table tbody tr:hover td {
+            background: rgba(233, 69, 96, 0.15);
+            transform: scale(1.01);
         }
 
         /* Buttons */
@@ -273,6 +350,24 @@
             -webkit-backdrop-filter: blur(10px);
         }
         
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .btn:active::after {
+            width: 300px;
+            height: 300px;
+        }
+        
         .btn-primary {
             background: linear-gradient(135deg, #e94560 0%, #c23152 100%);
             border: 1px solid rgba(255,255,255,0.2);
@@ -282,7 +377,7 @@
         
         .btn-primary:hover {
             transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(233,69,96,0.5);
+            box-shadow: 0 8px 25px rgba(233,69,96,0.6);
         }
         
         .btn-success {
@@ -305,9 +400,9 @@
             backdrop-filter: blur(30px);
             -webkit-backdrop-filter: blur(30px);
             border-radius: var(--radius-lg);
-            border: 1px solid rgba(255,255,255,0.1);
-            box-shadow: 0 25px 70px rgba(0,0,0,0.6);
-            animation: modalSlideIn 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.15);
+            box-shadow: 0 25px 70px rgba(0,0,0,0.7);
+            animation: modalSlideIn 0.4s ease;
             color: #e0e0e0;
         }
         
@@ -354,24 +449,77 @@
         .form-control, .form-select {
             background: rgba(22, 33, 62, 0.7);
             border: 1px solid rgba(255,255,255,0.1);
-            color: #e0e0e0;
+            color: #ffffff !important;
+            transition: all 0.3s;
         }
         
         .form-control:focus, .form-select:focus {
             background: rgba(22, 33, 62, 0.9);
             border-color: #e94560;
-            color: #fff;
+            color: #ffffff !important;
             box-shadow: 0 0 0 4px rgba(233,69,96,0.2);
+        }
+        
+        .form-control::placeholder {
+            color: #aaa !important;
+        }
+
+        /* Invoice items header */
+        .invoice-items-header {
+            background: linear-gradient(135deg, #0f3460 0%, #1a1a2e 100%);
+            color: #ffffff;
+            padding: 15px 20px;
+            border-radius: 14px;
+            margin-bottom: 15px;
+            font-weight: 700;
+            font-size: 1rem;
+            border: 2px solid rgba(233,69,96,0.4);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        
+        /* Improved Invoice Item Row */
+        .invoice-item-row {
+            background: rgba(15, 52, 96, 0.3);
+            border-radius: 14px;
+            padding: 15px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(255,255,255,0.08);
+            transition: all 0.3s;
+            animation: fadeInUp 0.4s ease;
+        }
+        
+        .invoice-item-row:hover {
+            background: rgba(15, 52, 96, 0.5);
+            border-color: rgba(233,69,96,0.3);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+        
+        /* White text for summary inputs */
+        .summary-input-white {
+            background: transparent !important;
+            border: none !important;
+            color: #ffffff !important;
+            font-weight: bold !important;
+        }
+        
+        .summary-input-green {
+            background: transparent !important;
+            border: none !important;
+            color: #10b981 !important;
+            font-weight: bold !important;
+            font-size: 1.2em !important;
+        }
+        
+        .summary-input-red {
+            background: transparent !important;
+            border: none !important;
+            color: #e94560 !important;
+            font-weight: bold !important;
         }
 
         @keyframes modalSlideIn {
             from { opacity: 0; transform: translateY(-30px) scale(0.95); }
             to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
         }
 
         /* Mobile Optimizations */
@@ -395,6 +543,27 @@
             .stat-card {
                 padding: 18px 15px;
             }
+            .invoice-items-header {
+                font-size: 0.8rem;
+                padding: 10px;
+            }
+            .company-name-animated {
+                font-size: 1rem;
+            }
+        }
+        
+        /* Badge Styles */
+        .badge-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        
+        /* Input Group Styling */
+        .input-group-text {
+            background: rgba(15, 52, 96, 0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #e0e0e0;
         }
     </style>
 </head>
@@ -447,11 +616,12 @@
         
         <!-- Main Content -->
         <div class="col-md-10 col-lg-10 main-content">
-            <div class="top-bar d-flex justify-content-between align-items-center">
+            <div class="top-bar d-flex justify-content-between align-items-center flex-wrap">
                 <button class="btn btn-primary d-md-none rounded-pill" onclick="toggleSidebar()" style="width: 45px; height: 45px; padding: 0;">
                     <i class="fas fa-bars"></i>
                 </button>
                 <h4 id="pageTitle" class="fw-bold mb-0" style="color: #ffffff;">لوحة التحكم</h4>
+                <div class="company-name-animated" id="companyNameDisplay">سيرنوفا فارماسيوتكالز</div>
                 <div>
                     <span id="dateTime" class="fw-bold" style="color: #e94560;"></span>
                 </div>
@@ -507,7 +677,6 @@
     let currentInvoiceNumber = 1000;
     let currentPurchaseNumber = 2000;
     let customerCounter = 0;
-    let batchCounter = 0;
     let currentPage = 'dashboard';
     let firebaseSyncEnabled = true;
     let isSyncing = false;
@@ -526,9 +695,8 @@
         data.settings.currency = '';
         data.settings.maxDiscountPercent = data.settings.maxDiscountPercent || 30;
         data.customers.forEach(c => { if (!c.code) c.code = generateCustomerCode(c.id); });
-        data.products.forEach(p => { if (!p.batchNumber) p.batchNumber = generateBatchNumber(); });
+        data.products.forEach(p => { if (!p.batchNumber) p.batchNumber = ''; });
         customerCounter = Math.max(...data.customers.map(c => parseInt(c.code?.split('-')[1]) || 0), 0);
-        batchCounter = Math.max(...data.products.map(p => parseInt(p.batchNumber?.split('-')[1]) || 0), 0);
         return data;
     }
     
@@ -542,14 +710,6 @@
         return 'CUST-' + String(customerCounter).padStart(5, '0');
     }
     
-    function generateBatchNumber() {
-        if (!batchCounter) {
-            batchCounter = Math.max(...appData.products.map(p => parseInt(p.batchNumber?.split('-')[1]) || 0), 0);
-        }
-        batchCounter++;
-        return 'OP-' + String(batchCounter).padStart(6, '0');
-    }
-    
     // Load data from Firebase
     function loadData() {
         if (firebaseSyncEnabled) {
@@ -560,6 +720,7 @@
                     appData = mergedData;
                     updateCounters();
                     updateLogoDisplay();
+                    updateCompanyNameDisplay();
                     renderCurrentPage();
                     console.log('✅ تم تحميل البيانات من Firebase');
                 } else {
@@ -589,6 +750,7 @@
         }
         updateCounters();
         updateLogoDisplay();
+        updateCompanyNameDisplay();
         renderCurrentPage();
     }
     
@@ -612,11 +774,18 @@
             });
         }
         updateLogoDisplay();
+        updateCompanyNameDisplay();
+    }
+    
+    function updateCompanyNameDisplay() {
+        const display = document.getElementById('companyNameDisplay');
+        if (display && appData.settings.companyName) {
+            display.textContent = appData.settings.companyName;
+        }
     }
     
     function updateCounters() {
         customerCounter = Math.max(...appData.customers.map(c => parseInt(c.code?.split('-')[1]) || 0), 0);
-        batchCounter = Math.max(...appData.products.map(p => parseInt(p.batchNumber?.split('-')[1]) || 0), 0);
         if (appData.salesInvoices.length > 0) {
             const maxNum = Math.max(...appData.salesInvoices.map(i => parseInt(i.invoiceNumber.split('-')[1]) || 0));
             currentInvoiceNumber = maxNum + 1;
@@ -635,28 +804,12 @@
         ];
         
         appData.products = [
-            { id: 1, name: 'لابتوب Dell', unit: 'علبة', buyPrice: 2500, sellPrice: 3000, quantity: 10, minQuantity: 2, profit: 500, initialQuantity: 10, batchNumber: 'OP-000001' },
-            { id: 2, name: 'ماوس لاسلكي', unit: 'علبة', buyPrice: 50, sellPrice: 80, quantity: 50, minQuantity: 10, profit: 30, initialQuantity: 50, batchNumber: 'OP-000002' },
-            { id: 3, name: 'طابعة HP', unit: 'علبة', buyPrice: 400, sellPrice: 550, quantity: 5, minQuantity: 3, profit: 150, initialQuantity: 5, batchNumber: 'OP-000003' }
+            { id: 1, name: 'لابتوب Dell', sellPrice: 3000, quantity: 10, initialQuantity: 10, batchNumber: 'B001' },
+            { id: 2, name: 'ماوس لاسلكي', sellPrice: 80, quantity: 50, initialQuantity: 50, batchNumber: 'B002' },
+            { id: 3, name: 'طابعة HP', sellPrice: 550, quantity: 5, initialQuantity: 5, batchNumber: 'B003' }
         ];
         
-        appData.salesInvoices = [
-            {
-                id: 1001,
-                invoiceNumber: 'INV-1001',
-                customerId: 1,
-                date: new Date().toISOString(),
-                items: [{ productId: 1, quantity: 1, price: 3000, total: 3000, batchNumber: 'OP-000001' }],
-                subtotal: 3000,
-                discount: 150,
-                extra: 0,
-                total: 2850,
-                paid: 2000,
-                due: 850,
-                status: 'partial'
-            }
-        ];
-        
+        appData.salesInvoices = [];
         appData.purchaseInvoices = [];
         appData.payments = [];
         appData.settings = { 
@@ -665,18 +818,14 @@
             commercialRegister: '1234567890', 
             taxCard: '987654321', 
             logo: '',
-            companyName: 'شركة التقنية',
+            companyName: 'سيرنوفا فارماسيوتكالز',
             companyAddress: 'الرياض',
             companyPhone: '0110000000'
         };
         customerCounter = 3;
-        batchCounter = 3;
         saveData();
         updateLogoDisplay();
-    }
-    
-    function updateInvoiceNumbers() {
-        updateCounters();
+        updateCompanyNameDisplay();
     }
     
     function renderCurrentPage() {
@@ -721,11 +870,6 @@
         if (overlay) overlay.style.display = sidebar.classList.contains('show') ? 'block' : 'none';
     }
     
-    function toggleDarkMode() {
-        document.body.classList.toggle('dark-mode');
-        localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
-    }
-    
     function updateDateTime() {
         const now = new Date();
         document.getElementById('dateTime').innerHTML = now.toLocaleString('ar');
@@ -745,12 +889,6 @@
     }
     
     // ==================== DASHBOARD ====================
-    function getTodaysPayments() {
-        const today = new Date().toLocaleDateString();
-        return appData.payments.filter(p => new Date(p.date).toLocaleDateString() === today)
-                                .reduce((sum, p) => sum + p.amount, 0);
-    }
-    
     function renderDashboard() {
         const totalSalesDue = appData.salesInvoices.reduce((sum, inv) => sum + inv.due, 0);
         const totalPurchaseDue = appData.purchaseInvoices.reduce((sum, inv) => sum + inv.due, 0);
@@ -835,7 +973,7 @@
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
                         <div class="modal-header"><h5 class="modal-title">📦 المخزون - المنتجات المسجلة</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
-                        <div class="modal-body"><div class="table-responsive"><table class="table"><thead><tr><th>اسم المنتج</th><th>رقم التشغيلة</th><th>المخزون الابتدائي</th><th>المخزون المتبقي</th><th>الوحدة</th></tr></thead><tbody>${products.map(p => `<tr><td><strong>${p.name}</strong></td><td>${p.batchNumber || '-'}</td><td>${p.initialQuantity || p.quantity || 0}</td><td style="color: ${(p.quantity || 0) <= (p.minQuantity || 5) ? '#e94560' : '#10b981'}; font-weight: bold;">${p.quantity || 0}</td><td>${p.unit || 'علبة'}</td></tr>`).join('') || '<tr><td colspan="5" class="text-center">لا توجد منتجات مسجلة</td></tr>'}</tbody></table></div></div></div></div></div>`;
+                        <div class="modal-body"><div class="table-responsive"><table class="table"><thead><tr><th>اسم المنتج</th><th>رقم التشغيلة</th><th>المخزون الابتدائي</th><th>المخزون المتبقي</th></tr></thead><tbody>${products.map(p => `<tr><td><strong>${p.name}</strong></td><td>${p.batchNumber || '-'}</td><td>${p.initialQuantity || p.quantity || 0}</td><td style="color: ${(p.quantity || 0) <= 0 ? '#e94560' : '#10b981'}; font-weight: bold;">${p.quantity || 0}</td></tr>`).join('') || '<tr><td colspan="4" class="text-center">لا توجد منتجات مسجلة</td></tr>'}</tbody></table></div></div></div></div></div>`;
         showModal(modalHtml, 'inventoryModal');
     }
     
@@ -934,7 +1072,6 @@
                             <tr>
                                 <th>المنتج</th>
                                 <th>رقم التشغيلة</th>
-                                <th>الوحدة</th>
                                 <th>سعر البيع</th>
                                 <th>الكمية</th>
                                 <th>الحالة</th>
@@ -946,10 +1083,9 @@
                                 <tr data-search="${p.name} ${p.batchNumber}">
                                     <td><strong>${p.name}</strong></td>
                                     <td><span class="badge bg-secondary">${p.batchNumber || '-'}</span></td>
-                                    <td>${p.unit}</td>
                                     <td>${formatCurrency(p.sellPrice)}</td>
                                     <td>${p.quantity}</td>
-                                    <td>${p.quantity <= (p.minQuantity || 5) ? '<span class="badge bg-danger">منخفض</span>' : '<span class="badge bg-success">متوفر</span>'}</td>
+                                    <td>${p.quantity <= 0 ? '<span class="badge bg-danger">نفذ</span>' : '<span class="badge bg-success">متوفر</span>'}</td>
                                     <td>
                                         <button class="btn btn-sm btn-info" onclick="editProduct(${p.id})"><i class="fas fa-edit"></i></button>
                                         <button class="btn btn-sm btn-danger" onclick="deleteProduct(${p.id})"><i class="fas fa-trash"></i></button>
@@ -1085,316 +1221,6 @@
         }
     }
     
-    // ==================== EDIT INVOICE MODALS ====================
-    function editSaleInvoice(id) {
-        const inv = appData.salesInvoices.find(i => i.id === id);
-        if(!inv) return;
-        const customers = appData.customers.filter(c => c.type === 'customer' || !c.type);
-        const customer = appData.customers.find(c => c.id === inv.customerId);
-        
-        const modalHtml = `
-            <div class="modal fade" id="editSaleModal" tabindex="-1">
-                <div class="modal-dialog modal-xl">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5>تعديل فاتورة بيع ${inv.invoiceNumber}</h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <label>العميل</label>
-                                    <select class="form-control" id="editCustomerSelect">
-                                        ${customers.map(c => `<option value="${c.id}" ${c.id === inv.customerId ? 'selected' : ''}>${c.name} (${c.code})</option>`).join('')}
-                                    </select>
-                                </div>
-                                <div class="col-md-3">
-                                    <label>التاريخ</label>
-                                    <input type="date" class="form-control" id="editInvoiceDate" value="${inv.date.split('T')[0]}">
-                                </div>
-                            </div>
-                            <hr>
-                            <h6>المنتجات</h6>
-                            <div id="editItemsContainer"></div>
-                            <button class="btn btn-sm btn-outline-primary mt-2" onclick="addEditItemRow()">+ إضافة منتج</button>
-                            <hr>
-                            <div class="row">
-                                <div class="col-md-6 offset-md-6">
-                                    <div class="mb-2"><label>خصم الفاتورة (%)</label><input type="number" class="form-control" id="editInvoiceDiscount" value="${inv.discount ? (inv.discount * 100 / inv.subtotal).toFixed(0) : 0}" onchange="calculateEditInvoiceTotal()"></div>
-                                    <div class="mb-2"><label>مصاريف إضافية</label><input type="number" class="form-control" id="editInvoiceExtra" value="${inv.extra || 0}" onchange="calculateEditInvoiceTotal()"></div>
-                                    <div class="mb-2"><label>الإجمالي النهائي</label><input type="text" class="form-control" id="editInvoiceTotal" readonly></div>
-                                    <div class="mb-2"><label>المدفوع</label><input type="number" class="form-control" id="editInvoicePaid" value="${inv.paid}" onchange="calculateEditDue()"></div>
-                                    <div class="mb-2"><label>المتبقي</label><input type="text" class="form-control" id="editInvoiceDue" readonly></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                            <button class="btn btn-primary" onclick="saveEditSaleInvoice(${id})">حفظ التعديلات</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        showModal(modalHtml, 'editSaleModal');
-        window.editItemsList = JSON.parse(JSON.stringify(inv.items));
-        renderEditItems();
-        setTimeout(() => calculateEditInvoiceTotal(), 100);
-    }
-    
-    function editPurchaseInvoice(id) {
-        const inv = appData.purchaseInvoices.find(i => i.id === id);
-        if(!inv) return;
-        const suppliers = appData.customers.filter(c => c.type === 'supplier');
-        const supplier = appData.customers.find(c => c.id === inv.supplierId);
-        
-        const modalHtml = `
-            <div class="modal fade" id="editPurchaseModal" tabindex="-1">
-                <div class="modal-dialog modal-xl">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5>تعديل فاتورة شراء ${inv.invoiceNumber}</h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <label>المورد</label>
-                                    <select class="form-control" id="editSupplierSelect">
-                                        ${suppliers.map(c => `<option value="${c.id}" ${c.id === inv.supplierId ? 'selected' : ''}>${c.name} (${c.code})</option>`).join('')}
-                                    </select>
-                                </div>
-                                <div class="col-md-3">
-                                    <label>التاريخ</label>
-                                    <input type="date" class="form-control" id="editPurchaseDate" value="${inv.date.split('T')[0]}">
-                                </div>
-                            </div>
-                            <hr>
-                            <h6>المنتجات</h6>
-                            <div id="editPurchaseItemsContainer"></div>
-                            <button class="btn btn-sm btn-outline-primary mt-2" onclick="addEditPurchaseItemRow()">+ إضافة منتج</button>
-                            <hr>
-                            <div class="row">
-                                <div class="col-md-6 offset-md-6">
-                                    <div class="mb-2"><label>مصاريف إضافية</label><input type="number" class="form-control" id="editPurchaseExtra" value="${inv.extra || 0}" onchange="calculateEditPurchaseTotal()"></div>
-                                    <div class="mb-2"><label>الإجمالي النهائي</label><input type="text" class="form-control" id="editPurchaseTotal" readonly></div>
-                                    <div class="mb-2"><label>المدفوع</label><input type="number" class="form-control" id="editPurchasePaid" value="${inv.paid}" onchange="calculateEditPurchaseDue()"></div>
-                                    <div class="mb-2"><label>المتبقي</label><input type="text" class="form-control" id="editPurchaseDue" readonly></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                            <button class="btn btn-primary" onclick="saveEditPurchaseInvoice(${id})">حفظ التعديلات</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        showModal(modalHtml, 'editPurchaseModal');
-        window.editPurchaseItemsList = JSON.parse(JSON.stringify(inv.items));
-        renderEditPurchaseItems();
-        setTimeout(() => calculateEditPurchaseTotal(), 100);
-    }
-    
-    function renderEditItems() {
-        const container = document.getElementById('editItemsContainer');
-        if(!container) return;
-        container.innerHTML = '';
-        window.editItemsList.forEach((item, idx) => {
-            const p = appData.products.find(pr => pr.id === item.productId);
-            const row = document.createElement('div');
-            row.className = 'row mb-2 align-items-center';
-            row.id = `editItemRow_${idx}`;
-            row.innerHTML = `
-                <div class="col-md-3">
-                    <select class="form-control" id="editItemProduct_${idx}" onchange="updateEditItemPrice(${idx})">
-                        <option value="">اختر منتج</option>
-                        ${appData.products.map(pr => `<option value="${pr.id}" data-price="${pr.sellPrice}" data-qty="${pr.quantity}" data-batch="${pr.batchNumber}" ${pr.id === item.productId ? 'selected' : ''}>${pr.name} (${pr.batchNumber}) - ${formatCurrency(pr.sellPrice)} [${pr.quantity}]</option>`).join('')}
-                    </select>
-                </div>
-                <div class="col-md-2"><input type="number" class="form-control" id="editItemQty_${idx}" value="${item.quantity}" onchange="updateEditItemTotal(${idx})"></div>
-                <div class="col-md-2"><input type="number" class="form-control" id="editItemPrice_${idx}" value="${item.price}" onchange="updateEditItemTotal(${idx})"></div>
-                <div class="col-md-2"><input type="text" class="form-control" id="editItemTotal_${idx}" value="${item.total.toFixed(2)}" readonly></div>
-                <div class="col-md-2"><button class="btn btn-danger btn-sm" onclick="removeEditItemRow(${idx})">X</button></div>
-            `;
-            container.appendChild(row);
-        });
-    }
-    
-    function renderEditPurchaseItems() {
-        const container = document.getElementById('editPurchaseItemsContainer');
-        if(!container) return;
-        container.innerHTML = '';
-        window.editPurchaseItemsList.forEach((item, idx) => {
-            const p = appData.products.find(pr => pr.id === item.productId);
-            const row = document.createElement('div');
-            row.className = 'row mb-2 align-items-center';
-            row.id = `editPurchaseItemRow_${idx}`;
-            row.innerHTML = `
-                <div class="col-md-3">
-                    <select class="form-control" id="editPurchaseItemProduct_${idx}" onchange="updateEditPurchaseItemPrice(${idx})">
-                        <option value="">اختر منتج</option>
-                        ${appData.products.map(pr => `<option value="${pr.id}" data-price="${pr.buyPrice}" data-qty="${pr.quantity}" data-batch="${pr.batchNumber}" ${pr.id === item.productId ? 'selected' : ''}>${pr.name} (${pr.batchNumber}) - ${formatCurrency(pr.buyPrice)} [${pr.quantity}]</option>`).join('')}
-                    </select>
-                </div>
-                <div class="col-md-2"><input type="number" class="form-control" id="editPurchaseItemQty_${idx}" value="${item.quantity}" onchange="updateEditPurchaseItemTotal(${idx})"></div>
-                <div class="col-md-2"><input type="number" class="form-control" id="editPurchaseItemPrice_${idx}" value="${item.price}" onchange="updateEditPurchaseItemTotal(${idx})"></div>
-                <div class="col-md-2"><input type="text" class="form-control" id="editPurchaseItemTotal_${idx}" value="${item.total.toFixed(2)}" readonly></div>
-                <div class="col-md-2"><button class="btn btn-danger btn-sm" onclick="removeEditPurchaseItemRow(${idx})">X</button></div>
-            `;
-            container.appendChild(row);
-        });
-    }
-    
-    function addEditItemRow() {
-        window.editItemsList.push({ productId: null, quantity: 1, price: 0, total: 0, batchNumber: '' });
-        renderEditItems();
-    }
-    
-    function addEditPurchaseItemRow() {
-        window.editPurchaseItemsList.push({ productId: null, quantity: 1, price: 0, total: 0, batchNumber: '' });
-        renderEditPurchaseItems();
-    }
-    
-    function removeEditItemRow(idx) {
-        window.editItemsList.splice(idx, 1);
-        renderEditItems();
-        calculateEditInvoiceTotal();
-    }
-    
-    function removeEditPurchaseItemRow(idx) {
-        window.editPurchaseItemsList.splice(idx, 1);
-        renderEditPurchaseItems();
-        calculateEditPurchaseTotal();
-    }
-    
-    function updateEditItemPrice(idx) {
-        const sel = document.getElementById(`editItemProduct_${idx}`);
-        if(!sel) return;
-        const pid = parseInt(sel.value);
-        const p = appData.products.find(pr => pr.id === pid);
-        if(p) {
-            document.getElementById(`editItemPrice_${idx}`).value = p.sellPrice;
-            window.editItemsList[idx].price = p.sellPrice;
-            window.editItemsList[idx].productId = pid;
-            window.editItemsList[idx].batchNumber = p.batchNumber || '';
-            updateEditItemTotal(idx);
-        }
-    }
-    
-    function updateEditPurchaseItemPrice(idx) {
-        const sel = document.getElementById(`editPurchaseItemProduct_${idx}`);
-        if(!sel) return;
-        const pid = parseInt(sel.value);
-        const p = appData.products.find(pr => pr.id === pid);
-        if(p) {
-            document.getElementById(`editPurchaseItemPrice_${idx}`).value = p.buyPrice;
-            window.editPurchaseItemsList[idx].price = p.buyPrice;
-            window.editPurchaseItemsList[idx].productId = pid;
-            window.editPurchaseItemsList[idx].batchNumber = p.batchNumber || '';
-            updateEditPurchaseItemTotal(idx);
-        }
-    }
-    
-    function updateEditItemTotal(idx) {
-        const qty = parseFloat(document.getElementById(`editItemQty_${idx}`)?.value) || 0;
-        const price = parseFloat(document.getElementById(`editItemPrice_${idx}`)?.value) || 0;
-        const tot = qty * price;
-        document.getElementById(`editItemTotal_${idx}`).value = tot.toFixed(2);
-        window.editItemsList[idx].quantity = qty;
-        window.editItemsList[idx].total = tot;
-        calculateEditInvoiceTotal();
-    }
-    
-    function updateEditPurchaseItemTotal(idx) {
-        const qty = parseFloat(document.getElementById(`editPurchaseItemQty_${idx}`)?.value) || 0;
-        const price = parseFloat(document.getElementById(`editPurchaseItemPrice_${idx}`)?.value) || 0;
-        const tot = qty * price;
-        document.getElementById(`editPurchaseItemTotal_${idx}`).value = tot.toFixed(2);
-        window.editPurchaseItemsList[idx].quantity = qty;
-        window.editPurchaseItemsList[idx].total = tot;
-        calculateEditPurchaseTotal();
-    }
-    
-    function calculateEditInvoiceTotal() {
-        const sub = window.editItemsList.reduce((s,i) => s + (i.total || 0), 0);
-        const disc = parseFloat(document.getElementById('editInvoiceDiscount')?.value) || 0;
-        const extra = parseFloat(document.getElementById('editInvoiceExtra')?.value) || 0;
-        const total = sub - (sub * disc / 100) + extra;
-        document.getElementById('editInvoiceTotal').value = total.toFixed(2);
-        calculateEditDue();
-    }
-    
-    function calculateEditPurchaseTotal() {
-        const sub = window.editPurchaseItemsList.reduce((s,i) => s + (i.total || 0), 0);
-        const extra = parseFloat(document.getElementById('editPurchaseExtra')?.value) || 0;
-        const total = sub + extra;
-        document.getElementById('editPurchaseTotal').value = total.toFixed(2);
-        calculateEditPurchaseDue();
-    }
-    
-    function calculateEditDue() {
-        const total = parseFloat(document.getElementById('editInvoiceTotal')?.value) || 0;
-        const paid = parseFloat(document.getElementById('editInvoicePaid')?.value) || 0;
-        document.getElementById('editInvoiceDue').value = (total - paid).toFixed(2);
-    }
-    
-    function calculateEditPurchaseDue() {
-        const total = parseFloat(document.getElementById('editPurchaseTotal')?.value) || 0;
-        const paid = parseFloat(document.getElementById('editPurchasePaid')?.value) || 0;
-        document.getElementById('editPurchaseDue').value = (total - paid).toFixed(2);
-    }
-    
-    function saveEditSaleInvoice(id) {
-        const inv = appData.salesInvoices.find(i => i.id === id);
-        if(!inv) return;
-        const customerId = parseInt(document.getElementById('editCustomerSelect').value);
-        if(!customerId) { alert('اختر عميل'); return; }
-        const items = window.editItemsList.filter(i => i.productId).map(i => ({ productId: i.productId, quantity: i.quantity, price: i.price, total: i.total, batchNumber: i.batchNumber }));
-        if(items.length === 0) { alert('أضف منتج'); return; }
-        
-        inv.customerId = customerId;
-        inv.date = document.getElementById('editInvoiceDate').value;
-        inv.items = items;
-        inv.subtotal = window.editItemsList.reduce((s,i) => s + i.total, 0);
-        inv.discount = (inv.subtotal * (parseFloat(document.getElementById('editInvoiceDiscount').value) || 0)) / 100;
-        inv.extra = parseFloat(document.getElementById('editInvoiceExtra').value) || 0;
-        inv.total = parseFloat(document.getElementById('editInvoiceTotal').value);
-        inv.paid = parseFloat(document.getElementById('editInvoicePaid').value);
-        inv.due = inv.total - inv.paid;
-        inv.status = inv.due === 0 ? 'paid' : 'partial';
-        
-        saveData();
-        bootstrap.Modal.getInstance(document.getElementById('editSaleModal')).hide();
-        renderCurrentPage();
-        alert('✅ تم تعديل الفاتورة');
-    }
-    
-    function saveEditPurchaseInvoice(id) {
-        const inv = appData.purchaseInvoices.find(i => i.id === id);
-        if(!inv) return;
-        const supplierId = parseInt(document.getElementById('editSupplierSelect').value);
-        if(!supplierId) { alert('اختر مورد'); return; }
-        const items = window.editPurchaseItemsList.filter(i => i.productId).map(i => ({ productId: i.productId, quantity: i.quantity, price: i.price, total: i.total, batchNumber: i.batchNumber }));
-        if(items.length === 0) { alert('أضف منتج'); return; }
-        
-        inv.supplierId = supplierId;
-        inv.date = document.getElementById('editPurchaseDate').value;
-        inv.items = items;
-        inv.subtotal = window.editPurchaseItemsList.reduce((s,i) => s + i.total, 0);
-        inv.extra = parseFloat(document.getElementById('editPurchaseExtra').value) || 0;
-        inv.total = parseFloat(document.getElementById('editPurchaseTotal').value);
-        inv.paid = parseFloat(document.getElementById('editPurchasePaid').value);
-        inv.due = inv.total - inv.paid;
-        inv.status = inv.due === 0 ? 'paid' : 'partial';
-        
-        saveData();
-        bootstrap.Modal.getInstance(document.getElementById('editPurchaseModal')).hide();
-        renderCurrentPage();
-        alert('✅ تم تعديل الفاتورة');
-    }
-    
     // ==================== MODALS & ACTIONS ====================
     function showSaleInvoiceModal() {
         const customers = appData.customers.filter(c => c.type === 'customer' || !c.type);
@@ -1403,44 +1229,76 @@
                 <div class="modal-dialog modal-xl">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5>فاتورة بيع جديدة</h5>
+                            <h5><i class="fas fa-file-invoice"></i> فاتورة بيع جديدة</h5>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
-                            <div class="row">
+                            <div class="row g-3 mb-4">
                                 <div class="col-md-6">
-                                    <label>العميل</label>
+                                    <label class="fw-bold mb-2"><i class="fas fa-user"></i> العميل</label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="fas fa-search"></i></span>
                                         <input type="text" class="form-control" id="customerSearchInput" placeholder="ابحث بالحرف الأول..." onkeyup="filterCustomerSelect()" autocomplete="off">
                                     </div>
-                                    <select class="form-control mt-1" id="customerSelect" size="5" onchange="onCustomerSelected()">
+                                    <select class="form-control mt-1" id="customerSelect" size="4" onchange="onCustomerSelected()" style="border-radius: 12px;">
                                         ${customers.map(c => `<option value="${c.id}" data-discount="${c.discountPercent}" data-name="${c.name}">${c.name} (${c.code})</option>`).join('')}
                                     </select>
                                 </div>
                                 <div class="col-md-3">
-                                    <label>التاريخ</label>
-                                    <input type="date" class="form-control" id="invoiceDate" value="${new Date().toISOString().split('T')[0]}">
+                                    <label class="fw-bold mb-2"><i class="fas fa-calendar"></i> التاريخ</label>
+                                    <input type="date" class="form-control" id="invoiceDate" value="${new Date().toISOString().split('T')[0]}" style="border-radius: 12px;">
+                                </div>
+                                <div class="col-md-3 d-flex align-items-end">
+                                    <div class="alert alert-info mb-0 w-100 text-center py-2" style="background: rgba(15,52,96,0.5); border: 1px solid rgba(255,255,255,0.2);">
+                                        <small><i class="fas fa-boxes"></i> المنتجات المتاحة: <strong>${appData.products.length}</strong></small>
+                                    </div>
                                 </div>
                             </div>
-                            <hr>
-                            <h6>المنتجات <small class="text-muted" id="availableProductsCount"></small></h6>
+                            
+                            <div class="invoice-items-header">
+                                <div class="row align-items-center">
+                                    <div class="col-md-3"><strong>المنتج</strong></div>
+                                    <div class="col-md-1"><strong>الكمية</strong></div>
+                                    <div class="col-md-2"><strong>سعر الوحدة</strong></div>
+                                    <div class="col-md-2"><strong>الإجمالي</strong></div>
+                                    <div class="col-md-1"><strong>خصم %</strong></div>
+                                    <div class="col-md-2"><strong>بعد الخصم</strong></div>
+                                    <div class="col-md-1"><strong>حذف</strong></div>
+                                </div>
+                            </div>
+                            
                             <div id="itemsContainer"></div>
-                            <button class="btn btn-sm btn-outline-primary mt-2" onclick="addInvoiceItemRow()">+ إضافة منتج</button>
-                            <hr>
+                            <button class="btn btn-outline-light mt-3 rounded-pill" onclick="addInvoiceItemRow()" style="border: 2px dashed rgba(255,255,255,0.3);">
+                                <i class="fas fa-plus-circle"></i> إضافة منتج آخر
+                            </button>
+                            
+                            <hr style="border-color: rgba(255,255,255,0.1);">
                             <div class="row">
-                                <div class="col-md-6 offset-md-6">
-                                    <div class="mb-2"><label>خصم الفاتورة (%)</label><input type="number" class="form-control" id="invoiceDiscount" value="0" onchange="calculateInvoiceTotal()"></div>
-                                    <div class="mb-2"><label>مصاريف إضافية</label><input type="number" class="form-control" id="invoiceExtra" value="0" onchange="calculateInvoiceTotal()"></div>
-                                    <div class="mb-2"><label>الإجمالي النهائي</label><input type="text" class="form-control" id="invoiceTotal" readonly></div>
-                                    <div class="mb-2"><label>المدفوع</label><input type="number" class="form-control" id="invoicePaid" value="0" onchange="calculateDue()"></div>
-                                    <div class="mb-2"><label>المتبقي</label><input type="text" class="form-control" id="invoiceDue" readonly></div>
+                                <div class="col-md-5 offset-md-7">
+                                    <div class="card bg-transparent border-light p-3 rounded-4" style="background: rgba(0,0,0,0.3) !important; border: 1px solid rgba(255,255,255,0.2) !important;">
+                                        <div class="mb-3 d-flex justify-content-between align-items-center">
+                                            <span style="color: #ffffff;">الإجمالي قبل الخصم:</span>
+                                            <input type="text" class="form-control w-50 text-end summary-input-white" id="invoiceSubtotal" readonly>
+                                        </div>
+                                        <div class="mb-3 d-flex justify-content-between align-items-center">
+                                            <span style="color: #ffffff;">الإجمالي بعد الخصم:</span>
+                                            <input type="text" class="form-control w-50 text-end summary-input-green" id="invoiceTotal" readonly>
+                                        </div>
+                                        <div class="mb-3 d-flex justify-content-between align-items-center">
+                                            <span style="color: #ffffff;">المدفوع:</span>
+                                            <input type="number" class="form-control w-50 text-end" id="invoicePaid" value="0" onchange="calculateDue()" style="border-radius: 8px; background: rgba(255,255,255,0.1); color: #ffffff;">
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span style="color: #ffffff;">المتبقي:</span>
+                                            <input type="text" class="form-control w-50 text-end summary-input-red" id="invoiceDue" readonly>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                            <button class="btn btn-primary" onclick="saveSaleInvoice()">حفظ</button>
+                            <button class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">إلغاء</button>
+                            <button class="btn btn-primary rounded-pill" onclick="saveSaleInvoice()"><i class="fas fa-save"></i> حفظ الفاتورة</button>
                         </div>
                     </div>
                 </div>
@@ -1475,43 +1333,71 @@
                 <div class="modal-dialog modal-xl">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5>فاتورة شراء جديدة</h5>
+                            <h5><i class="fas fa-truck-loading"></i> فاتورة شراء جديدة</h5>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
-                            <div class="row">
+                            <div class="row g-3 mb-4">
                                 <div class="col-md-6">
-                                    <label>المورد</label>
+                                    <label class="fw-bold mb-2"><i class="fas fa-industry"></i> المورد</label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="fas fa-search"></i></span>
                                         <input type="text" class="form-control" id="supplierSearchInput" placeholder="ابحث بالحرف الأول..." onkeyup="filterSupplierSelect()" autocomplete="off">
                                     </div>
-                                    <select class="form-control mt-1" id="supplierSelect" size="5" onchange="onSupplierSelected()">
+                                    <select class="form-control mt-1" id="supplierSelect" size="4" onchange="onSupplierSelected()" style="border-radius: 12px;">
                                         ${suppliers.map(c => `<option value="${c.id}" data-name="${c.name}">${c.name} (${c.code})</option>`).join('')}
                                     </select>
                                 </div>
                                 <div class="col-md-3">
-                                    <label>التاريخ</label>
-                                    <input type="date" class="form-control" id="purchaseDate" value="${new Date().toISOString().split('T')[0]}">
+                                    <label class="fw-bold mb-2"><i class="fas fa-calendar"></i> التاريخ</label>
+                                    <input type="date" class="form-control" id="purchaseDate" value="${new Date().toISOString().split('T')[0]}" style="border-radius: 12px;">
                                 </div>
                             </div>
-                            <hr>
-                            <h6>المنتجات <small class="text-muted" id="purchaseAvailableProductsCount"></small></h6>
+                            
+                            <div class="invoice-items-header">
+                                <div class="row align-items-center">
+                                    <div class="col-md-3"><strong>المنتج</strong></div>
+                                    <div class="col-md-1"><strong>الكمية</strong></div>
+                                    <div class="col-md-2"><strong>سعر الوحدة</strong></div>
+                                    <div class="col-md-2"><strong>الإجمالي</strong></div>
+                                    <div class="col-md-1"><strong>خصم %</strong></div>
+                                    <div class="col-md-2"><strong>بعد الخصم</strong></div>
+                                    <div class="col-md-1"><strong>حذف</strong></div>
+                                </div>
+                            </div>
+                            
                             <div id="purchaseItemsContainer"></div>
-                            <button class="btn btn-sm btn-outline-primary mt-2" onclick="addPurchaseItemRow()">+ إضافة منتج</button>
-                            <hr>
+                            <button class="btn btn-outline-light mt-3 rounded-pill" onclick="addPurchaseItemRow()" style="border: 2px dashed rgba(255,255,255,0.3);">
+                                <i class="fas fa-plus-circle"></i> إضافة منتج آخر
+                            </button>
+                            
+                            <hr style="border-color: rgba(255,255,255,0.1);">
                             <div class="row">
-                                <div class="col-md-6 offset-md-6">
-                                    <div class="mb-2"><label>مصاريف إضافية</label><input type="number" class="form-control" id="purchaseExtra" value="0" onchange="calculatePurchaseTotal()"></div>
-                                    <div class="mb-2"><label>الإجمالي النهائي</label><input type="text" class="form-control" id="purchaseTotal" readonly></div>
-                                    <div class="mb-2"><label>المدفوع</label><input type="number" class="form-control" id="purchasePaid" value="0" onchange="calculatePurchaseDue()"></div>
-                                    <div class="mb-2"><label>المتبقي</label><input type="text" class="form-control" id="purchaseDue" readonly></div>
+                                <div class="col-md-5 offset-md-7">
+                                    <div class="card bg-transparent border-light p-3 rounded-4" style="background: rgba(0,0,0,0.3) !important; border: 1px solid rgba(255,255,255,0.2) !important;">
+                                        <div class="mb-3 d-flex justify-content-between align-items-center">
+                                            <span style="color: #ffffff;">الإجمالي قبل الخصم:</span>
+                                            <input type="text" class="form-control w-50 text-end summary-input-white" id="purchaseSubtotal" readonly>
+                                        </div>
+                                        <div class="mb-3 d-flex justify-content-between align-items-center">
+                                            <span style="color: #ffffff;">الإجمالي بعد الخصم:</span>
+                                            <input type="text" class="form-control w-50 text-end summary-input-green" id="purchaseTotal" readonly>
+                                        </div>
+                                        <div class="mb-3 d-flex justify-content-between align-items-center">
+                                            <span style="color: #ffffff;">المدفوع:</span>
+                                            <input type="number" class="form-control w-50 text-end" id="purchasePaid" value="0" onchange="calculatePurchaseDue()" style="border-radius: 8px; background: rgba(255,255,255,0.1); color: #ffffff;">
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span style="color: #ffffff;">المتبقي:</span>
+                                            <input type="text" class="form-control w-50 text-end summary-input-red" id="purchaseDue" readonly>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                            <button class="btn btn-primary" onclick="savePurchaseInvoice()">حفظ</button>
+                            <button class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">إلغاء</button>
+                            <button class="btn btn-primary rounded-pill" onclick="savePurchaseInvoice()"><i class="fas fa-save"></i> حفظ الفاتورة</button>
                         </div>
                     </div>
                 </div>
@@ -1544,58 +1430,54 @@
         const container = document.getElementById('itemsContainer');
         const idx = window.invoiceItemsList.length;
         const row = document.createElement('div'); 
-        row.className = 'row mb-2 align-items-center'; 
+        row.className = 'invoice-item-row'; 
         row.id = `itemRow_${idx}`;
         row.innerHTML = `
-            <div class="col-md-3">
-                <select class="form-control" id="itemProduct_${idx}" onchange="updateItemPrice(${idx})">
-                    <option value="">اختر منتج</option>
-                    ${appData.products.map(p => `<option value="${p.id}" data-price="${p.sellPrice}" data-qty="${p.quantity}" data-batch="${p.batchNumber}">${p.name} (${p.batchNumber}) - ${formatCurrency(p.sellPrice)} [${p.quantity}]</option>`).join('')}
-                </select>
+            <div class="row align-items-center g-2">
+                <div class="col-md-3">
+                    <select class="form-control" id="itemProduct_${idx}" onchange="updateItemPrice(${idx})" style="border-radius: 10px;">
+                        <option value="">-- اختر منتج --</option>
+                        ${appData.products.map(p => `<option value="${p.id}" data-price="${p.sellPrice}" data-qty="${p.quantity}" data-batch="${p.batchNumber}">${p.name}${p.batchNumber ? ' (تشغيلة: ' + p.batchNumber + ')' : ''} | السعر: ${formatCurrency(p.sellPrice)}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="col-md-1"><input type="number" class="form-control" id="itemQty_${idx}" value="1" onchange="updateItemTotal(${idx})" placeholder="الكمية" style="border-radius: 10px;"></div>
+                <div class="col-md-2"><input type="number" class="form-control" id="itemPrice_${idx}" onchange="updateItemTotal(${idx})" placeholder="السعر" step="0.01" style="border-radius: 10px;"></div>
+                <div class="col-md-2"><input type="text" class="form-control" id="itemTotal_${idx}" readonly placeholder="0.00" style="background: rgba(255,255,255,0.05); border-radius: 10px; color: #fff;"></div>
+                <div class="col-md-1"><input type="number" class="form-control" id="itemDiscount_${idx}" value="0" onchange="updateItemTotal(${idx})" placeholder="0" step="0.01" style="border-radius: 10px;"></div>
+                <div class="col-md-2"><input type="text" class="form-control" id="itemTotalAfterDiscount_${idx}" readonly placeholder="0.00" style="background: rgba(16, 185, 129, 0.2); border-radius: 10px; color: #10b981; font-weight: bold;"></div>
+                <div class="col-md-1"><button class="btn btn-outline-danger btn-sm rounded-pill" onclick="removeInvoiceItemRow(${idx})"><i class="fas fa-times"></i></button></div>
+                <div class="col-12 mt-1"><small class="text-info" id="stockInfo_${idx}"></small></div>
             </div>
-            <div class="col-md-2"><input type="number" class="form-control" id="itemQty_${idx}" value="1" onchange="updateItemTotal(${idx})"></div>
-            <div class="col-md-2"><input type="number" class="form-control" id="itemPrice_${idx}" onchange="updateItemTotal(${idx})"></div>
-            <div class="col-md-2"><input type="text" class="form-control" id="itemTotal_${idx}" readonly></div>
-            <div class="col-md-2"><button class="btn btn-danger btn-sm" onclick="removeInvoiceItemRow(${idx})">X</button></div>
-            <div class="col-12"><small class="text-warning" id="stockInfo_${idx}"></small></div>
         `;
         container.appendChild(row);
-        window.invoiceItemsList.push({ productId: null, quantity: 1, price: 0, total: 0, batchNumber: '' });
-        updateAvailableProductsCount();
+        window.invoiceItemsList.push({ productId: null, quantity: 1, price: 0, total: 0, discountPercent: 0, totalAfterDiscount: 0, batchNumber: '' });
     }
     
     function addPurchaseItemRow() {
         const container = document.getElementById('purchaseItemsContainer');
         const idx = window.purchaseItemsList.length;
         const row = document.createElement('div'); 
-        row.className = 'row mb-2 align-items-center'; 
+        row.className = 'invoice-item-row'; 
         row.id = `purchaseItemRow_${idx}`;
         row.innerHTML = `
-            <div class="col-md-3">
-                <select class="form-control" id="purchaseItemProduct_${idx}" onchange="updatePurchaseItemPrice(${idx})">
-                    <option value="">اختر منتج</option>
-                    ${appData.products.map(p => `<option value="${p.id}" data-price="${p.buyPrice}" data-qty="${p.quantity}" data-batch="${p.batchNumber}">${p.name} (${p.batchNumber}) - ${formatCurrency(p.buyPrice)} [${p.quantity}]</option>`).join('')}
-                </select>
+            <div class="row align-items-center g-2">
+                <div class="col-md-3">
+                    <select class="form-control" id="purchaseItemProduct_${idx}" onchange="updatePurchaseItemPrice(${idx})" style="border-radius: 10px;">
+                        <option value="">-- اختر منتج --</option>
+                        ${appData.products.map(p => `<option value="${p.id}" data-price="${p.sellPrice}" data-qty="${p.quantity}" data-batch="${p.batchNumber}">${p.name}${p.batchNumber ? ' (تشغيلة: ' + p.batchNumber + ')' : ''} | السعر: ${formatCurrency(p.sellPrice)}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="col-md-1"><input type="number" class="form-control" id="purchaseItemQty_${idx}" value="1" onchange="updatePurchaseItemTotal(${idx})" placeholder="الكمية" style="border-radius: 10px;"></div>
+                <div class="col-md-2"><input type="number" class="form-control" id="purchaseItemPrice_${idx}" onchange="updatePurchaseItemTotal(${idx})" placeholder="السعر" step="0.01" style="border-radius: 10px;"></div>
+                <div class="col-md-2"><input type="text" class="form-control" id="purchaseItemTotal_${idx}" readonly placeholder="0.00" style="background: rgba(255,255,255,0.05); border-radius: 10px; color: #fff;"></div>
+                <div class="col-md-1"><input type="number" class="form-control" id="purchaseItemDiscount_${idx}" value="0" onchange="updatePurchaseItemTotal(${idx})" placeholder="0" step="0.01" style="border-radius: 10px;"></div>
+                <div class="col-md-2"><input type="text" class="form-control" id="purchaseItemTotalAfterDiscount_${idx}" readonly placeholder="0.00" style="background: rgba(16, 185, 129, 0.2); border-radius: 10px; color: #10b981; font-weight: bold;"></div>
+                <div class="col-md-1"><button class="btn btn-outline-danger btn-sm rounded-pill" onclick="removePurchaseItemRow(${idx})"><i class="fas fa-times"></i></button></div>
+                <div class="col-12 mt-1"><small class="text-info" id="purchaseStockInfo_${idx}"></small></div>
             </div>
-            <div class="col-md-2"><input type="number" class="form-control" id="purchaseItemQty_${idx}" value="1" onchange="updatePurchaseItemTotal(${idx})"></div>
-            <div class="col-md-2"><input type="number" class="form-control" id="purchaseItemPrice_${idx}" onchange="updatePurchaseItemTotal(${idx})"></div>
-            <div class="col-md-2"><input type="text" class="form-control" id="purchaseItemTotal_${idx}" readonly></div>
-            <div class="col-md-2"><button class="btn btn-danger btn-sm" onclick="removePurchaseItemRow(${idx})">X</button></div>
-            <div class="col-12"><small class="text-muted" id="purchaseStockInfo_${idx}"></small></div>
         `;
         container.appendChild(row);
-        window.purchaseItemsList.push({ productId: null, quantity: 1, price: 0, total: 0, batchNumber: '' });
-        updatePurchaseAvailableProductsCount();
-    }
-    
-    function updateAvailableProductsCount() {
-        const el = document.getElementById('availableProductsCount');
-        if (el) el.textContent = `(${appData.products.length} منتج متاح)`;
-    }
-    
-    function updatePurchaseAvailableProductsCount() {
-        const el = document.getElementById('purchaseAvailableProductsCount');
-        if (el) el.textContent = `(${appData.products.length} منتج متاح)`;
+        window.purchaseItemsList.push({ productId: null, quantity: 1, price: 0, total: 0, discountPercent: 0, totalAfterDiscount: 0, batchNumber: '' });
     }
     
     function updateItemPrice(idx) {
@@ -1609,7 +1491,7 @@
             window.invoiceItemsList[idx].productId = pid;
             window.invoiceItemsList[idx].batchNumber = p.batchNumber || '';
             const stockInfo = document.getElementById(`stockInfo_${idx}`);
-            if (stockInfo) stockInfo.textContent = `المخزون المتاح: ${p.quantity} ${p.unit}`;
+            if (stockInfo) stockInfo.innerHTML = `<i class="fas fa-warehouse"></i> المخزون المتاح: <strong>${p.quantity}</strong>`;
             updateItemTotal(idx);
         }
     }
@@ -1620,12 +1502,12 @@
         const pid = parseInt(sel.value);
         const p = appData.products.find(pr => pr.id === pid);
         if(p) {
-            document.getElementById(`purchaseItemPrice_${idx}`).value = p.buyPrice;
-            window.purchaseItemsList[idx].price = p.buyPrice;
+            document.getElementById(`purchaseItemPrice_${idx}`).value = p.sellPrice;
+            window.purchaseItemsList[idx].price = p.sellPrice;
             window.purchaseItemsList[idx].productId = pid;
             window.purchaseItemsList[idx].batchNumber = p.batchNumber || '';
             const stockInfo = document.getElementById(`purchaseStockInfo_${idx}`);
-            if (stockInfo) stockInfo.textContent = `المخزون الحالي: ${p.quantity} ${p.unit}`;
+            if (stockInfo) stockInfo.innerHTML = `<i class="fas fa-warehouse"></i> المخزون الحالي: <strong>${p.quantity}</strong>`;
             updatePurchaseItemTotal(idx);
         }
     }
@@ -1634,10 +1516,16 @@
         const qty = parseFloat(document.getElementById(`itemQty_${idx}`)?.value) || 0;
         const price = parseFloat(document.getElementById(`itemPrice_${idx}`)?.value) || 0;
         const tot = qty * price;
-        const totalEl = document.getElementById(`itemTotal_${idx}`);
-        if (totalEl) totalEl.value = tot.toFixed(2);
+        const discountPercent = parseFloat(document.getElementById(`itemDiscount_${idx}`)?.value) || 0;
+        const totalAfterDiscount = tot - (tot * discountPercent / 100);
+        
+        document.getElementById(`itemTotal_${idx}`).value = tot.toFixed(2);
+        document.getElementById(`itemTotalAfterDiscount_${idx}`).value = totalAfterDiscount.toFixed(2);
+        
         window.invoiceItemsList[idx].quantity = qty;
         window.invoiceItemsList[idx].total = tot;
+        window.invoiceItemsList[idx].discountPercent = discountPercent;
+        window.invoiceItemsList[idx].totalAfterDiscount = totalAfterDiscount;
         calculateInvoiceTotal();
     }
     
@@ -1645,56 +1533,75 @@
         const qty = parseFloat(document.getElementById(`purchaseItemQty_${idx}`)?.value) || 0;
         const price = parseFloat(document.getElementById(`purchaseItemPrice_${idx}`)?.value) || 0;
         const tot = qty * price;
-        const totalEl = document.getElementById(`purchaseItemTotal_${idx}`);
-        if (totalEl) totalEl.value = tot.toFixed(2);
+        const discountPercent = parseFloat(document.getElementById(`purchaseItemDiscount_${idx}`)?.value) || 0;
+        const totalAfterDiscount = tot - (tot * discountPercent / 100);
+        
+        document.getElementById(`purchaseItemTotal_${idx}`).value = tot.toFixed(2);
+        document.getElementById(`purchaseItemTotalAfterDiscount_${idx}`).value = totalAfterDiscount.toFixed(2);
+        
         window.purchaseItemsList[idx].quantity = qty;
         window.purchaseItemsList[idx].total = tot;
+        window.purchaseItemsList[idx].discountPercent = discountPercent;
+        window.purchaseItemsList[idx].totalAfterDiscount = totalAfterDiscount;
         calculatePurchaseTotal();
     }
     
     function removeInvoiceItemRow(idx) { 
-        document.getElementById(`itemRow_${idx}`)?.remove(); 
-        window.invoiceItemsList.splice(idx,1); 
-        calculateInvoiceTotal(); 
+        const row = document.getElementById(`itemRow_${idx}`);
+        if (row) {
+            row.style.transition = 'all 0.3s';
+            row.style.opacity = '0';
+            row.style.transform = 'translateX(50px)';
+            setTimeout(() => {
+                row.remove();
+                window.invoiceItemsList.splice(idx,1); 
+                calculateInvoiceTotal(); 
+            }, 300);
+        }
     }
     
     function removePurchaseItemRow(idx) { 
-        document.getElementById(`purchaseItemRow_${idx}`)?.remove(); 
-        window.purchaseItemsList.splice(idx,1); 
-        calculatePurchaseTotal(); 
+        const row = document.getElementById(`purchaseItemRow_${idx}`);
+        if (row) {
+            row.style.transition = 'all 0.3s';
+            row.style.opacity = '0';
+            row.style.transform = 'translateX(50px)';
+            setTimeout(() => {
+                row.remove();
+                window.purchaseItemsList.splice(idx,1); 
+                calculatePurchaseTotal(); 
+            }, 300);
+        }
     }
     
     function calculateInvoiceTotal() { 
-        const sub = window.invoiceItemsList.reduce((s,i) => s + (i.total || 0), 0); 
-        const disc = parseFloat(document.getElementById('invoiceDiscount')?.value) || 0; 
-        const extra = parseFloat(document.getElementById('invoiceExtra')?.value) || 0; 
-        const total = sub - (sub * disc / 100) + extra; 
-        const totalEl = document.getElementById('invoiceTotal');
-        if (totalEl) totalEl.value = total.toFixed(2); 
+        const sub = window.invoiceItemsList.reduce((s,i) => s + (i.total || 0), 0);
+        const totalAfterDiscount = window.invoiceItemsList.reduce((s,i) => s + (i.totalAfterDiscount || 0), 0);
+        
+        document.getElementById('invoiceSubtotal').value = sub.toFixed(2);
+        document.getElementById('invoiceTotal').value = totalAfterDiscount.toFixed(2);
         calculateDue(); 
     }
     
     function calculatePurchaseTotal() { 
-        const sub = window.purchaseItemsList.reduce((s,i) => s + (i.total || 0), 0); 
-        const extra = parseFloat(document.getElementById('purchaseExtra')?.value) || 0; 
-        const total = sub + extra; 
-        const totalEl = document.getElementById('purchaseTotal');
-        if (totalEl) totalEl.value = total.toFixed(2); 
+        const sub = window.purchaseItemsList.reduce((s,i) => s + (i.total || 0), 0);
+        const totalAfterDiscount = window.purchaseItemsList.reduce((s,i) => s + (i.totalAfterDiscount || 0), 0);
+        
+        document.getElementById('purchaseSubtotal').value = sub.toFixed(2);
+        document.getElementById('purchaseTotal').value = totalAfterDiscount.toFixed(2);
         calculatePurchaseDue(); 
     }
     
     function calculateDue() { 
         const total = parseFloat(document.getElementById('invoiceTotal')?.value) || 0; 
         const paid = parseFloat(document.getElementById('invoicePaid')?.value) || 0; 
-        const dueEl = document.getElementById('invoiceDue');
-        if (dueEl) dueEl.value = (total - paid).toFixed(2); 
+        document.getElementById('invoiceDue').value = (total - paid).toFixed(2); 
     }
     
     function calculatePurchaseDue() { 
         const total = parseFloat(document.getElementById('purchaseTotal')?.value) || 0; 
         const paid = parseFloat(document.getElementById('purchasePaid')?.value) || 0; 
-        const dueEl = document.getElementById('purchaseDue');
-        if (dueEl) dueEl.value = (total - paid).toFixed(2); 
+        document.getElementById('purchaseDue').value = (total - paid).toFixed(2); 
     }
     
     function saveSaleInvoice() {
@@ -1703,7 +1610,15 @@
         if(!customerId) { alert('اختر عميل'); return; }
         const items = window.invoiceItemsList
             .filter(i => i.productId)
-            .map(i => ({ productId: i.productId, quantity: i.quantity, price: i.price, total: i.total, batchNumber: i.batchNumber }));
+            .map(i => ({ 
+                productId: i.productId, 
+                quantity: i.quantity, 
+                price: i.price, 
+                total: i.total,
+                discountPercent: i.discountPercent,
+                totalAfterDiscount: i.totalAfterDiscount,
+                batchNumber: i.batchNumber 
+            }));
         
         for(let item of items) {
             const prod = appData.products.find(p => p.id === item.productId);
@@ -1714,19 +1629,21 @@
         }
         if(items.length === 0) { alert('أضف منتج'); return; }
         
+        const subtotal = window.invoiceItemsList.reduce((s,i) => s + i.total, 0);
         const total = parseFloat(document.getElementById('invoiceTotal').value);
         const paid = parseFloat(document.getElementById('invoicePaid').value);
         const due = total - paid;
+        
         const newInvoice = { 
             id: Date.now(), 
             invoiceNumber: generateInvoiceNumber(), 
             customerId, 
             date: document.getElementById('invoiceDate').value, 
             items, 
-            subtotal: window.invoiceItemsList.reduce((s,i) => s + i.total, 0), 
-            discount: (window.invoiceItemsList.reduce((s,i) => s + i.total, 0) * (parseFloat(document.getElementById('invoiceDiscount').value) || 0)) / 100, 
-            extra: parseFloat(document.getElementById('invoiceExtra').value) || 0, 
-            total, paid, due, 
+            subtotal: subtotal,
+            total: total,
+            paid, 
+            due, 
             status: due === 0 ? 'paid' : 'partial' 
         };
         
@@ -1751,22 +1668,33 @@
         if(!supplierId) { alert('اختر مورد'); return; }
         const items = window.purchaseItemsList
             .filter(i => i.productId)
-            .map(i => ({ productId: i.productId, quantity: i.quantity, price: i.price, total: i.total, batchNumber: i.batchNumber }));
+            .map(i => ({ 
+                productId: i.productId, 
+                quantity: i.quantity, 
+                price: i.price, 
+                total: i.total,
+                discountPercent: i.discountPercent,
+                totalAfterDiscount: i.totalAfterDiscount,
+                batchNumber: i.batchNumber 
+            }));
         
         if(items.length === 0) { alert('أضف منتج'); return; }
         
+        const subtotal = window.purchaseItemsList.reduce((s,i) => s + i.total, 0);
         const total = parseFloat(document.getElementById('purchaseTotal').value);
         const paid = parseFloat(document.getElementById('purchasePaid').value);
         const due = total - paid;
+        
         const newInvoice = { 
             id: Date.now(), 
             invoiceNumber: generatePurchaseNumber(), 
             supplierId, 
             date: document.getElementById('purchaseDate').value, 
             items, 
-            subtotal: window.purchaseItemsList.reduce((s,i) => s + i.total, 0), 
-            extra: parseFloat(document.getElementById('purchaseExtra').value) || 0, 
-            total, paid, due, 
+            subtotal: subtotal,
+            total: total,
+            paid, 
+            due, 
             status: due === 0 ? 'paid' : 'partial' 
         };
         
@@ -1783,6 +1711,486 @@
         bootstrap.Modal.getInstance(document.getElementById('purchaseModal')).hide();
         renderCurrentPage();
         alert('✅ تم حفظ فاتورة الشراء');
+    }
+    
+    // ==================== EDIT INVOICE FUNCTIONS ====================
+    function editSaleInvoice(id) {
+        const inv = appData.salesInvoices.find(i => i.id === id);
+        if(!inv) return;
+        
+        const customers = appData.customers.filter(c => c.type === 'customer' || !c.type);
+        const modalHtml = `
+            <div class="modal fade" id="editSaleModal" tabindex="-1">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5>تعديل فاتورة البيع ${inv.invoiceNumber}</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label class="fw-bold mb-2">العميل</label>
+                                    <select class="form-control" id="editCustomerSelect" style="border-radius: 12px;">
+                                        ${customers.map(c => `<option value="${c.id}" ${c.id === inv.customerId ? 'selected' : ''}>${c.name} (${c.code})</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="fw-bold mb-2">التاريخ</label>
+                                    <input type="date" class="form-control" id="editInvoiceDate" value="${inv.date}" style="border-radius: 12px;">
+                                </div>
+                            </div>
+                            
+                            <div class="invoice-items-header">
+                                <div class="row align-items-center">
+                                    <div class="col-md-3"><strong>المنتج</strong></div>
+                                    <div class="col-md-1"><strong>الكمية</strong></div>
+                                    <div class="col-md-2"><strong>سعر الوحدة</strong></div>
+                                    <div class="col-md-2"><strong>الإجمالي</strong></div>
+                                    <div class="col-md-1"><strong>خصم %</strong></div>
+                                    <div class="col-md-2"><strong>بعد الخصم</strong></div>
+                                    <div class="col-md-1"><strong>حذف</strong></div>
+                                </div>
+                            </div>
+                            
+                            <div id="editItemsContainer"></div>
+                            <button class="btn btn-outline-light mt-3 rounded-pill" onclick="addEditInvoiceItemRow()" style="border: 2px dashed rgba(255,255,255,0.3);">
+                                <i class="fas fa-plus-circle"></i> إضافة منتج
+                            </button>
+                            
+                            <hr style="border-color: rgba(255,255,255,0.1);">
+                            <div class="row">
+                                <div class="col-md-5 offset-md-7">
+                                    <div class="card bg-transparent border-light p-3 rounded-4" style="background: rgba(0,0,0,0.3) !important; border: 1px solid rgba(255,255,255,0.2) !important;">
+                                        <div class="mb-3 d-flex justify-content-between align-items-center">
+                                            <span style="color: #ffffff;">الإجمالي قبل الخصم:</span>
+                                            <input type="text" class="form-control w-50 text-end summary-input-white" id="editInvoiceSubtotal" readonly>
+                                        </div>
+                                        <div class="mb-3 d-flex justify-content-between align-items-center">
+                                            <span style="color: #ffffff;">الإجمالي بعد الخصم:</span>
+                                            <input type="text" class="form-control w-50 text-end summary-input-green" id="editInvoiceTotal" readonly>
+                                        </div>
+                                        <div class="mb-3 d-flex justify-content-between align-items-center">
+                                            <span style="color: #ffffff;">المدفوع:</span>
+                                            <input type="number" class="form-control w-50 text-end" id="editInvoicePaid" value="${inv.paid}" onchange="calculateEditDue()" style="border-radius: 8px; background: rgba(255,255,255,0.1); color: #ffffff;">
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span style="color: #ffffff;">المتبقي:</span>
+                                            <input type="text" class="form-control w-50 text-end summary-input-red" id="editInvoiceDue" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">إلغاء</button>
+                            <button class="btn btn-primary rounded-pill" onclick="updateSaleInvoice(${id})">تحديث</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        showModal(modalHtml, 'editSaleModal');
+        
+        window.editInvoiceItemsList = inv.items.map(item => ({...item}));
+        
+        const container = document.getElementById('editItemsContainer');
+        container.innerHTML = '';
+        window.editInvoiceItemsList.forEach((item, idx) => {
+            const p = appData.products.find(pr => pr.id === item.productId);
+            const row = document.createElement('div');
+            row.className = 'invoice-item-row';
+            row.id = `editItemRow_${idx}`;
+            row.innerHTML = `
+                <div class="row align-items-center g-2">
+                    <div class="col-md-3">
+                        <select class="form-control" id="editItemProduct_${idx}" onchange="updateEditItemPrice(${idx})" style="border-radius: 10px;">
+                            <option value="">اختر منتج</option>
+                            ${appData.products.map(pr => `<option value="${pr.id}" data-price="${pr.sellPrice}" data-qty="${pr.quantity}" data-batch="${pr.batchNumber}" ${pr.id === item.productId ? 'selected' : ''}>${pr.name}${pr.batchNumber ? ' (' + pr.batchNumber + ')' : ''}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="col-md-1"><input type="number" class="form-control" id="editItemQty_${idx}" value="${item.quantity}" onchange="updateEditItemTotal(${idx})" style="border-radius: 10px;"></div>
+                    <div class="col-md-2"><input type="number" class="form-control" id="editItemPrice_${idx}" value="${item.price}" onchange="updateEditItemTotal(${idx})" step="0.01" style="border-radius: 10px;"></div>
+                    <div class="col-md-2"><input type="text" class="form-control" id="editItemTotal_${idx}" value="${item.total.toFixed(2)}" readonly style="background: rgba(255,255,255,0.05); border-radius: 10px; color: #fff;"></div>
+                    <div class="col-md-1"><input type="number" class="form-control" id="editItemDiscount_${idx}" value="${item.discountPercent || 0}" onchange="updateEditItemTotal(${idx})" step="0.01" style="border-radius: 10px;"></div>
+                    <div class="col-md-2"><input type="text" class="form-control" id="editItemTotalAfterDiscount_${idx}" value="${(item.totalAfterDiscount || item.total).toFixed(2)}" readonly style="background: rgba(16, 185, 129, 0.2); border-radius: 10px; color: #10b981; font-weight: bold;"></div>
+                    <div class="col-md-1"><button class="btn btn-outline-danger btn-sm rounded-pill" onclick="removeEditItemRow(${idx})"><i class="fas fa-times"></i></button></div>
+                </div>
+            `;
+            container.appendChild(row);
+        });
+        
+        calculateEditTotal();
+    }
+    
+    function editPurchaseInvoice(id) {
+        const inv = appData.purchaseInvoices.find(i => i.id === id);
+        if(!inv) return;
+        
+        const suppliers = appData.customers.filter(c => c.type === 'supplier');
+        const modalHtml = `
+            <div class="modal fade" id="editPurchaseModal" tabindex="-1">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5>تعديل فاتورة الشراء ${inv.invoiceNumber}</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label class="fw-bold mb-2">المورد</label>
+                                    <select class="form-control" id="editSupplierSelect" style="border-radius: 12px;">
+                                        ${suppliers.map(s => `<option value="${s.id}" ${s.id === inv.supplierId ? 'selected' : ''}>${s.name} (${s.code})</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="fw-bold mb-2">التاريخ</label>
+                                    <input type="date" class="form-control" id="editPurchaseDate" value="${inv.date}" style="border-radius: 12px;">
+                                </div>
+                            </div>
+                            
+                            <div class="invoice-items-header">
+                                <div class="row align-items-center">
+                                    <div class="col-md-3"><strong>المنتج</strong></div>
+                                    <div class="col-md-1"><strong>الكمية</strong></div>
+                                    <div class="col-md-2"><strong>سعر الوحدة</strong></div>
+                                    <div class="col-md-2"><strong>الإجمالي</strong></div>
+                                    <div class="col-md-1"><strong>خصم %</strong></div>
+                                    <div class="col-md-2"><strong>بعد الخصم</strong></div>
+                                    <div class="col-md-1"><strong>حذف</strong></div>
+                                </div>
+                            </div>
+                            
+                            <div id="editPurchaseItemsContainer"></div>
+                            <button class="btn btn-outline-light mt-3 rounded-pill" onclick="addEditPurchaseItemRow()" style="border: 2px dashed rgba(255,255,255,0.3);">
+                                <i class="fas fa-plus-circle"></i> إضافة منتج
+                            </button>
+                            
+                            <hr style="border-color: rgba(255,255,255,0.1);">
+                            <div class="row">
+                                <div class="col-md-5 offset-md-7">
+                                    <div class="card bg-transparent border-light p-3 rounded-4" style="background: rgba(0,0,0,0.3) !important; border: 1px solid rgba(255,255,255,0.2) !important;">
+                                        <div class="mb-3 d-flex justify-content-between align-items-center">
+                                            <span style="color: #ffffff;">الإجمالي قبل الخصم:</span>
+                                            <input type="text" class="form-control w-50 text-end summary-input-white" id="editPurchaseSubtotal" readonly>
+                                        </div>
+                                        <div class="mb-3 d-flex justify-content-between align-items-center">
+                                            <span style="color: #ffffff;">الإجمالي بعد الخصم:</span>
+                                            <input type="text" class="form-control w-50 text-end summary-input-green" id="editPurchaseTotal" readonly>
+                                        </div>
+                                        <div class="mb-3 d-flex justify-content-between align-items-center">
+                                            <span style="color: #ffffff;">المدفوع:</span>
+                                            <input type="number" class="form-control w-50 text-end" id="editPurchasePaid" value="${inv.paid}" onchange="calculateEditPurchaseDue()" style="border-radius: 8px; background: rgba(255,255,255,0.1); color: #ffffff;">
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span style="color: #ffffff;">المتبقي:</span>
+                                            <input type="text" class="form-control w-50 text-end summary-input-red" id="editPurchaseDue" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">إلغاء</button>
+                            <button class="btn btn-primary rounded-pill" onclick="updatePurchaseInvoice(${id})">تحديث</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        showModal(modalHtml, 'editPurchaseModal');
+        
+        window.editPurchaseItemsList = inv.items.map(item => ({...item}));
+        
+        const container = document.getElementById('editPurchaseItemsContainer');
+        container.innerHTML = '';
+        window.editPurchaseItemsList.forEach((item, idx) => {
+            const p = appData.products.find(pr => pr.id === item.productId);
+            const row = document.createElement('div');
+            row.className = 'invoice-item-row';
+            row.id = `editPurchaseItemRow_${idx}`;
+            row.innerHTML = `
+                <div class="row align-items-center g-2">
+                    <div class="col-md-3">
+                        <select class="form-control" id="editPurchaseItemProduct_${idx}" onchange="updateEditPurchaseItemPrice(${idx})" style="border-radius: 10px;">
+                            <option value="">اختر منتج</option>
+                            ${appData.products.map(pr => `<option value="${pr.id}" data-price="${pr.sellPrice}" data-qty="${pr.quantity}" data-batch="${pr.batchNumber}" ${pr.id === item.productId ? 'selected' : ''}>${pr.name}${pr.batchNumber ? ' (' + pr.batchNumber + ')' : ''}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="col-md-1"><input type="number" class="form-control" id="editPurchaseItemQty_${idx}" value="${item.quantity}" onchange="updateEditPurchaseItemTotal(${idx})" style="border-radius: 10px;"></div>
+                    <div class="col-md-2"><input type="number" class="form-control" id="editPurchaseItemPrice_${idx}" value="${item.price}" onchange="updateEditPurchaseItemTotal(${idx})" step="0.01" style="border-radius: 10px;"></div>
+                    <div class="col-md-2"><input type="text" class="form-control" id="editPurchaseItemTotal_${idx}" value="${item.total.toFixed(2)}" readonly style="background: rgba(255,255,255,0.05); border-radius: 10px; color: #fff;"></div>
+                    <div class="col-md-1"><input type="number" class="form-control" id="editPurchaseItemDiscount_${idx}" value="${item.discountPercent || 0}" onchange="updateEditPurchaseItemTotal(${idx})" step="0.01" style="border-radius: 10px;"></div>
+                    <div class="col-md-2"><input type="text" class="form-control" id="editPurchaseItemTotalAfterDiscount_${idx}" value="${(item.totalAfterDiscount || item.total).toFixed(2)}" readonly style="background: rgba(16, 185, 129, 0.2); border-radius: 10px; color: #10b981; font-weight: bold;"></div>
+                    <div class="col-md-1"><button class="btn btn-outline-danger btn-sm rounded-pill" onclick="removeEditPurchaseItemRow(${idx})"><i class="fas fa-times"></i></button></div>
+                </div>
+            `;
+            container.appendChild(row);
+        });
+        
+        calculateEditPurchaseTotal();
+    }
+    
+    // Edit Invoice Item Functions
+    function addEditInvoiceItemRow() {
+        const container = document.getElementById('editItemsContainer');
+        const idx = window.editInvoiceItemsList.length;
+        const row = document.createElement('div');
+        row.className = 'invoice-item-row';
+        row.id = `editItemRow_${idx}`;
+        row.innerHTML = `
+            <div class="row align-items-center g-2">
+                <div class="col-md-3">
+                    <select class="form-control" id="editItemProduct_${idx}" onchange="updateEditItemPrice(${idx})" style="border-radius: 10px;">
+                        <option value="">اختر منتج</option>
+                        ${appData.products.map(p => `<option value="${p.id}" data-price="${p.sellPrice}" data-qty="${p.quantity}" data-batch="${p.batchNumber}">${p.name}${p.batchNumber ? ' (' + p.batchNumber + ')' : ''}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="col-md-1"><input type="number" class="form-control" id="editItemQty_${idx}" value="1" onchange="updateEditItemTotal(${idx})" style="border-radius: 10px;"></div>
+                <div class="col-md-2"><input type="number" class="form-control" id="editItemPrice_${idx}" onchange="updateEditItemTotal(${idx})" step="0.01" style="border-radius: 10px;"></div>
+                <div class="col-md-2"><input type="text" class="form-control" id="editItemTotal_${idx}" readonly style="background: rgba(255,255,255,0.05); border-radius: 10px; color: #fff;"></div>
+                <div class="col-md-1"><input type="number" class="form-control" id="editItemDiscount_${idx}" value="0" onchange="updateEditItemTotal(${idx})" step="0.01" style="border-radius: 10px;"></div>
+                <div class="col-md-2"><input type="text" class="form-control" id="editItemTotalAfterDiscount_${idx}" readonly style="background: rgba(16, 185, 129, 0.2); border-radius: 10px; color: #10b981; font-weight: bold;"></div>
+                <div class="col-md-1"><button class="btn btn-outline-danger btn-sm rounded-pill" onclick="removeEditItemRow(${idx})"><i class="fas fa-times"></i></button></div>
+            </div>
+        `;
+        container.appendChild(row);
+        window.editInvoiceItemsList.push({ productId: null, quantity: 1, price: 0, total: 0, discountPercent: 0, totalAfterDiscount: 0, batchNumber: '' });
+    }
+    
+    function addEditPurchaseItemRow() {
+        const container = document.getElementById('editPurchaseItemsContainer');
+        const idx = window.editPurchaseItemsList.length;
+        const row = document.createElement('div');
+        row.className = 'invoice-item-row';
+        row.id = `editPurchaseItemRow_${idx}`;
+        row.innerHTML = `
+            <div class="row align-items-center g-2">
+                <div class="col-md-3">
+                    <select class="form-control" id="editPurchaseItemProduct_${idx}" onchange="updateEditPurchaseItemPrice(${idx})" style="border-radius: 10px;">
+                        <option value="">اختر منتج</option>
+                        ${appData.products.map(p => `<option value="${p.id}" data-price="${p.sellPrice}" data-qty="${p.quantity}" data-batch="${p.batchNumber}">${p.name}${p.batchNumber ? ' (' + p.batchNumber + ')' : ''}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="col-md-1"><input type="number" class="form-control" id="editPurchaseItemQty_${idx}" value="1" onchange="updateEditPurchaseItemTotal(${idx})" style="border-radius: 10px;"></div>
+                <div class="col-md-2"><input type="number" class="form-control" id="editPurchaseItemPrice_${idx}" onchange="updateEditPurchaseItemTotal(${idx})" step="0.01" style="border-radius: 10px;"></div>
+                <div class="col-md-2"><input type="text" class="form-control" id="editPurchaseItemTotal_${idx}" readonly style="background: rgba(255,255,255,0.05); border-radius: 10px; color: #fff;"></div>
+                <div class="col-md-1"><input type="number" class="form-control" id="editPurchaseItemDiscount_${idx}" value="0" onchange="updateEditPurchaseItemTotal(${idx})" step="0.01" style="border-radius: 10px;"></div>
+                <div class="col-md-2"><input type="text" class="form-control" id="editPurchaseItemTotalAfterDiscount_${idx}" readonly style="background: rgba(16, 185, 129, 0.2); border-radius: 10px; color: #10b981; font-weight: bold;"></div>
+                <div class="col-md-1"><button class="btn btn-outline-danger btn-sm rounded-pill" onclick="removeEditPurchaseItemRow(${idx})"><i class="fas fa-times"></i></button></div>
+            </div>
+        `;
+        container.appendChild(row);
+        window.editPurchaseItemsList.push({ productId: null, quantity: 1, price: 0, total: 0, discountPercent: 0, totalAfterDiscount: 0, batchNumber: '' });
+    }
+    
+    function updateEditItemPrice(idx) {
+        const sel = document.getElementById(`editItemProduct_${idx}`);
+        if (!sel) return;
+        const pid = parseInt(sel.value);
+        const p = appData.products.find(pr => pr.id === pid);
+        if(p) {
+            document.getElementById(`editItemPrice_${idx}`).value = p.sellPrice;
+            window.editInvoiceItemsList[idx].price = p.sellPrice;
+            window.editInvoiceItemsList[idx].productId = pid;
+            window.editInvoiceItemsList[idx].batchNumber = p.batchNumber || '';
+            updateEditItemTotal(idx);
+        }
+    }
+    
+    function updateEditPurchaseItemPrice(idx) {
+        const sel = document.getElementById(`editPurchaseItemProduct_${idx}`);
+        if (!sel) return;
+        const pid = parseInt(sel.value);
+        const p = appData.products.find(pr => pr.id === pid);
+        if(p) {
+            document.getElementById(`editPurchaseItemPrice_${idx}`).value = p.sellPrice;
+            window.editPurchaseItemsList[idx].price = p.sellPrice;
+            window.editPurchaseItemsList[idx].productId = pid;
+            window.editPurchaseItemsList[idx].batchNumber = p.batchNumber || '';
+            updateEditPurchaseItemTotal(idx);
+        }
+    }
+    
+    function updateEditItemTotal(idx) {
+        const qty = parseFloat(document.getElementById(`editItemQty_${idx}`)?.value) || 0;
+        const price = parseFloat(document.getElementById(`editItemPrice_${idx}`)?.value) || 0;
+        const tot = qty * price;
+        const discountPercent = parseFloat(document.getElementById(`editItemDiscount_${idx}`)?.value) || 0;
+        const totalAfterDiscount = tot - (tot * discountPercent / 100);
+        
+        document.getElementById(`editItemTotal_${idx}`).value = tot.toFixed(2);
+        document.getElementById(`editItemTotalAfterDiscount_${idx}`).value = totalAfterDiscount.toFixed(2);
+        
+        window.editInvoiceItemsList[idx].quantity = qty;
+        window.editInvoiceItemsList[idx].total = tot;
+        window.editInvoiceItemsList[idx].discountPercent = discountPercent;
+        window.editInvoiceItemsList[idx].totalAfterDiscount = totalAfterDiscount;
+        calculateEditTotal();
+    }
+    
+    function updateEditPurchaseItemTotal(idx) {
+        const qty = parseFloat(document.getElementById(`editPurchaseItemQty_${idx}`)?.value) || 0;
+        const price = parseFloat(document.getElementById(`editPurchaseItemPrice_${idx}`)?.value) || 0;
+        const tot = qty * price;
+        const discountPercent = parseFloat(document.getElementById(`editPurchaseItemDiscount_${idx}`)?.value) || 0;
+        const totalAfterDiscount = tot - (tot * discountPercent / 100);
+        
+        document.getElementById(`editPurchaseItemTotal_${idx}`).value = tot.toFixed(2);
+        document.getElementById(`editPurchaseItemTotalAfterDiscount_${idx}`).value = totalAfterDiscount.toFixed(2);
+        
+        window.editPurchaseItemsList[idx].quantity = qty;
+        window.editPurchaseItemsList[idx].total = tot;
+        window.editPurchaseItemsList[idx].discountPercent = discountPercent;
+        window.editPurchaseItemsList[idx].totalAfterDiscount = totalAfterDiscount;
+        calculateEditPurchaseTotal();
+    }
+    
+    function removeEditItemRow(idx) {
+        const row = document.getElementById(`editItemRow_${idx}`);
+        if (row) {
+            row.style.transition = 'all 0.3s';
+            row.style.opacity = '0';
+            row.style.transform = 'translateX(50px)';
+            setTimeout(() => {
+                row.remove();
+                window.editInvoiceItemsList.splice(idx,1);
+                calculateEditTotal();
+            }, 300);
+        }
+    }
+    
+    function removeEditPurchaseItemRow(idx) {
+        const row = document.getElementById(`editPurchaseItemRow_${idx}`);
+        if (row) {
+            row.style.transition = 'all 0.3s';
+            row.style.opacity = '0';
+            row.style.transform = 'translateX(50px)';
+            setTimeout(() => {
+                row.remove();
+                window.editPurchaseItemsList.splice(idx,1);
+                calculateEditPurchaseTotal();
+            }, 300);
+        }
+    }
+    
+    function calculateEditTotal() {
+        const sub = window.editInvoiceItemsList.reduce((s,i) => s + (i.total || 0), 0);
+        const totalAfterDiscount = window.editInvoiceItemsList.reduce((s,i) => s + (i.totalAfterDiscount || 0), 0);
+        
+        document.getElementById('editInvoiceSubtotal').value = sub.toFixed(2);
+        document.getElementById('editInvoiceTotal').value = totalAfterDiscount.toFixed(2);
+        calculateEditDue();
+    }
+    
+    function calculateEditPurchaseTotal() {
+        const sub = window.editPurchaseItemsList.reduce((s,i) => s + (i.total || 0), 0);
+        const totalAfterDiscount = window.editPurchaseItemsList.reduce((s,i) => s + (i.totalAfterDiscount || 0), 0);
+        
+        document.getElementById('editPurchaseSubtotal').value = sub.toFixed(2);
+        document.getElementById('editPurchaseTotal').value = totalAfterDiscount.toFixed(2);
+        calculateEditPurchaseDue();
+    }
+    
+    function calculateEditDue() {
+        const total = parseFloat(document.getElementById('editInvoiceTotal')?.value) || 0;
+        const paid = parseFloat(document.getElementById('editInvoicePaid')?.value) || 0;
+        document.getElementById('editInvoiceDue').value = (total - paid).toFixed(2);
+    }
+    
+    function calculateEditPurchaseDue() {
+        const total = parseFloat(document.getElementById('editPurchaseTotal')?.value) || 0;
+        const paid = parseFloat(document.getElementById('editPurchasePaid')?.value) || 0;
+        document.getElementById('editPurchaseDue').value = (total - paid).toFixed(2);
+    }
+    
+    function updateSaleInvoice(id) {
+        const inv = appData.salesInvoices.find(i => i.id === id);
+        if(!inv) return;
+        
+        const items = window.editInvoiceItemsList.filter(i => i.productId);
+        if(items.length === 0) { alert('أضف منتج'); return; }
+        
+        // Restore old quantities
+        inv.items.forEach(item => {
+            const prod = appData.products.find(p => p.id === item.productId);
+            if(prod) prod.quantity += item.quantity;
+        });
+        
+        // Apply new quantities
+        for(let item of items) {
+            const prod = appData.products.find(p => p.id === item.productId);
+            if(prod && item.quantity > prod.quantity) {
+                alert(`الكمية غير متوفرة لـ ${prod.name}. المتاح: ${prod.quantity}`);
+                inv.items.forEach(oldItem => {
+                    const p = appData.products.find(pr => pr.id === oldItem.productId);
+                    if(p) p.quantity -= oldItem.quantity;
+                });
+                return;
+            }
+        }
+        
+        const subtotal = window.editInvoiceItemsList.reduce((s,i) => s + i.total, 0);
+        const total = parseFloat(document.getElementById('editInvoiceTotal').value);
+        const paid = parseFloat(document.getElementById('editInvoicePaid').value);
+        const due = total - paid;
+        
+        inv.customerId = parseInt(document.getElementById('editCustomerSelect').value);
+        inv.date = document.getElementById('editInvoiceDate').value;
+        inv.items = items;
+        inv.subtotal = subtotal;
+        inv.total = total;
+        inv.paid = paid;
+        inv.due = due;
+        inv.status = due === 0 ? 'paid' : 'partial';
+        
+        items.forEach(item => {
+            const prod = appData.products.find(p => p.id === item.productId);
+            if(prod) prod.quantity -= item.quantity;
+        });
+        
+        saveData();
+        bootstrap.Modal.getInstance(document.getElementById('editSaleModal')).hide();
+        renderCurrentPage();
+        alert('✅ تم تحديث الفاتورة');
+    }
+    
+    function updatePurchaseInvoice(id) {
+        const inv = appData.purchaseInvoices.find(i => i.id === id);
+        if(!inv) return;
+        
+        const items = window.editPurchaseItemsList.filter(i => i.productId);
+        if(items.length === 0) { alert('أضف منتج'); return; }
+        
+        inv.items.forEach(item => {
+            const prod = appData.products.find(p => p.id === item.productId);
+            if(prod) prod.quantity -= item.quantity;
+        });
+        
+        const subtotal = window.editPurchaseItemsList.reduce((s,i) => s + i.total, 0);
+        const total = parseFloat(document.getElementById('editPurchaseTotal').value);
+        const paid = parseFloat(document.getElementById('editPurchasePaid').value);
+        const due = total - paid;
+        
+        inv.supplierId = parseInt(document.getElementById('editSupplierSelect').value);
+        inv.date = document.getElementById('editPurchaseDate').value;
+        inv.items = items;
+        inv.subtotal = subtotal;
+        inv.total = total;
+        inv.paid = paid;
+        inv.due = due;
+        inv.status = due === 0 ? 'paid' : 'partial';
+        
+        items.forEach(item => {
+            const prod = appData.products.find(p => p.id === item.productId);
+            if(prod) prod.quantity += item.quantity;
+        });
+        
+        saveData();
+        bootstrap.Modal.getInstance(document.getElementById('editPurchaseModal')).hide();
+        renderCurrentPage();
+        alert('✅ تم تحديث فاتورة الشراء');
     }
     
     // ==================== PAYMENTS ====================
@@ -1837,15 +2245,15 @@
                         <div class="modal-body">
                             <input type="hidden" id="customerId" value="${c?.id || ''}">
                             <input type="hidden" id="customerCode" value="${c?.code || ''}">
-                            <div class="mb-2"><label>النوع</label><select id="customerType" class="form-control"><option value="customer" ${c?.type === 'customer' ? 'selected' : ''}>عميل</option><option value="supplier" ${c?.type === 'supplier' ? 'selected' : ''}>مورد</option></select></div>
-                            <div class="mb-2"><label>كود العميل</label><input id="customerCodeDisplay" class="form-control" value="${c?.code || (id ? '' : 'سيتم توليده تلقائياً')}" readonly style="background: rgba(233,69,96,0.2);"></div>
-                            <div class="mb-2"><label>الاسم</label><input id="customerName" class="form-control" value="${c?.name || ''}"></div>
-                            <div class="mb-2"><label>الهاتف</label><input id="customerPhone" class="form-control" value="${c?.phone || ''}"></div>
-                            <div class="mb-2"><label>العنوان</label><input id="customerAddress" class="form-control" value="${c?.address || ''}"></div>
-                                                    </div>
+                            <div class="mb-3"><label class="fw-bold">النوع</label><select id="customerType" class="form-control"><option value="customer" ${c?.type === 'customer' ? 'selected' : ''}>عميل</option><option value="supplier" ${c?.type === 'supplier' ? 'selected' : ''}>مورد</option></select></div>
+                            <div class="mb-3"><label class="fw-bold">كود العميل</label><input id="customerCodeDisplay" class="form-control" value="${c?.code || (id ? '' : 'سيتم توليده تلقائياً')}" readonly style="background: rgba(233,69,96,0.2); color: #ffffff;"></div>
+                            <div class="mb-3"><label class="fw-bold">الاسم</label><input id="customerName" class="form-control" value="${c?.name || ''}"></div>
+                            <div class="mb-3"><label class="fw-bold">الهاتف</label><input id="customerPhone" class="form-control" value="${c?.phone || ''}"></div>
+                            <div class="mb-3"><label class="fw-bold">العنوان</label><input id="customerAddress" class="form-control" value="${c?.address || ''}"></div>
+                        </div>
                         <div class="modal-footer">
-                            <button class="btn btn-primary" onclick="saveCustomer()">حفظ</button>
-                            <button class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                            <button class="btn btn-primary rounded-pill" onclick="saveCustomer()">حفظ</button>
+                            <button class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">إلغاء</button>
                         </div>
                     </div>
                 </div>
@@ -1857,19 +2265,27 @@
     function saveCustomer() { 
         const id = document.getElementById('customerId').value; 
         let code = document.getElementById('customerCode').value;
+        const type = document.getElementById('customerType').value;
+        const name = document.getElementById('customerName').value;
+        const phone = document.getElementById('customerPhone').value;
+        const address = document.getElementById('customerAddress').value;
+        
         if (!code || code === 'سيتم توليده تلقائياً') {
             code = generateCustomerCode(id ? parseInt(id) : Date.now());
         }
+        
+        if(!name) return alert('أدخل الاسم'); 
+        
         const data = { 
             id: id ? parseInt(id) : Date.now(), 
             code: code,
-            type: document.getElementById('customerType').value, 
-            name: document.getElementById('customerName').value, 
-            phone: document.getElementById('customerPhone').value, 
-            address: document.getElementById('customerAddress').value, 
-            discountPercent: parseFloat(document.getElementById('customerDiscount').value) || 0 
+            type: type, 
+            name: name, 
+            phone: phone, 
+            address: address, 
+            discountPercent: 0
         }; 
-        if(!data.name) return alert('أدخل الاسم'); 
+        
         if(id) { 
             const idx = appData.customers.findIndex(c => c.id === parseInt(id)); 
             if(idx !== -1) {
@@ -1902,23 +2318,14 @@
                         <div class="modal-header"><h5>${p ? 'تعديل منتج' : 'إضافة منتج'}</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
                         <div class="modal-body">
                             <input type="hidden" id="productId" value="${p?.id || ''}">
-                            <div class="mb-2"><label>اسم المنتج</label><input id="productName" class="form-control" value="${p?.name || ''}"></div>
-                            <div class="mb-2"><label>الوحدة</label>
-                                <select id="productUnit" class="form-control">
-                                    <option value="علبة" ${p?.unit === 'علبة' ? 'selected' : ''}>علبة</option>
-                                    <option value="قطعة" ${p?.unit === 'قطعة' ? 'selected' : ''}>قطعة</option>
-                                    <option value="كرتونة" ${p?.unit === 'كرتونة' ? 'selected' : ''}>كرتونة</option>
-                                    <option value="كيس" ${p?.unit === 'كيس' ? 'selected' : ''}>كيس</option>
-                                </select>
-                            </div>
-                            <div class="mb-2"><label>رقم التشغيلة</label><input id="productBatch" class="form-control" value="${p?.batchNumber || (id ? '' : 'سيتم توليده تلقائياً')}" readonly style="background: rgba(233,69,96,0.2);"></div>
-                            
-                            <div class="mb-2"><label>سعر البيع</label><input id="productSellPrice" type="number" class="form-control" value="${p?.sellPrice || 0}"></div>
-                            <div class="mb-2"><label>الكمية</label><input id="productQuantity" type="number" class="form-control" value="${p?.quantity || 0}"></div>
+                            <div class="mb-3"><label class="fw-bold">اسم المنتج</label><input id="productName" class="form-control" value="${p?.name || ''}"></div>
+                            <div class="mb-3"><label class="fw-bold">رقم التشغيلة</label><input id="productBatch" class="form-control" value="${p?.batchNumber || ''}" placeholder="أدخل رقم التشغيلة يدوياً"></div>
+                            <div class="mb-3"><label class="fw-bold">سعر البيع</label><input id="productSellPrice" type="number" class="form-control" value="${p?.sellPrice || 0}"></div>
+                            <div class="mb-3"><label class="fw-bold">الكمية</label><input id="productQuantity" type="number" class="form-control" value="${p?.quantity || 0}"></div>
                         </div>
                         <div class="modal-footer">
-                            <button class="btn btn-primary" onclick="saveProduct()">حفظ</button>
-                            <button class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                            <button class="btn btn-primary rounded-pill" onclick="saveProduct()">حفظ</button>
+                            <button class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">إلغاء</button>
                         </div>
                     </div>
                 </div>
@@ -1929,23 +2336,17 @@
     
     function saveProduct() { 
         const id = document.getElementById('productId').value; 
-        const buy = parseFloat(document.getElementById('productBuyPrice').value) || 0; 
         const sell = parseFloat(document.getElementById('productSellPrice').value) || 0; 
-        let batchNumber = document.getElementById('productBatch').value;
-        if (!batchNumber || batchNumber === 'سيتم توليده تلقائياً') {
-            batchNumber = id ? (appData.products.find(p => p.id === parseInt(id))?.batchNumber || generateBatchNumber()) : generateBatchNumber();
-        }
+        let batchNumber = document.getElementById('productBatch').value.trim();
+        const qty = parseFloat(document.getElementById('productQuantity').value) || 0;
+        
         const data = { 
             id: id ? parseInt(id) : Date.now(), 
             name: document.getElementById('productName').value, 
-            unit: document.getElementById('productUnit').value, 
             batchNumber: batchNumber,
-            buyPrice: buy, 
             sellPrice: sell, 
-            profit: sell - buy, 
-            quantity: parseFloat(document.getElementById('productQuantity').value) || 0, 
-            minQuantity: 5, 
-            initialQuantity: id ? (appData.products.find(p => p.id === parseInt(id))?.initialQuantity || parseFloat(document.getElementById('productQuantity').value) || 0) : parseFloat(document.getElementById('productQuantity').value) || 0 
+            quantity: qty, 
+            initialQuantity: id ? (appData.products.find(p => p.id === parseInt(id))?.initialQuantity || qty) : qty 
         }; 
         if(!data.name) return alert('أدخل الاسم'); 
         if(id) { 
@@ -2061,7 +2462,7 @@
         let itemsHtml = ''; 
         inv.items.forEach(item => { 
             const p = appData.products.find(pr => pr.id === item.productId); 
-            itemsHtml += `<tr><td>${p?.name || 'محذوف'}</td><td>${p?.batchNumber || '-'}</td><td>${item.quantity}</td><td>${formatCurrency(item.price)}</td><td>${formatCurrency(item.total)}</td></tr>`; 
+            itemsHtml += `<tr><td>${p?.name || 'محذوف'}</td><td>${p?.batchNumber || '-'}</td><td>${item.quantity}</td><td>${formatCurrency(item.price)}</td><td>${item.discountPercent || 0}%</td><td>${formatCurrency(item.total)}</td><td>${formatCurrency(item.totalAfterDiscount || item.total)}</td></tr>`; 
         }); 
         const modalHtml = `
             <div class="modal fade" id="prodModal">
@@ -2070,8 +2471,8 @@
                         <div class="modal-header"><h5>تفاصيل الفاتورة ${inv.invoiceNumber}</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
                         <div class="modal-body">
                             <p>${party?.name} - ${new Date(inv.date).toLocaleDateString()}</p>
-                            <table class="table"><thead><tr><th>المنتج</th><th>رقم التشغيلة</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead><tbody>${itemsHtml}</tbody></table>
-                            <p>الإجمالي: ${formatCurrency(inv.total)} | المدفوع: ${formatCurrency(inv.paid)} | المتبقي: ${formatCurrency(inv.due)}</p>
+                            <table class="table"><thead><tr><th>المنتج</th><th>رقم التشغيلة</th><th>الكمية</th><th>السعر</th><th>خصم%</th><th>الإجمالي</th><th>بعد الخصم</th></tr></thead><tbody>${itemsHtml}</tbody></table>
+                            <p>الإجمالي قبل الخصم: ${formatCurrency(inv.subtotal)} | الإجمالي بعد الخصم: ${formatCurrency(inv.total)} | المدفوع: ${formatCurrency(inv.paid)} | المتبقي: ${formatCurrency(inv.due)}</p>
                         </div>
                     </div>
                 </div>
@@ -2094,6 +2495,7 @@
         document.getElementById('pageContent').innerHTML = html; 
         document.getElementById('pageTitle').innerHTML = '💾 النسخ الاحتياطي'; 
     }
+    
     function backupData() { 
         const dataStr = JSON.stringify(appData); 
         const blob = new Blob([dataStr], {type:'application/json'}); 
@@ -2102,6 +2504,7 @@
         a.download = `backup_${new Date().toISOString().split('T')[0]}.json`; 
         a.click(); 
     }
+    
     function restoreData() { 
         const file = document.getElementById('restoreFile').files[0]; 
         if(!file) return alert('اختر ملف'); 
@@ -2119,6 +2522,7 @@
         }; 
         reader.readAsText(file); 
     }
+    
     function exportToExcel() { 
         const wsData = [['النوع','رقم الفاتورة','الطرف','التاريخ','الإجمالي','المدفوع','المتبقي'], 
         ...[...appData.salesInvoices.map(i => { 
@@ -2178,6 +2582,7 @@
         appData.settings.commercialRegister = document.getElementById('commercialRegister').value; 
         appData.settings.taxCard = document.getElementById('taxCard').value; 
         saveData(); 
+        updateCompanyNameDisplay();
         alert('تم حفظ الإعدادات'); 
     }
     
@@ -2220,21 +2625,26 @@
                 <td>${item.quantity}</td>
                 <td>${item.price.toFixed(2)}</td>
                 <td>${item.total.toFixed(2)}</td>
+                <td>${item.discountPercent || 0}%</td>
+                <td>${(item.totalAfterDiscount || item.total).toFixed(2)}</td>
             </tr>`; 
         }).join('');
+
+        const subtotal = inv.subtotal || 0;
         
         return `<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><title>فاتورة</title>
         <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
         <style>
-            body{font-family:Tajawal;padding:20px;direction:rtl;}
+            body{font-family:Tajawal;padding:20px;direction:rtl;background:#f5f5f5;}
             .invoice-container{max-width:800px;margin:auto;background:#fff;padding:30px;border-radius:15px;box-shadow:0 0 20px rgba(0,0,0,0.1);position:relative;}
             .header{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #0f3460;padding-bottom:15px;margin-bottom:20px;}
             .company-info{text-align:right;flex:1;}
             .company-info h2{margin:0;color:#0f3460;}
             .company-info p{margin:2px 0;color:#666;font-size:14px;}
-            .logo-container{max-width:120px;margin-left:20px;}
-            .logo-container img{max-width:120px;max-height:120px;}
-            .totals-section{position:relative;margin-top:20px;}
+            .logo-container{max-width:120px;margin-right:0;margin-left:20px;text-align:right;}
+            .logo-container img{max-width:120px;max-height:120px;border-radius:10px;}
+            .totals-section{position:relative;margin-top:20px;border-top:1px solid #eee;padding-top:15px;}
+            .totals-section p{margin:5px 0;text-align:right;}
             .stamp-text{position:absolute;left:0;bottom:0;border:2px solid #999;padding:15px 10px;border-radius:10px;text-align:center;width:130px;color:#999;font-size:13px;}
             .stamp-text .inner{border:1px dashed #999;padding:8px;}
             table{width:100%;border-collapse:collapse;margin:20px 0;}
@@ -2244,13 +2654,13 @@
         </style></head><body>
         <div class="invoice-container">
             <div class="header">
-                ${logoHtml ? `<div class="logo-container">${logoHtml}</div>` : ''}
                 <div class="company-info">
                     <h2>${company}</h2>
                     ${infoLine ? `<p style="font-weight:bold;color:#e94560;">${infoLine}</p>` : ''}
                     ${appData.settings.companyAddress ? `<p>${appData.settings.companyAddress}</p>` : ''}
                     ${appData.settings.companyPhone ? `<p>هاتف: ${appData.settings.companyPhone}</p>` : ''}
                 </div>
+                ${logoHtml ? `<div class="logo-container">${logoHtml}</div>` : ''}
             </div>
             <h3 style="color:#e94560;text-align:center;">فاتورة ${type === 'sale' ? 'بيع' : 'شراء'}</h3>
             <p><strong>رقم الفاتورة:</strong> ${inv.invoiceNumber}</p>
@@ -2258,14 +2668,15 @@
             <p><strong>التاريخ:</strong> ${new Date(inv.date).toLocaleDateString('ar')}</p>
             
             <table>
-                <thead><tr><th>المنتج</th><th>رقم التشغيلة</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead>
+                <thead><tr><th>المنتج</th><th>رقم التشغيلة</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th><th>نسبة الخصم</th><th>بعد الخصم</th></tr></thead>
                 <tbody>${itemsRows}</tbody>
             </table>
             
             <div class="totals-section">
-                <p style="text-align:right;"><strong>الإجمالي:</strong> ${inv.total.toFixed(2)}</p>
-                <p style="text-align:right;"><strong>المدفوع:</strong> ${inv.paid.toFixed(2)}</p>
-                <p style="text-align:right;color:#e94560;"><strong>المتبقي:</strong> ${inv.due.toFixed(2)}</p>
+                <p><strong>الإجمالي قبل الخصم:</strong> ${subtotal.toFixed(2)}</p>
+                <p style="font-size:1.2em;color:#0f3460;"><strong>الإجمالي بعد الخصم:</strong> ${inv.total.toFixed(2)}</p>
+                <p><strong>المدفوع:</strong> ${inv.paid.toFixed(2)}</p>
+                <p style="color:#e94560;font-weight:bold;"><strong>المتبقي:</strong> ${inv.due.toFixed(2)}</p>
                 <div class="stamp-text"><div class="inner">ختم الاستلام<br><br>.............</div></div>
             </div>
         </div>
@@ -2281,7 +2692,7 @@
         
         let itemsText = inv.items.map(item => {
             const p = appData.products.find(pr => pr.id === item.productId);
-            return `- ${p?.name || 'منتج'} | تشغيلة: ${p?.batchNumber || '-'} | كمية: ${item.quantity} | سعر: ${item.price.toFixed(2)} | إجمالي: ${item.total.toFixed(2)}`;
+            return `- ${p?.name || 'منتج'} | تشغيلة: ${p?.batchNumber || '-'} | كمية: ${item.quantity} | سعر: ${item.price.toFixed(2)} | إجمالي: ${item.total.toFixed(2)} | خصم: ${item.discountPercent || 0}% | بعد الخصم: ${(item.totalAfterDiscount || item.total).toFixed(2)}`;
         }).join('\n');
         
         const company = appData.settings.companyName || '';
@@ -2294,13 +2705,16 @@
             infoLine += `ب.ض: ${taxCard}`;
         }
         
-        const msg = `📋 *فاتورة ${inv.invoiceNumber}*\n` +
+        const subtotal = inv.subtotal || 0;
+        
+        let msg = `📋 *فاتورة ${inv.invoiceNumber}*\n` +
             `${company ? `\n*${company}*` : ''}` +
             `${infoLine ? `\n${infoLine}` : ''}` +
             `\n\n👤 العميل: ${c.name} (${c.code})` +
             `\n📅 التاريخ: ${new Date(inv.date).toLocaleDateString('ar')}` +
             `\n\n📦 *المنتجات:*\n${itemsText}` +
-            `\n\n💰 *الإجمالي:* ${inv.total.toFixed(2)}` +
+            `\n\n💰 *الإجمالي قبل الخصم:* ${subtotal.toFixed(2)}` +
+            `\n💰 *الإجمالي بعد الخصم:* ${inv.total.toFixed(2)}` +
             `\n💵 *المدفوع:* ${inv.paid.toFixed(2)}` +
             `\n⚠️ *المتبقي:* ${inv.due.toFixed(2)}`;
         
@@ -2316,7 +2730,7 @@
         
         let itemsText = inv.items.map(item => {
             const p = appData.products.find(pr => pr.id === item.productId);
-            return `- ${p?.name || 'منتج'} | تشغيلة: ${p?.batchNumber || '-'} | كمية: ${item.quantity} | سعر: ${item.price.toFixed(2)} | إجمالي: ${item.total.toFixed(2)}`;
+            return `- ${p?.name || 'منتج'} | تشغيلة: ${p?.batchNumber || '-'} | كمية: ${item.quantity} | سعر: ${item.price.toFixed(2)} | إجمالي: ${item.total.toFixed(2)} | خصم: ${item.discountPercent || 0}% | بعد الخصم: ${(item.totalAfterDiscount || item.total).toFixed(2)}`;
         }).join('\n');
         
         const company = appData.settings.companyName || '';
@@ -2358,6 +2772,7 @@
     loadData();
     setInterval(updateDateTime, 1000);
     updateDateTime();
+    updateCompanyNameDisplay();
     window.addEventListener('resize', () => { 
         if(window.innerWidth >= 768) { 
             document.getElementById('sidebar').classList.remove('show'); 
