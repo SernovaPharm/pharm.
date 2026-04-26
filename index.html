@@ -244,6 +244,7 @@
             overflow: hidden;
             animation: fadeInUp 0.6s ease forwards;
             opacity: 0;
+            text-align: center;
         }
         
         .stat-card:nth-child(1) { animation-delay: 0.1s; }
@@ -284,6 +285,8 @@
             z-index: 1;
             transition: transform 0.4s;
             filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
+            display: block;
+            margin-bottom: 10px;
         }
         
         .stat-card:hover .icon {
@@ -303,6 +306,21 @@
         .stat-card .label {
             color: #b0b0b0;
             font-weight: 600;
+            display: block;
+        }
+
+        .stat-card .d-flex {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .stat-card .d-flex.justify-content-between {
+            flex-direction: column;
+        }
+        
+        .stat-card .d-flex.justify-content-between > div {
+            text-align: center;
         }
 
         /* Table Card with Glass Effect */
@@ -318,11 +336,11 @@
         }
         
         .table thead th {
-            background: linear-gradient(135deg, #0f3460 0%, #e94560 100%);
-            color: white;
+            background: linear-gradient(135deg, #2a3a5c 0%, #3a4a6c 100%);
+            color: #ffffff;
             border: none;
             padding: 14px 12px;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 0.9rem;
         }
         
@@ -407,7 +425,7 @@
         }
         
         .modal-header {
-            background: linear-gradient(135deg, #0f3460 0%, #e94560 100%);
+            background: linear-gradient(135deg, #2a3a5c 0%, #3a4a6c 100%);
             color: white;
             border-radius: var(--radius-lg) var(--radius-lg) 0 0;
             border: none;
@@ -466,14 +484,14 @@
 
         /* Invoice items header */
         .invoice-items-header {
-            background: linear-gradient(135deg, #0f3460 0%, #1a1a2e 100%);
+            background: linear-gradient(135deg, #2a3a5c 0%, #3a4a6c 100%);
             color: #ffffff;
             padding: 15px 20px;
             border-radius: 14px;
             margin-bottom: 15px;
             font-weight: 700;
             font-size: 1rem;
-            border: 2px solid rgba(233,69,96,0.4);
+            border: 1px solid rgba(255,255,255,0.1);
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
         
@@ -606,9 +624,41 @@
             border: 1px solid rgba(255,255,255,0.1);
             color: #e0e0e0;
         }
+
+        /* Password Modal Styles */
+        #passwordModal .modal-content {
+            background: rgba(22, 33, 62, 0.98);
+        }
+        #passwordModal .modal-header {
+            background: linear-gradient(135deg, #2a3a5c 0%, #3a4a6c 100%);
+        }
     </style>
 </head>
 <body>
+
+<!-- Password Modal -->
+<div class="modal fade" id="passwordModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-lock"></i> تسجيل الدخول</h5>
+            </div>
+            <div class="modal-body text-center">
+                <div class="mb-4">
+                    <i class="fas fa-shield-alt fa-3x" style="color: #e94560;"></i>
+                </div>
+                <p class="mb-3" style="color: #e0e0e0;">الرجاء إدخال كلمة المرور للوصول إلى النظام</p>
+                <div class="mb-3">
+                    <input type="password" id="passwordInput" class="form-control text-center" placeholder="كلمة المرور" style="font-size: 1.2rem; letter-spacing: 5px;">
+                </div>
+                <div id="passwordError" class="text-danger mb-2" style="display: none;">كلمة المرور غير صحيحة</div>
+                <button class="btn btn-primary w-100" onclick="checkPassword()">
+                    <i class="fas fa-sign-in-alt"></i> دخول
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="container-fluid p-0">
     <div class="row g-0">
@@ -679,6 +729,39 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
+    // ==================== PASSWORD PROTECTION ====================
+    const CORRECT_PASSWORD = "YFM@2017";
+    let isAuthenticated = false;
+    
+    function checkPassword() {
+        const passwordInput = document.getElementById('passwordInput');
+        const passwordError = document.getElementById('passwordError');
+        const enteredPassword = passwordInput.value;
+        
+        if (enteredPassword === CORRECT_PASSWORD) {
+            isAuthenticated = true;
+            const passwordModal = bootstrap.Modal.getInstance(document.getElementById('passwordModal'));
+            passwordModal.hide();
+            loadData();
+            setInterval(updateDateTime, 1000);
+            updateDateTime();
+            updateCompanyNameDisplay();
+        } else {
+            passwordError.style.display = 'block';
+            passwordInput.value = '';
+            passwordInput.focus();
+        }
+    }
+    
+    // Allow Enter key to submit password
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkPassword();
+            }
+        });
+    });
+    
     // ==================== FIREBASE INITIALIZATION ====================
     const firebaseConfig = {
         apiKey: "AIzaSyByFRuK3zXJbBKKs1OIntPkTB6Jq65yq4U",
@@ -762,6 +845,8 @@
     
     // Load data from Firebase
     function loadData() {
+        if (!isAuthenticated) return;
+        
         if (firebaseSyncEnabled) {
             database.ref('appData').once('value').then((snapshot) => {
                 const firebaseData = snapshot.val();
@@ -945,37 +1030,31 @@
         const totalProducts = appData.products.length;
         
         const html = `
-            <div class="row g-3">
+            <div class="row g-3 justify-content-center">
                 <div class="col-xl-3 col-md-6" onclick="showDueDetails('sales')">
                     <div class="stat-card" style="border-right: 5px solid #e94560;">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <small class="label">ديون فواتير البيع</small>
-                                <div class="value" style="color: #e94560;">${formatCurrency(totalSalesDue)}</div>
-                            </div>
-                            <i class="fas fa-credit-card icon" style="color: #e94560;"></i>
+                        <i class="fas fa-credit-card icon" style="color: #e94560;"></i>
+                        <div>
+                            <small class="label">ديون فواتير البيع</small>
+                            <div class="value" style="color: #e94560;">${formatCurrency(totalSalesDue)}</div>
                         </div>
                     </div>
                 </div>
                 <div class="col-xl-3 col-md-6" onclick="showDueDetails('purchases')">
                     <div class="stat-card" style="border-right: 5px solid #f59e0b;">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <small class="label">ديون فواتير الشراء</small>
-                                <div class="value" style="color: #f59e0b;">${formatCurrency(totalPurchaseDue)}</div>
-                            </div>
-                            <i class="fas fa-hand-holding-usd icon" style="color: #f59e0b;"></i>
+                        <i class="fas fa-hand-holding-usd icon" style="color: #f59e0b;"></i>
+                        <div>
+                            <small class="label">ديون فواتير الشراء</small>
+                            <div class="value" style="color: #f59e0b;">${formatCurrency(totalPurchaseDue)}</div>
                         </div>
                     </div>
                 </div>
                 <div class="col-xl-3 col-md-6" onclick="showProductsInventoryModal()">
                     <div class="stat-card" style="border-right: 5px solid #6366f1;">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <small class="label">المنتجات المسجلة</small>
-                                <div class="value" style="color: #6366f1;">${totalProducts}</div>
-                            </div>
-                            <i class="fas fa-boxes icon" style="color: #6366f1;"></i>
+                        <i class="fas fa-boxes icon" style="color: #6366f1;"></i>
+                        <div>
+                            <small class="label">المنتجات المسجلة</small>
+                            <div class="value" style="color: #6366f1;">${totalProducts}</div>
                         </div>
                     </div>
                 </div>
@@ -2423,7 +2502,6 @@
     }
     
     // ==================== REPORTS (ENHANCED) ====================
-     // ==================== REPORTS (ENHANCED) ====================
     function getFilteredInvoices() {
         let invoices = [];
         
@@ -2435,7 +2513,7 @@
             invoices.push(...appData.purchaseInvoices.map(i => ({...i, invoiceType: 'شراء', partyId: i.supplierId})));
         }
         
-        // Filter by search term (يبحث في رقم الفاتورة واسم الطرف)
+        // Filter by search term
         if (reportsFilter.searchTerm) {
             const term = reportsFilter.searchTerm.toLowerCase();
             invoices = invoices.filter(inv => {
@@ -2504,9 +2582,8 @@
                             <option value="unpaid" ${reportsFilter.status === 'unpaid' ? 'selected' : ''}>غير مسددة</option>
                         </select>
                     </div>
-                                    </div>
-                
-                                </div>
+                </div>
+            </div>
             
             <!-- Summary Cards -->
             <div class="row g-3 mb-3">
@@ -2582,7 +2659,7 @@
         document.getElementById('pageContent').innerHTML = html; 
         document.getElementById('pageTitle').innerHTML = '📈 التقارير';
         
-        // إعادة تركيز المؤشر على حقل البحث بعد الرسم
+        // Refocus on search input
         const searchInput = document.getElementById('reportSearch');
         if (searchInput && reportsFilter.searchTerm) {
             searchInput.focus();
@@ -2590,18 +2667,14 @@
         }
     }
     
-    // دالة مخصصة للتعامل مع البحث في التقارير دون فقدان التركيز
     function handleReportSearch(value) {
         reportsFilter.searchTerm = value;
-        // نقوم بتحديث جدول النتائج فقط دون إعادة رسم الصفحة كاملة
         updateReportResults();
     }
     
-    // دالة لتحديث نتائج الجدول فقط
     function updateReportResults() {
         const filteredInvoices = getFilteredInvoices();
         
-        // تحديث جدول النتائج
         const tableBody = document.querySelector('#reportsTable tbody');
         if (tableBody) {
             if (filteredInvoices.length > 0) {
@@ -2624,7 +2697,6 @@
             }
         }
         
-        // تحديث بطاقات الملخص
         const totalAmount = filteredInvoices.reduce((s, i) => s + i.total, 0);
         const totalPaid = filteredInvoices.reduce((s, i) => s + i.paid, 0);
         const totalDue = filteredInvoices.reduce((s, i) => s + i.due, 0);
@@ -2665,7 +2737,6 @@
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'التقارير');
         
-        // Auto-size columns
         const colWidths = wsData[0].map((_, i) => ({
             wch: Math.max(...wsData.map(row => String(row[i] || '').length)) + 5
         }));
@@ -2877,8 +2948,8 @@
             .stamp-text{position:absolute;left:0;bottom:0;border:2px solid #999;padding:15px 10px;border-radius:10px;text-align:center;width:130px;color:#999;font-size:13px;}
             .stamp-text .inner{border:1px dashed #999;padding:8px;}
             table{width:100%;border-collapse:collapse;margin:20px 0;}
-            th,td{border:1px solid #ddd;padding:10px;text-align:center;}
-            th{background:#0f3460;color:#fff;}
+            th{background:#d3d3d3;color:#000000;font-weight:bold;padding:10px;text-align:center;border:1px solid #b0b0b0;}
+            td{border:1px solid #ddd;padding:10px;text-align:center;}
             @media print{body{background:#fff;}.invoice-container{box-shadow:none;}}
         </style></head><body>
         <div class="invoice-container">
@@ -2933,10 +3004,18 @@
         });
     });
     
-    loadData();
-    setInterval(updateDateTime, 1000);
-    updateDateTime();
-    updateCompanyNameDisplay();
+    // ==================== INITIALIZATION ====================
+    // Show password modal immediately
+    document.addEventListener('DOMContentLoaded', function() {
+        const passwordModal = new bootstrap.Modal(document.getElementById('passwordModal'));
+        passwordModal.show();
+        
+        // Focus on password input
+        setTimeout(() => {
+            document.getElementById('passwordInput').focus();
+        }, 500);
+    });
+    
     window.addEventListener('resize', () => { 
         if(window.innerWidth >= 768) { 
             document.getElementById('sidebar').classList.remove('show'); 
