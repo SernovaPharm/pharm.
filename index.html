@@ -907,6 +907,8 @@
         data.settings.maxDiscountPercent = data.settings.maxDiscountPercent || 30;
         data.customers.forEach(c => { if (!c.code) c.code = generateCustomerCode(c.id); });
         data.products.forEach(p => { if (!p.batchNumber) p.batchNumber = ''; });
+        if (!data.expenses) data.expenses = [];
+        data.expenses.forEach(e => { if (!e.expenseType) e.expenseType = 'مصروفات تشغيلية'; });
         customerCounter = Math.max(...data.customers.map(c => parseInt(c.code?.split('-')[1]) || 0), 0);
         return data;
     }
@@ -1157,7 +1159,10 @@
             <div class="row mt-4">
                 <div class="col-12">
                     <div class="table-card">
-                        <h5 class="mb-3" style="color: #ffffff;"><i class="fas fa-list-alt" style="color: #e94560;"></i> آخر الفواتير (بيع)</h5>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 style="color: #ffffff;"><i class="fas fa-list-alt" style="color: #e94560;"></i> آخر الفواتير (بيع)</h5>
+                            <button class="btn btn-success rounded-pill" onclick="exportSalesToExcel()"><i class="fas fa-file-excel"></i> تصدير Excel</button>
+                        </div>
                         <div class="table-responsive">
                             <table class="table table-hover align-middle">
                                 <thead><tr><th>رقم الفاتورة</th><th>العميل</th><th>التاريخ</th><th>الإجمالي</th><th>المدفوع</th><th>المتبقي</th><th>حالة</th><th>طباعة</th></tr></thead>
@@ -1187,6 +1192,28 @@
         
         document.getElementById('pageContent').innerHTML = html;
         document.getElementById('pageTitle').innerHTML = '📊 لوحة التحكم';
+    }
+    
+    function exportSalesToExcel() {
+        const wsData = [['رقم الفاتورة', 'العميل', 'التاريخ', 'الإجمالي', 'المدفوع', 'المتبقي', 'الحالة']];
+        appData.salesInvoices.forEach(inv => {
+            const c = appData.customers.find(c => c.id === inv.customerId);
+            wsData.push([
+                inv.invoiceNumber,
+                c?.name || '',
+                inv.date,
+                inv.total,
+                inv.paid,
+                inv.due,
+                inv.due === 0 ? 'مسددة' : 'غير مسددة'
+            ]);
+        });
+        const ws = XLSX.utils.aoa_to_sheet(wsData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'فواتير_البيع');
+        const colWidths = wsData[0].map((_, i) => ({ wch: Math.max(...wsData.map(row => String(row[i] || '').length)) + 5 }));
+        ws['!cols'] = colWidths;
+        XLSX.writeFile(wb, `فواتير_البيع_${new Date().toISOString().split('T')[0]}.xlsx`);
     }
     
     function showPaidDetails() {
@@ -1343,6 +1370,9 @@
                 <input type="text" class="form-control" id="customerSearch" placeholder="بحث بالاسم أو الكود أو الهاتف..." onkeyup="filterTableContains('customersTable', 'customerSearch')">
             </div>
             <div class="table-card">
+                <div class="d-flex justify-content-end mb-3">
+                    <button class="btn btn-success rounded-pill" onclick="exportCustomersToExcel()"><i class="fas fa-file-excel"></i> تصدير Excel</button>
+                </div>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle" id="customersTable">
                         <thead>
@@ -1384,6 +1414,28 @@
         document.getElementById('pageTitle').innerHTML = '👥 العملاء والموردين';
     }
     
+    function exportCustomersToExcel() {
+        const wsData = [['النوع', 'الكود', 'الاسم', 'الهاتف', 'العنوان', 'المشتريات', 'المدفوع', 'المتبقي']];
+        appData.customers.forEach(c => {
+            wsData.push([
+                c.type === 'supplier' ? 'مورد' : 'عميل',
+                c.code,
+                c.name,
+                c.phone,
+                c.address || '',
+                getCustomerTotal(c.id),
+                getCustomerPaid(c.id),
+                getCustomerDue(c.id)
+            ]);
+        });
+        const ws = XLSX.utils.aoa_to_sheet(wsData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'العملاء_والموردين');
+        const colWidths = wsData[0].map((_, i) => ({ wch: Math.max(...wsData.map(row => String(row[i] || '').length)) + 5 }));
+        ws['!cols'] = colWidths;
+        XLSX.writeFile(wb, `العملاء_والموردين_${new Date().toISOString().split('T')[0]}.xlsx`);
+    }
+    
     function filterTableContains(tableId, searchId) {
         const term = document.getElementById(searchId)?.value.toLowerCase().trim() || '';
         document.querySelectorAll(`#${tableId} tbody tr`).forEach(r => {
@@ -1396,13 +1448,19 @@
         filterTableContains(tableId, searchId);
     }
     
-    function getCustomerTotal(cId) { 
-        return appData.salesInvoices.filter(i => i.customerId === cId).reduce((s,i) => s + i.total, 0) + 
-               appData.purchaseInvoices.filter(i => i.supplierId === cId).reduce((s,i) => s + i.total, 0); 
+    function getCustomerTotal(cId) {
+        let total = 0;
+        total += appData.salesInvoices.filter(i => i.customerId === cId).reduce((s,i) => s + i.total, 0);
+        total += appData.purchaseInvoices.filter(i => i.supplierId === cId).reduce((s,i) => s + i.total, 0);
+        total += (appData.expenses || []).filter(e => e.supplierId === cId).reduce((s,e) => s + (e.amount || 0), 0);
+        return total;
     }
-    function getCustomerPaid(cId) { 
-        return appData.salesInvoices.filter(i => i.customerId === cId).reduce((s,i) => s + i.paid, 0) + 
-               appData.purchaseInvoices.filter(i => i.supplierId === cId).reduce((s,i) => s + i.paid, 0); 
+    function getCustomerPaid(cId) {
+        let paid = 0;
+        paid += appData.salesInvoices.filter(i => i.customerId === cId).reduce((s,i) => s + i.paid, 0);
+        paid += appData.purchaseInvoices.filter(i => i.supplierId === cId).reduce((s,i) => s + i.paid, 0);
+        paid += (appData.expenses || []).filter(e => e.supplierId === cId).reduce((s,e) => s + (e.paid || 0), 0);
+        return paid;
     }
     function getCustomerDue(cId) { return getCustomerTotal(cId) - getCustomerPaid(cId); }
     
@@ -1418,6 +1476,9 @@
                 <input type="text" class="form-control" id="productSearch" placeholder="بحث بالاسم أو رقم التشغيلة..." onkeyup="filterTableContains('productsTable', 'productSearch')">
             </div>
             <div class="table-card">
+                <div class="d-flex justify-content-end mb-3">
+                    <button class="btn btn-success rounded-pill" onclick="exportProductsToExcel()"><i class="fas fa-file-excel"></i> تصدير Excel</button>
+                </div>
                 <div class="table-responsive">
                     <table class="table" id="productsTable">
                         <thead>
@@ -1453,6 +1514,25 @@
         document.getElementById('pageTitle').innerHTML = '📦 المنتجات';
     }
     
+    function exportProductsToExcel() {
+        const wsData = [['المنتج', 'رقم التشغيلة', 'سعر البيع', 'الكمية', 'الحالة']];
+        appData.products.forEach(p => {
+            wsData.push([
+                p.name,
+                p.batchNumber || '-',
+                p.sellPrice,
+                p.quantity,
+                p.quantity <= 0 ? 'نفذ' : 'متوفر'
+            ]);
+        });
+        const ws = XLSX.utils.aoa_to_sheet(wsData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'المنتجات');
+        const colWidths = wsData[0].map((_, i) => ({ wch: Math.max(...wsData.map(row => String(row[i] || '').length)) + 5 }));
+        ws['!cols'] = colWidths;
+        XLSX.writeFile(wb, `المنتجات_${new Date().toISOString().split('T')[0]}.xlsx`);
+    }
+    
     // ==================== SALES INVOICES ====================
     function renderSalesInvoices() {
         const html = `
@@ -1465,6 +1545,9 @@
                 <input type="text" class="form-control" id="saleSearch" placeholder="بحث..." onkeyup="filterTableContains('salesTable', 'saleSearch')">
             </div>
             <div class="table-card">
+                <div class="d-flex justify-content-end mb-3">
+                    <button class="btn btn-success rounded-pill" onclick="exportSalesInvoicesToExcel()"><i class="fas fa-file-excel"></i> تصدير Excel</button>
+                </div>
                 <div class="table-responsive">
                     <table class="table" id="salesTable">
                         <thead>
@@ -1508,6 +1591,28 @@
         document.getElementById('pageTitle').innerHTML = '🧾 فواتير البيع';
     }
     
+    function exportSalesInvoicesToExcel() {
+        const wsData = [['رقم الفاتورة', 'العميل', 'التاريخ', 'الإجمالي', 'المدفوع', 'المتبقي', 'الحالة']];
+        appData.salesInvoices.forEach(inv => {
+            const c = appData.customers.find(c => c.id === inv.customerId);
+            wsData.push([
+                inv.invoiceNumber,
+                c?.name || '',
+                inv.date,
+                inv.total,
+                inv.paid,
+                inv.due,
+                inv.due === 0 ? 'مسددة' : 'غير مسددة'
+            ]);
+        });
+        const ws = XLSX.utils.aoa_to_sheet(wsData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'فواتير_البيع');
+        const colWidths = wsData[0].map((_, i) => ({ wch: Math.max(...wsData.map(row => String(row[i] || '').length)) + 5 }));
+        ws['!cols'] = colWidths;
+        XLSX.writeFile(wb, `فواتير_البيع_${new Date().toISOString().split('T')[0]}.xlsx`);
+    }
+    
     // ==================== EXPENSES (المصروفات) ====================
     function renderExpenses() {
         const expenses = appData.expenses || [];
@@ -1521,6 +1626,9 @@
                 <input type="text" class="form-control" id="expenseSearch" placeholder="بحث..." onkeyup="filterTableContains('expensesTable', 'expenseSearch')">
             </div>
             <div class="table-card">
+                <div class="d-flex justify-content-end mb-3">
+                    <button class="btn btn-success rounded-pill" onclick="exportExpensesToExcel()"><i class="fas fa-file-excel"></i> تصدير Excel</button>
+                </div>
                 <div class="table-responsive">
                     <table class="table" id="expensesTable">
                         <thead>
@@ -1565,6 +1673,29 @@
         document.getElementById('pageTitle').innerHTML = '💰 المصروفات';
     }
     
+    function exportExpensesToExcel() {
+        const wsData = [['رقم المصروف', 'المورد', 'البيان', 'التاريخ', 'التكلفة', 'المدفوع', 'المتبقي', 'ملاحظات']];
+        (appData.expenses || []).forEach(exp => {
+            const supplier = exp.supplierId ? appData.customers.find(c => c.id === exp.supplierId) : null;
+            wsData.push([
+                exp.expenseNumber || '-',
+                supplier?.name || '-',
+                exp.description || '-',
+                exp.date || '',
+                exp.amount || 0,
+                exp.paid || 0,
+                exp.due || 0,
+                exp.notes || '-'
+            ]);
+        });
+        const ws = XLSX.utils.aoa_to_sheet(wsData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'المصروفات');
+        const colWidths = wsData[0].map((_, i) => ({ wch: Math.max(...wsData.map(row => String(row[i] || '').length)) + 5 }));
+        ws['!cols'] = colWidths;
+        XLSX.writeFile(wb, `المصروفات_${new Date().toISOString().split('T')[0]}.xlsx`);
+    }
+    
     function showExpenseModal(id = null) {
         const exp = id ? (appData.expenses || []).find(e => e.id === id) : null;
         const suppliers = appData.customers.filter(c => c.type === 'supplier');
@@ -1595,6 +1726,15 @@
                                 <div class="col-md-3">
                                     <label class="fw-bold mb-2"><i class="fas fa-calendar"></i> التاريخ</label>
                                     <input type="date" class="form-control" id="expenseDate" value="${exp?.date || new Date().toISOString().split('T')[0]}" style="border-radius: 12px;">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="fw-bold mb-2"><i class="fas fa-tag"></i> نوع المصروف</label>
+                                    <select class="form-control" id="expenseType" style="border-radius: 12px;">
+                                        <option value="مصروفات تشغيلية" ${exp?.expenseType === 'مصروفات تشغيلية' ? 'selected' : ''}>مصروفات تشغيلية</option>
+                                        <option value="مصروفات ادارية" ${exp?.expenseType === 'مصروفات ادارية' ? 'selected' : ''}>مصروفات ادارية</option>
+                                        <option value="مصروفات تسويقية" ${exp?.expenseType === 'مصروفات تسويقية' ? 'selected' : ''}>مصروفات تسويقية</option>
+                                        <option value="اخري" ${exp?.expenseType === 'اخري' ? 'selected' : ''}>اخري</option>
+                                    </select>
                                 </div>
                             </div>
                             
@@ -1687,6 +1827,7 @@
         const due = amount - paid;
         const notes = document.getElementById('expenseNotes').value.trim();
         const date = document.getElementById('expenseDate').value;
+        const expenseType = document.getElementById('expenseType').value;
         
         if (!description) {
             alert('الرجاء إدخال البيان');
@@ -1707,7 +1848,8 @@
             paid: paid,
             due: due,
             notes: notes,
-            date: date
+            date: date,
+            expenseType: expenseType
         };
         
         if (!appData.expenses) appData.expenses = [];
@@ -2451,11 +2593,17 @@
         if (reportsFilter.type === 'all' || reportsFilter.type === 'sales') {
             invoices.push(...appData.salesInvoices.map(i => ({...i, invoiceType: 'بيع', partyId: i.customerId})));
         }
-        if (reportsFilter.type === 'all' || reportsFilter.type === 'purchases') {
-            invoices.push(...appData.purchaseInvoices.map(i => ({...i, invoiceType: 'شراء', partyId: i.supplierId})));
-        }
         if (reportsFilter.type === 'all' || reportsFilter.type === 'expenses') {
-            invoices.push(...(appData.expenses || []).map(e => ({...e, invoiceType: 'مصروف', partyId: e.supplierId, invoiceNumber: e.expenseNumber, total: e.amount, due: e.due, paid: e.paid})));
+            invoices.push(...(appData.expenses || []).map(e => ({
+                ...e, 
+                invoiceType: 'مصروف', 
+                partyId: e.supplierId, 
+                invoiceNumber: e.expenseNumber, 
+                total: e.amount, 
+                due: e.due, 
+                paid: e.paid,
+                expenseType: e.expenseType || 'مصروفات تشغيلية'
+            })));
         }
         
         if (reportsFilter.searchTerm) {
@@ -2465,7 +2613,8 @@
                 return (inv.invoiceNumber || '').toLowerCase().includes(term) ||
                        (party?.name || '').toLowerCase().includes(term) ||
                        (party?.code || '').toLowerCase().includes(term) ||
-                       (inv.description || '').toLowerCase().includes(term);
+                       (inv.description || '').toLowerCase().includes(term) ||
+                       (inv.expenseType || '').toLowerCase().includes(term);
             });
         }
         
@@ -2485,14 +2634,219 @@
         return invoices;
     }
     
+    // Reports detail modals (for cards)
+    function showReportSalesDueDetails() {
+        const filtered = getFilteredInvoices().filter(inv => inv.invoiceType === 'بيع' && inv.due > 0);
+        const totalDue = filtered.reduce((s, inv) => s + (inv.due || 0), 0);
+        const modalHtml = `
+            <div class="modal fade" id="reportSalesDueModal" tabindex="-1">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title"><i class="fas fa-credit-card" style="color: #e94560;"></i> ديون فواتير البيع (حسب الفلتر)</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <h5 class="mb-3">إجمالي الديون: <span style="color: #e94560;">${formatCurrency(totalDue)}</span></h5>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead><tr><th>رقم الفاتورة</th><th>العميل</th><th>التاريخ</th><th>الإجمالي</th><th>المدفوع</th><th>المتبقي</th></tr></thead>
+                                    <tbody>
+                                        ${filtered.map(inv => {
+                                            const c = appData.customers.find(c => c.id === inv.partyId);
+                                            return `<tr>
+                                                <td>${inv.invoiceNumber}</td>
+                                                <td>${c?.name || 'غير محدد'}</td>
+                                                <td>${new Date(inv.date).toLocaleDateString('ar')}</td>
+                                                <td>${formatCurrency(inv.total)}</td>
+                                                <td>${formatCurrency(inv.paid)}</td>
+                                                <td class="fw-bold" style="color: #e94560;">${formatCurrency(inv.due)}</td>
+                                            </tr>`;
+                                        }).join('') || '<tr><td colspan="6" class="text-center">لا توجد نتائج</td></tr>'}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        showModal(modalHtml, 'reportSalesDueModal');
+    }
+    
+    function showReportPaidDetails() {
+        const filtered = getFilteredInvoices().filter(inv => (inv.paid || 0) > 0 && inv.invoiceType === 'بيع');
+        const totalPaid = filtered.reduce((s, inv) => s + (inv.paid || 0), 0);
+        const modalHtml = `
+            <div class="modal fade" id="reportPaidModal" tabindex="-1">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title"><i class="fas fa-check-circle" style="color: #10b981;"></i> المدفوع من فواتير البيع (حسب الفلتر)</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <h5 class="mb-3">إجمالي المدفوع: <span style="color: #10b981;">${formatCurrency(totalPaid)}</span></h5>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead><tr><th>رقم الفاتورة</th><th>العميل</th><th>التاريخ</th><th>الإجمالي</th><th>المدفوع</th></tr></thead>
+                                    <tbody>
+                                        ${filtered.map(inv => {
+                                            const c = appData.customers.find(c => c.id === inv.partyId);
+                                            return `<tr>
+                                                <td>${inv.invoiceNumber}</td>
+                                                <td>${c?.name || 'غير محدد'}</td>
+                                                <td>${inv.date ? new Date(inv.date).toLocaleDateString('ar') : '-'}</td>
+                                                <td>${formatCurrency(inv.total || 0)}</td>
+                                                <td style="color: #10b981; font-weight: bold;">${formatCurrency(inv.paid || 0)}</td>
+                                            </tr>`;
+                                        }).join('') || '<tr><td colspan="5" class="text-center">لا توجد نتائج</td></tr>'}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        showModal(modalHtml, 'reportPaidModal');
+    }
+    
+    function showReportExpensesDetails() {
+        const filtered = getFilteredInvoices().filter(inv => inv.invoiceType === 'مصروف');
+        const totalExpenses = filtered.reduce((s, inv) => s + (inv.total || 0), 0);
+        const modalHtml = `
+            <div class="modal fade" id="reportExpensesModal" tabindex="-1">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title"><i class="fas fa-money-bill-wave" style="color: #f59e0b;"></i> المصروفات (حسب الفلتر)</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <h5 class="mb-3">إجمالي المصروفات: <span style="color: #f59e0b;">${formatCurrency(totalExpenses)}</span></h5>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead><tr><th>النوع</th><th>رقم المصروف</th><th>المورد</th><th>البيان</th><th>التاريخ</th><th>التكلفة</th><th>المدفوع</th><th>المتبقي</th></tr></thead>
+                                    <tbody>
+                                        ${filtered.map(inv => {
+                                            const supplier = inv.partyId ? appData.customers.find(c => c.id === inv.partyId) : null;
+                                            return `<tr>
+                                                <td>${inv.expenseType || 'مصروفات تشغيلية'}</td>
+                                                <td>${inv.invoiceNumber || '-'}</td>
+                                                <td>${supplier?.name || '-'}</td>
+                                                <td>${inv.description || '-'}</td>
+                                                <td>${inv.date ? new Date(inv.date).toLocaleDateString('ar') : '-'}</td>
+                                                <td>${formatCurrency(inv.total || 0)}</td>
+                                                <td style="color: #10b981;">${formatCurrency(inv.paid || 0)}</td>
+                                                <td style="color: #e94560;">${formatCurrency(inv.due || 0)}</td>
+                                            </tr>`;
+                                        }).join('') || '<tr><td colspan="8" class="text-center">لا توجد نتائج</td></tr>'}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        showModal(modalHtml, 'reportExpensesModal');
+    }
+    
+    function showReportBalanceDetails() {
+        const filtered = getFilteredInvoices();
+        const totalPaid = filtered.filter(inv => inv.invoiceType === 'بيع').reduce((s, inv) => s + (inv.paid || 0), 0);
+        const totalExpenses = filtered.filter(inv => inv.invoiceType === 'مصروف').reduce((s, inv) => s + (inv.total || 0), 0);
+        const balance = totalPaid - totalExpenses;
+        
+        const modalHtml = `
+            <div class="modal fade" id="reportBalanceModal" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title"><i class="fas fa-balance-scale" style="color: #6366f1;"></i> الرصيد (حسب الفلتر)</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row text-center">
+                                <div class="col-md-6 mb-3">
+                                    <div class="p-3 rounded" style="background: rgba(16, 185, 129, 0.2);">
+                                        <h6>إجمالي المدفوعات )</h6>
+                                        <h3 style="color: #10b981;">${formatCurrency(totalPaid)}</h3>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="p-3 rounded" style="background: rgba(245, 158, 11, 0.2);">
+                                        <h6>إجمالي المصروفات</h6>
+                                        <h3 style="color: #f59e0b;">${formatCurrency(totalExpenses)}</h3>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="p-3 rounded" style="background: rgba(99, 102, 241, 0.2);">
+                                        <h6>الرصيد النهائي (المدفوع - المصروفات)</h6>
+                                        <h3 style="color: #6366f1;">${formatCurrency(balance)}</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        showModal(modalHtml, 'reportBalanceModal');
+    }
+    
     function renderReports() {
         const filteredInvoices = getFilteredInvoices();
-        const totalAmount = filteredInvoices.reduce((s, i) => s + (i.total || 0), 0);
-        const totalPaid = filteredInvoices.reduce((s, i) => s + (i.paid || 0), 0);
-        const totalDue = filteredInvoices.reduce((s, i) => s + (i.due || 0), 0);
+        
+        // Calculate totals for cards based on filtered data
+        const salesDue = filteredInvoices.filter(inv => inv.invoiceType === 'بيع').reduce((s, inv) => s + (inv.due || 0), 0);
+        const totalPaid = filteredInvoices.filter(inv => inv.invoiceType === 'بيع').reduce((s, inv) => s + (inv.paid || 0), 0);
+        const totalExpenses = filteredInvoices.filter(inv => inv.invoiceType === 'مصروف').reduce((s, inv) => s + (inv.total || 0), 0);
+        const balance = totalPaid - totalExpenses;
         
         const html = `
             <h5 class="mb-4">📈 التقارير</h5>
+            
+            <!-- Report Cards -->
+            <div class="row g-3 justify-content-center mb-4">
+                <div class="col-xl-3 col-md-6" onclick="showReportSalesDueDetails()">
+                    <div class="stat-card" style="border-right: 5px solid #e94560;">
+                        <i class="fas fa-credit-card icon" style="color: #e94560;"></i>
+                        <div>
+                            <small class="label">ديون فواتير البيع</small>
+                            <div class="value" style="color: #e94560;">${formatCurrency(salesDue)}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6" onclick="showReportPaidDetails()">
+                    <div class="stat-card" style="border-right: 5px solid #10b981;">
+                        <i class="fas fa-check-circle icon" style="color: #10b981;"></i>
+                        <div>
+                            <small class="label">المدفوع </small>
+                            <div class="value" style="color: #10b981;">${formatCurrency(totalPaid)}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6" onclick="showReportExpensesDetails()">
+                    <div class="stat-card" style="border-right: 5px solid #f59e0b;">
+                        <i class="fas fa-money-bill-wave icon" style="color: #f59e0b;"></i>
+                        <div>
+                            <small class="label">المصروفات</small>
+                            <div class="value" style="color: #f59e0b;">${formatCurrency(totalExpenses)}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6" onclick="showReportBalanceDetails()">
+                    <div class="stat-card" style="border-right: 5px solid #6366f1;">
+                        <i class="fas fa-balance-scale icon" style="color: #6366f1;"></i>
+                        <div>
+                            <small class="label">الرصيد</small>
+                            <div class="value" style="color: #6366f1;">${formatCurrency(balance)}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
             <div class="filter-section">
                 <div class="row g-3">
@@ -2505,7 +2859,6 @@
                         <select class="form-control" id="reportTypeFilter" onchange="updateReportFilter('type', this.value)" style="border-radius: 10px;">
                             <option value="all" ${reportsFilter.type === 'all' ? 'selected' : ''}>الكل</option>
                             <option value="sales" ${reportsFilter.type === 'sales' ? 'selected' : ''}>مبيعات</option>
-                            <option value="purchases" ${reportsFilter.type === 'purchases' ? 'selected' : ''}>مشتريات</option>
                             <option value="expenses" ${reportsFilter.type === 'expenses' ? 'selected' : ''}>مصروفات</option>
                         </select>
                     </div>
@@ -2524,33 +2877,6 @@
                             <option value="paid" ${reportsFilter.status === 'paid' ? 'selected' : ''}>مسددة</option>
                             <option value="unpaid" ${reportsFilter.status === 'unpaid' ? 'selected' : ''}>غير مسددة</option>
                         </select>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="row g-3 mb-3">
-                <div class="col-md-3">
-                    <div class="stat-card text-center" style="border-right: 5px solid #6366f1;">
-                        <small class="label">عدد الفواتير</small>
-                        <div class="value" style="color: #6366f1; font-size: 1.5rem;">${filteredInvoices.length}</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stat-card text-center" style="border-right: 5px solid #10b981;">
-                        <small class="label">الإجمالي</small>
-                        <div class="value" style="color: #10b981; font-size: 1.5rem;">${formatCurrency(totalAmount)}</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stat-card text-center" style="border-right: 5px solid #f59e0b;">
-                        <small class="label">المدفوع</small>
-                        <div class="value" style="color: #f59e0b; font-size: 1.5rem;">${formatCurrency(totalPaid)}</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stat-card text-center" style="border-right: 5px solid #e94560;">
-                        <small class="label">المتبقي</small>
-                        <div class="value" style="color: #e94560; font-size: 1.5rem;">${formatCurrency(totalDue)}</div>
                     </div>
                 </div>
             </div>
@@ -2578,19 +2904,21 @@
                         </thead>
                         <tbody>
                             ${filteredInvoices.length > 0 ? filteredInvoices.map(inv => {
-                                let partyName = '';
+                                let partyDisplay = '';
                                 if (inv.invoiceType === 'مصروف') {
                                     const supplier = inv.partyId ? appData.customers.find(c => c.id === inv.partyId) : null;
-                                    partyName = supplier?.name || inv.description || 'مصروف';
+                                    const typeLabel = inv.expenseType || 'مصروفات تشغيلية';
+                                    partyDisplay = `${typeLabel} | ${inv.description || ''}`;
+                                    if (supplier) partyDisplay += ` (${supplier.name})`;
                                 } else {
                                     const party = appData.customers.find(c => c.id === inv.partyId);
-                                    partyName = party?.name || 'غير محدد';
+                                    partyDisplay = `مبيعات | ${party?.name || 'غير محدد'}`;
                                 }
                                 return `
                                 <tr>
-                                    <td><span class="badge ${inv.invoiceType === 'بيع' ? 'bg-info' : inv.invoiceType === 'شراء' ? 'bg-warning' : 'bg-secondary'} badge-status">${inv.invoiceType}</span></td>
+                                    <td><span class="badge ${inv.invoiceType === 'بيع' ? 'bg-info' : 'bg-secondary'} badge-status">${inv.invoiceType === 'بيع' ? 'مبيعات' : inv.expenseType || 'مصروف'}</span></td>
                                     <td><strong>${inv.invoiceNumber}</strong></td>
-                                    <td>${partyName}</td>
+                                    <td>${partyDisplay}</td>
                                     <td>${inv.date ? new Date(inv.date).toLocaleDateString('ar') : '-'}</td>
                                     <td>${formatCurrency(inv.total || 0)}</td>
                                     <td>${formatCurrency(inv.paid || 0)}</td>
@@ -2615,52 +2943,7 @@
     
     function handleReportSearch(value) {
         reportsFilter.searchTerm = value;
-        updateReportResults();
-    }
-    
-    function updateReportResults() {
-        const filteredInvoices = getFilteredInvoices();
-        
-        const tableBody = document.querySelector('#reportsTable tbody');
-        if (tableBody) {
-            if (filteredInvoices.length > 0) {
-                tableBody.innerHTML = filteredInvoices.map(inv => {
-                    let partyName = '';
-                    if (inv.invoiceType === 'مصروف') {
-                        const supplier = inv.partyId ? appData.customers.find(c => c.id === inv.partyId) : null;
-                        partyName = supplier?.name || inv.description || 'مصروف';
-                    } else {
-                        const party = appData.customers.find(c => c.id === inv.partyId);
-                        partyName = party?.name || 'غير محدد';
-                    }
-                    return `
-                    <tr>
-                        <td><span class="badge ${inv.invoiceType === 'بيع' ? 'bg-info' : inv.invoiceType === 'شراء' ? 'bg-warning' : 'bg-secondary'} badge-status">${inv.invoiceType}</span></td>
-                        <td><strong>${inv.invoiceNumber}</strong></td>
-                        <td>${partyName}</td>
-                        <td>${inv.date ? new Date(inv.date).toLocaleDateString('ar') : '-'}</td>
-                        <td>${formatCurrency(inv.total || 0)}</td>
-                        <td>${formatCurrency(inv.paid || 0)}</td>
-                        <td class="fw-bold" style="color: #e94560;">${formatCurrency(inv.due || 0)}</td>
-                        <td>${inv.invoiceType !== 'مصروف' ? `<button class="btn btn-sm btn-info rounded-pill" onclick="showInvoiceProductDetails('${inv.invoiceType}', ${inv.id})"><i class="fas fa-eye"></i> عرض</button>` : '-'}</td>
-                    </tr>`;
-                }).join('');
-            } else {
-                tableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4">لا توجد نتائج مطابقة للفلتر</td></tr>';
-            }
-        }
-        
-        const totalAmount = filteredInvoices.reduce((s, i) => s + (i.total || 0), 0);
-        const totalPaid = filteredInvoices.reduce((s, i) => s + (i.paid || 0), 0);
-        const totalDue = filteredInvoices.reduce((s, i) => s + (i.due || 0), 0);
-        
-        const statValues = document.querySelectorAll('.stat-card .value');
-        if (statValues.length >= 4) {
-            statValues[0].textContent = filteredInvoices.length;
-            statValues[1].textContent = formatCurrency(totalAmount);
-            statValues[2].textContent = formatCurrency(totalPaid);
-            statValues[3].textContent = formatCurrency(totalDue);
-        }
+        renderReports();
     }
     
     function updateReportFilter(key, value) {
@@ -2673,18 +2956,20 @@
         const wsData = [['النوع', 'رقم الفاتورة', 'الطرف / البيان', 'التاريخ', 'الإجمالي', 'المدفوع', 'المتبقي', 'الحالة']];
         
         filteredInvoices.forEach(inv => {
-            let partyName = '';
+            let partyDisplay = '';
             if (inv.invoiceType === 'مصروف') {
                 const supplier = inv.partyId ? appData.customers.find(c => c.id === inv.partyId) : null;
-                partyName = supplier?.name || inv.description || 'مصروف';
+                const typeLabel = inv.expenseType || 'مصروفات تشغيلية';
+                partyDisplay = `${typeLabel} | ${inv.description || ''}`;
+                if (supplier) partyDisplay += ` (${supplier.name})`;
             } else {
                 const party = appData.customers.find(c => c.id === inv.partyId);
-                partyName = party?.name || '';
+                partyDisplay = `مبيعات | ${party?.name || ''}`;
             }
             wsData.push([
-                inv.invoiceType,
+                inv.invoiceType === 'بيع' ? 'مبيعات' : (inv.expenseType || 'مصروف'),
                 inv.invoiceNumber || '',
-                partyName,
+                partyDisplay,
                 inv.date || '',
                 inv.total || 0,
                 inv.paid || 0,
@@ -2791,12 +3076,14 @@
         }),
         ...(appData.expenses || []).map(e => {
             const supplier = e.supplierId ? appData.customers.find(c => c.id === e.supplierId) : null;
-            return ['مصروف', e.expenseNumber || '-', supplier?.name || e.description || '-', e.date, e.amount, e.paid || 0, e.due || 0];
+            const typeLabel = e.expenseType || 'مصروفات تشغيلية';
+            const desc = `${typeLabel} | ${e.description || ''}`;
+            return ['مصروف', e.expenseNumber || '-', desc + (supplier ? ` (${supplier.name})` : ''), e.date, e.amount, e.paid || 0, e.due || 0];
         })]];
         const ws = XLSX.utils.aoa_to_sheet(wsData); 
         const wb = XLSX.utils.book_new(); 
         XLSX.utils.book_append_sheet(wb, ws, 'التقارير'); 
-        XLSX.writeFile(wb, `تقرير_${new Date().toISOString().split('T')[0]}.xlsx`); 
+        XLSX.writeFile(wb, `تقرير_شامل_${new Date().toISOString().split('T')[0]}.xlsx`); 
     }
     
     // ==================== SETTINGS ====================
