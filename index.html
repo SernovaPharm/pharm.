@@ -1589,7 +1589,6 @@
                                         <input type="text" class="form-control" id="expenseSupplierSearch" placeholder="ابحث بأي جزء من اسم المورد..." onkeyup="filterExpenseSupplierSelect()" autocomplete="off" value="${exp?.supplierId ? (appData.customers.find(c => c.id === exp.supplierId)?.name || '') : ''}">
                                     </div>
                                     <select class="form-control mt-1" id="expenseSupplierSelect" size="4" onchange="onExpenseSupplierSelected()" style="border-radius: 12px;">
-                                        <option value="">-- بدون مورد --</option>
                                         ${suppliers.map(s => `<option value="${s.id}" data-name="${s.name}" ${exp?.supplierId === s.id ? 'selected' : ''}>${s.name} (${s.code})</option>`).join('')}
                                     </select>
                                 </div>
