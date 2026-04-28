@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
-    <title>شركة سيرنوفا فارماسيوتكالز </title>
+    <title>شركة سيرنوفا فارماسيوتكالز</title>
     
     <!-- Bootstrap 5 RTL + Icons + Fonts -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
@@ -136,6 +136,7 @@
         .sidebar .nav-link:nth-child(6) { animation-delay: 0.6s; }
         .sidebar .nav-link:nth-child(7) { animation-delay: 0.7s; }
         .sidebar .nav-link:nth-child(8) { animation-delay: 0.8s; }
+        .sidebar .nav-link:nth-child(9) { animation-delay: 0.9s; }
         
         .sidebar .nav-link:hover {
             background: rgba(255,255,255,0.15);
@@ -251,6 +252,7 @@
         .stat-card:nth-child(2) { animation-delay: 0.2s; }
         .stat-card:nth-child(3) { animation-delay: 0.3s; }
         .stat-card:nth-child(4) { animation-delay: 0.4s; }
+        .stat-card:nth-child(5) { animation-delay: 0.5s; }
         
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(30px); }
@@ -688,6 +690,9 @@
                 <a class="nav-link" data-page="purchases" href="#">
                     <i class="fas fa-truck"></i> فواتير الشراء
                 </a>
+                <a class="nav-link" data-page="expenses" href="#">
+                    <i class="fas fa-receipt"></i> المصروفات
+                </a>
                 <a class="nav-link" data-page="reports" href="#">
                     <i class="fas fa-chart-bar"></i> التقارير
                 </a>
@@ -784,6 +789,7 @@
         salesInvoices: [],
         purchaseInvoices: [],
         payments: [],
+        expenses: [], // إضافة مصفوفة المصروفات
         settings: {
             companyName: '',
             companyAddress: '',
@@ -821,6 +827,7 @@
         if (!data.salesInvoices) data.salesInvoices = [];
         if (!data.purchaseInvoices) data.purchaseInvoices = [];
         if (!data.payments) data.payments = [];
+        if (!data.expenses) data.expenses = []; // التأكد من وجود مصفوفة المصروفات
         if (!data.settings) data.settings = {};
         if (!data.settings.commercialRegister) data.settings.commercialRegister = '';
         if (!data.settings.taxCard) data.settings.taxCard = '';
@@ -829,6 +836,10 @@
         data.settings.maxDiscountPercent = data.settings.maxDiscountPercent || 30;
         data.customers.forEach(c => { if (!c.code) c.code = generateCustomerCode(c.id); });
         data.products.forEach(p => { if (!p.batchNumber) p.batchNumber = ''; });
+        // التأكد من أن جميع المصروفات لها تاريخ
+        if (data.expenses) {
+            data.expenses.forEach(e => { if (!e.date) e.date = new Date().toISOString().split('T')[0]; });
+        }
         customerCounter = Math.max(...data.customers.map(c => parseInt(c.code?.split('-')[1]) || 0), 0);
         return data;
     }
@@ -947,6 +958,7 @@
         appData.salesInvoices = [];
         appData.purchaseInvoices = [];
         appData.payments = [];
+        appData.expenses = []; // تهيئة مصفوفة المصروفات فارغة
         appData.settings = { 
             currency: '', 
             maxDiscountPercent: 30, 
@@ -970,6 +982,7 @@
             case 'products': renderProducts(); break;
             case 'sales': renderSalesInvoices(); break;
             case 'purchases': renderPurchaseInvoices(); break;
+            case 'expenses': renderExpenses(); break;
             case 'reports': renderReports(); break;
             case 'backup': renderBackup(); break;
             case 'settings': renderSettings(); break;
@@ -1028,6 +1041,7 @@
         const totalSalesDue = appData.salesInvoices.reduce((sum, inv) => sum + inv.due, 0);
         const totalPurchaseDue = appData.purchaseInvoices.reduce((sum, inv) => sum + inv.due, 0);
         const totalProducts = appData.products.length;
+        const totalExpenses = appData.expenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
         
         const html = `
             <div class="row g-3 justify-content-center">
@@ -1055,6 +1069,15 @@
                         <div>
                             <small class="label">المنتجات المسجلة</small>
                             <div class="value" style="color: #6366f1;">${totalProducts}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6" onclick="navigateToPage('expenses')">
+                    <div class="stat-card" style="border-right: 5px solid #ef4444;">
+                        <i class="fas fa-receipt icon" style="color: #ef4444;"></i>
+                        <div>
+                            <small class="label">إجمالي المصروفات</small>
+                            <div class="value" style="color: #ef4444;">${formatCurrency(totalExpenses)}</div>
                         </div>
                     </div>
                 </div>
@@ -1095,6 +1118,14 @@
         document.getElementById('pageTitle').innerHTML = '📊 لوحة التحكم';
     }
     
+    function navigateToPage(page) {
+        currentPage = page;
+        document.querySelectorAll('[data-page]').forEach(l => l.classList.remove('active'));
+        const link = document.querySelector(`[data-page="${page}"]`);
+        if (link) link.classList.add('active');
+        renderCurrentPage();
+    }
+    
     function showProductsInventoryModal() {
         const products = appData.products;
         const modalHtml = `
@@ -1118,7 +1149,10 @@
         const html = `
             <div class="d-flex justify-content-between mb-4 flex-wrap gap-2">
                 <h5 style="color: #ffffff;">👥 إدارة العملاء والموردين</h5>
-                <button class="btn btn-primary rounded-pill" onclick="showCustomerModal()"><i class="fas fa-plus"></i> إضافة جديد</button>
+                <div>
+                    <button class="btn btn-success rounded-pill me-2" onclick="exportCustomersToExcel()"><i class="fas fa-file-excel"></i> تصدير Excel</button>
+                    <button class="btn btn-primary rounded-pill" onclick="showCustomerModal()"><i class="fas fa-plus"></i> إضافة جديد</button>
+                </div>
             </div>
             <div class="search-box">
                 <i class="fas fa-search" style="color: #b0b0b0;"></i>
@@ -1164,6 +1198,34 @@
         `;
         document.getElementById('pageContent').innerHTML = html;
         document.getElementById('pageTitle').innerHTML = '👥 العملاء والموردين';
+    }
+    
+    function exportCustomersToExcel() {
+        const wsData = [['النوع', 'الكود', 'الاسم', 'الهاتف', 'العنوان', 'إجمالي المشتريات', 'المدفوع', 'المتبقي']];
+        
+        appData.customers.forEach(c => {
+            wsData.push([
+                c.type === 'supplier' ? 'مورد' : 'عميل',
+                c.code,
+                c.name,
+                c.phone,
+                c.address || '',
+                getCustomerTotal(c.id),
+                getCustomerPaid(c.id),
+                getCustomerDue(c.id)
+            ]);
+        });
+        
+        const ws = XLSX.utils.aoa_to_sheet(wsData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'العملاء والموردين');
+        
+        const colWidths = wsData[0].map((_, i) => ({
+            wch: Math.max(...wsData.map(row => String(row[i] || '').length)) + 5
+        }));
+        ws['!cols'] = colWidths;
+        
+        XLSX.writeFile(wb, `العملاء_والموردين_${new Date().toISOString().split('T')[0]}.xlsx`);
     }
     
     function filterTableContains(tableId, searchId) {
@@ -1233,6 +1295,277 @@
         `;
         document.getElementById('pageContent').innerHTML = html;
         document.getElementById('pageTitle').innerHTML = '📦 المنتجات';
+    }
+    
+    // ==================== EXPENSES MANAGEMENT ====================
+    function renderExpenses() {
+        // فلترة المصروفات حسب البحث
+        const searchTerm = document.getElementById('expenseSearch')?.value?.toLowerCase().trim() || '';
+        const monthFilter = document.getElementById('expenseMonthFilter')?.value || '';
+        
+        let filteredExpenses = [...appData.expenses];
+        
+        // فلترة بالبحث في البيان
+        if (searchTerm) {
+            filteredExpenses = filteredExpenses.filter(exp => 
+                (exp.description || '').toLowerCase().includes(searchTerm) ||
+                (exp.notes || '').toLowerCase().includes(searchTerm)
+            );
+        }
+        
+        // فلترة بالشهر
+        if (monthFilter) {
+            filteredExpenses = filteredExpenses.filter(exp => {
+                const expDate = exp.date || '';
+                return expDate.startsWith(monthFilter);
+            });
+        }
+        
+        // ترتيب المصروفات من الأحدث إلى الأقدم
+        filteredExpenses.sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        const totalFiltered = filteredExpenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
+        
+        // تجميع فريد للشهور الموجودة في المصروفات
+        const months = [...new Set(appData.expenses.map(exp => (exp.date || '').substring(0, 7)))].filter(m => m).sort().reverse();
+        
+        const html = `
+            <div class="d-flex justify-content-between mb-4 flex-wrap gap-2">
+                <h5 style="color: #ffffff;">💸 إدارة المصروفات</h5>
+                <button class="btn btn-primary rounded-pill" onclick="showExpenseModal()"><i class="fas fa-plus"></i> إضافة مصروف</button>
+            </div>
+            
+            <!-- Filter Section -->
+            <div class="filter-section">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label><i class="fas fa-search"></i> بحث بالبيان</label>
+                        <input type="text" class="form-control" id="expenseSearch" placeholder="اكتب أي جزء من البيان..." value="${searchTerm}" oninput="renderExpenses()" style="border-radius: 10px;">
+                    </div>
+                    <div class="col-md-3">
+                        <label><i class="fas fa-calendar"></i> فلترة بالشهر</label>
+                        <input type="month" class="form-control" id="expenseMonthFilter" value="${monthFilter}" onchange="renderExpenses()" style="border-radius: 10px;">
+                    </div>
+                    <div class="col-md-3">
+                        <label><i class="fas fa-filter"></i> الشهور المتاحة</label>
+                        <select class="form-control" id="expenseMonthSelect" onchange="document.getElementById('expenseMonthFilter').value = this.value; renderExpenses();" style="border-radius: 10px;">
+                            <option value="">كل الشهور</option>
+                            ${months.map(m => `<option value="${m}" ${monthFilter === m ? 'selected' : ''}>${m}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button class="btn btn-outline-light rounded-pill w-100" onclick="document.getElementById('expenseSearch').value=''; document.getElementById('expenseMonthFilter').value=''; renderExpenses();">
+                            <i class="fas fa-times"></i> مسح الفلاتر
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Summary -->
+            <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                    <div class="stat-card text-center" style="border-right: 5px solid #ef4444;">
+                        <small class="label">عدد المصروفات</small>
+                        <div class="value" style="color: #ef4444; font-size: 1.5rem;">${filteredExpenses.length}</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card text-center" style="border-right: 5px solid #f59e0b;">
+                        <small class="label">إجمالي المصروفات المفلترة</small>
+                        <div class="value" style="color: #f59e0b; font-size: 1.5rem;">${formatCurrency(totalFiltered)}</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card text-center" style="border-right: 5px solid #6366f1;">
+                        <small class="label">إجمالي كل المصروفات</small>
+                        <div class="value" style="color: #6366f1; font-size: 1.5rem;">${formatCurrency(appData.expenses.reduce((s, e) => s + (e.amount || 0), 0))}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Export Button -->
+            <div class="d-flex justify-content-end mb-3">
+                <button class="btn btn-success rounded-pill" onclick="exportExpensesToExcel()">
+                    <i class="fas fa-file-excel"></i> تصدير Excel
+                </button>
+            </div>
+            
+            <!-- Expenses Table -->
+            <div class="table-card">
+                <div class="table-responsive">
+                    <table class="table" id="expensesTable">
+                        <thead>
+                            <tr>
+                                <th>التاريخ</th>
+                                <th>البيان</th>
+                                <th>المبلغ</th>
+                                <th>ملاحظات</th>
+                                <th>إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${filteredExpenses.length > 0 ? filteredExpenses.map(exp => `
+                                <tr>
+                                    <td>${new Date(exp.date).toLocaleDateString('ar')}</td>
+                                    <td><strong>${exp.description || ''}</strong></td>
+                                    <td style="color: #ef4444; font-weight: bold;">${formatCurrency(exp.amount)}</td>
+                                    <td>${exp.notes || '-'}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info rounded-pill" onclick="editExpense(${exp.id})"><i class="fas fa-edit"></i></button>
+                                        <button class="btn btn-sm btn-danger rounded-pill" onclick="deleteExpense(${exp.id})"><i class="fas fa-trash"></i></button>
+                                    </td>
+                                </tr>
+                            `).join('') : '<tr><td colspan="5" class="text-center py-4">لا توجد مصروفات</td></tr>'}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+        document.getElementById('pageContent').innerHTML = html;
+        document.getElementById('pageTitle').innerHTML = '💸 المصروفات';
+    }
+    
+    function showExpenseModal(id = null) {
+        const exp = id ? appData.expenses.find(e => e.id === id) : null;
+        const today = new Date().toISOString().split('T')[0];
+        
+        const html = `
+            <div class="modal fade" id="expenseModal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">${exp ? 'تعديل مصروف' : 'إضافة مصروف جديد'}</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" id="expenseId" value="${exp?.id || ''}">
+                            
+                            <div class="mb-3">
+                                <label class="fw-bold"><i class="fas fa-calendar"></i> التاريخ</label>
+                                <input type="date" class="form-control" id="expenseDate" value="${exp?.date || today}" style="border-radius: 12px;">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="fw-bold"><i class="fas fa-file-alt"></i> البيان</label>
+                                <input type="text" class="form-control" id="expenseDescription" value="${exp?.description || ''}" placeholder="أدخل بيان المصروف" style="border-radius: 12px;">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="fw-bold"><i class="fas fa-money-bill"></i> المبلغ</label>
+                                <input type="number" class="form-control" id="expenseAmount" value="${exp?.amount || ''}" placeholder="0.00" step="0.01" style="border-radius: 12px;">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="fw-bold"><i class="fas fa-sticky-note"></i> ملاحظات</label>
+                                <textarea class="form-control" id="expenseNotes" rows="3" placeholder="ملاحظات إضافية..." style="border-radius: 12px;">${exp?.notes || ''}</textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">إلغاء</button>
+                            <button class="btn btn-primary rounded-pill" onclick="saveExpense()">
+                                <i class="fas fa-save"></i> حفظ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        showModal(html, 'expenseModal');
+    }
+    
+    function saveExpense() {
+        const id = document.getElementById('expenseId').value;
+        const date = document.getElementById('expenseDate').value;
+        const description = document.getElementById('expenseDescription').value.trim();
+        const amount = parseFloat(document.getElementById('expenseAmount').value) || 0;
+        const notes = document.getElementById('expenseNotes').value.trim();
+        
+        if (!date) return alert('الرجاء إدخال التاريخ');
+        if (!description) return alert('الرجاء إدخال البيان');
+        if (amount <= 0) return alert('الرجاء إدخال مبلغ صحيح');
+        
+        const expenseData = {
+            id: id ? parseInt(id) : Date.now(),
+            date: date,
+            description: description,
+            amount: amount,
+            notes: notes
+        };
+        
+        if (id) {
+            const idx = appData.expenses.findIndex(e => e.id === parseInt(id));
+            if (idx !== -1) {
+                appData.expenses[idx] = expenseData;
+            }
+        } else {
+            appData.expenses.push(expenseData);
+        }
+        
+        saveData();
+        bootstrap.Modal.getInstance(document.getElementById('expenseModal')).hide();
+        renderExpenses();
+    }
+    
+    function editExpense(id) {
+        showExpenseModal(id);
+    }
+    
+    function deleteExpense(id) {
+        if (confirm('هل أنت متأكد من حذف هذا المصروف؟')) {
+            appData.expenses = appData.expenses.filter(e => e.id !== id);
+            saveData();
+            renderExpenses();
+        }
+    }
+    
+    function exportExpensesToExcel() {
+        const wsData = [['التاريخ', 'البيان', 'المبلغ', 'ملاحظات']];
+        
+        // استخدام نفس الفلترة الحالية
+        const searchTerm = document.getElementById('expenseSearch')?.value?.toLowerCase().trim() || '';
+        const monthFilter = document.getElementById('expenseMonthFilter')?.value || '';
+        
+        let filteredExpenses = [...appData.expenses];
+        
+        if (searchTerm) {
+            filteredExpenses = filteredExpenses.filter(exp => 
+                (exp.description || '').toLowerCase().includes(searchTerm) ||
+                (exp.notes || '').toLowerCase().includes(searchTerm)
+            );
+        }
+        
+        if (monthFilter) {
+            filteredExpenses = filteredExpenses.filter(exp => {
+                const expDate = exp.date || '';
+                return expDate.startsWith(monthFilter);
+            });
+        }
+        
+        filteredExpenses.sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        filteredExpenses.forEach(exp => {
+            wsData.push([
+                exp.date,
+                exp.description,
+                exp.amount,
+                exp.notes || ''
+            ]);
+        });
+        
+        // إضافة صف الإجمالي
+        const total = filteredExpenses.reduce((s, e) => s + (e.amount || 0), 0);
+        wsData.push(['', 'الإجمالي', total, '']);
+        
+        const ws = XLSX.utils.aoa_to_sheet(wsData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'المصروفات');
+        
+        const colWidths = wsData[0].map((_, i) => ({
+            wch: Math.max(...wsData.map(row => String(row[i] || '').length)) + 5
+        }));
+        ws['!cols'] = colWidths;
+        
+        XLSX.writeFile(wb, `المصروفات_${new Date().toISOString().split('T')[0]}.xlsx`);
     }
     
     // ==================== INVOICES (Sales + Purchases) ====================
@@ -2542,14 +2875,40 @@
         return invoices;
     }
     
+    function getFilteredExpensesForReports() {
+        let expenses = [...appData.expenses];
+        
+        // Filter by date range
+        if (reportsFilter.dateFrom) {
+            expenses = expenses.filter(exp => exp.date >= reportsFilter.dateFrom);
+        }
+        if (reportsFilter.dateTo) {
+            expenses = expenses.filter(exp => exp.date <= reportsFilter.dateTo);
+        }
+        
+        // Filter by search term (description)
+        if (reportsFilter.searchTerm) {
+            const term = reportsFilter.searchTerm.toLowerCase();
+            expenses = expenses.filter(exp => 
+                (exp.description || '').toLowerCase().includes(term) ||
+                (exp.notes || '').toLowerCase().includes(term)
+            );
+        }
+        
+        return expenses;
+    }
+    
     function renderReports() {
         const filteredInvoices = getFilteredInvoices();
+        const filteredExpenses = getFilteredExpensesForReports();
+        
         const totalAmount = filteredInvoices.reduce((s, i) => s + i.total, 0);
         const totalPaid = filteredInvoices.reduce((s, i) => s + i.paid, 0);
         const totalDue = filteredInvoices.reduce((s, i) => s + i.due, 0);
+        const totalExpenses = filteredExpenses.reduce((s, e) => s + (e.amount || 0), 0);
         
         const html = `
-            <h5 class="mb-4">📈 التقارير</h5>
+            <h5 class="mb-4" style="color: #ffffff;">📈 التقارير</h5>
             
             <!-- Filter Section -->
             <div class="filter-section">
@@ -2582,10 +2941,16 @@
                             <option value="unpaid" ${reportsFilter.status === 'unpaid' ? 'selected' : ''}>غير مسددة</option>
                         </select>
                     </div>
+                    <div class="col-md-1 d-flex align-items-end">
+                        <button class="btn btn-outline-light rounded-pill w-100" onclick="clearReportFilters()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
             
-            <!-- Summary Cards -->
+            <!-- Summary Cards - Invoices -->
+            <h6 class="mb-3" style="color: #6366f1;"><i class="fas fa-file-invoice"></i> ملخص الفواتير</h6>
             <div class="row g-3 mb-3">
                 <div class="col-md-3">
                     <div class="stat-card text-center" style="border-right: 5px solid #6366f1;">
@@ -2613,15 +2978,14 @@
                 </div>
             </div>
             
-            <!-- Export Button -->
+            <!-- Invoices Table -->
             <div class="d-flex justify-content-end mb-3">
                 <button class="btn btn-success rounded-pill" onclick="exportFilteredToExcel()">
-                    <i class="fas fa-file-excel"></i> تصدير Excel
+                    <i class="fas fa-file-excel"></i> تصدير Excel للفواتير
                 </button>
             </div>
             
-            <!-- Results Table -->
-            <div class="table-card">
+            <div class="table-card mb-4">
                 <div class="table-responsive">
                     <table class="table" id="reportsTable">
                         <thead>
@@ -2655,6 +3019,54 @@
                     </table>
                 </div>
             </div>
+            
+            <!-- Expenses Section in Reports -->
+            <h6 class="mb-3 mt-4" style="color: #ef4444;"><i class="fas fa-receipt"></i> ملخص المصروفات</h6>
+            <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                    <div class="stat-card text-center" style="border-right: 5px solid #ef4444;">
+                        <small class="label">عدد المصروفات</small>
+                        <div class="value" style="color: #ef4444; font-size: 1.5rem;">${filteredExpenses.length}</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card text-center" style="border-right: 5px solid #f59e0b;">
+                        <small class="label">إجمالي المصروفات</small>
+                        <div class="value" style="color: #f59e0b; font-size: 1.5rem;">${formatCurrency(totalExpenses)}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-end mb-3">
+                <button class="btn btn-success rounded-pill" onclick="exportExpensesReportToExcel()">
+                    <i class="fas fa-file-excel"></i> تصدير Excel للمصروفات
+                </button>
+            </div>
+            
+            <div class="table-card">
+                <div class="table-responsive">
+                    <table class="table" id="reportExpensesTable">
+                        <thead>
+                            <tr>
+                                <th>التاريخ</th>
+                                <th>البيان</th>
+                                <th>المبلغ</th>
+                                <th>ملاحظات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${filteredExpenses.length > 0 ? filteredExpenses.map(exp => `
+                                <tr>
+                                    <td>${new Date(exp.date).toLocaleDateString('ar')}</td>
+                                    <td><strong>${exp.description || ''}</strong></td>
+                                    <td style="color: #ef4444; font-weight: bold;">${formatCurrency(exp.amount)}</td>
+                                    <td>${exp.notes || '-'}</td>
+                                </tr>
+                            `).join('') : '<tr><td colspan="4" class="text-center py-4">لا توجد مصروفات في هذه الفترة</td></tr>'}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         `;
         document.getElementById('pageContent').innerHTML = html; 
         document.getElementById('pageTitle').innerHTML = '📈 التقارير';
@@ -2667,47 +3079,20 @@
         }
     }
     
-    function handleReportSearch(value) {
-        reportsFilter.searchTerm = value;
-        updateReportResults();
+    function clearReportFilters() {
+        reportsFilter = {
+            searchTerm: '',
+            type: 'all',
+            dateFrom: '',
+            dateTo: '',
+            status: 'all'
+        };
+        renderReports();
     }
     
-    function updateReportResults() {
-        const filteredInvoices = getFilteredInvoices();
-        
-        const tableBody = document.querySelector('#reportsTable tbody');
-        if (tableBody) {
-            if (filteredInvoices.length > 0) {
-                tableBody.innerHTML = filteredInvoices.map(inv => {
-                    const party = appData.customers.find(c => c.id === inv.partyId); 
-                    return `
-                    <tr>
-                        <td><span class="badge ${inv.invoiceType === 'بيع' ? 'bg-info' : 'bg-warning'} badge-status">${inv.invoiceType}</span></td>
-                        <td><strong>${inv.invoiceNumber}</strong></td>
-                        <td>${party?.name || 'غير محدد'}</td>
-                        <td>${new Date(inv.date).toLocaleDateString('ar')}</td>
-                        <td>${formatCurrency(inv.total)}</td>
-                        <td>${formatCurrency(inv.paid)}</td>
-                        <td class="fw-bold" style="color: #e94560;">${formatCurrency(inv.due)}</td>
-                        <td><button class="btn btn-sm btn-info rounded-pill" onclick="showInvoiceProductDetails('${inv.invoiceType}', ${inv.id})"><i class="fas fa-eye"></i> عرض</button></td>
-                    </tr>`;
-                }).join('');
-            } else {
-                tableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4">لا توجد نتائج مطابقة للفلتر</td></tr>';
-            }
-        }
-        
-        const totalAmount = filteredInvoices.reduce((s, i) => s + i.total, 0);
-        const totalPaid = filteredInvoices.reduce((s, i) => s + i.paid, 0);
-        const totalDue = filteredInvoices.reduce((s, i) => s + i.due, 0);
-        
-        const statValues = document.querySelectorAll('.stat-card .value');
-        if (statValues.length >= 4) {
-            statValues[0].textContent = filteredInvoices.length;
-            statValues[1].textContent = formatCurrency(totalAmount);
-            statValues[2].textContent = formatCurrency(totalPaid);
-            statValues[3].textContent = formatCurrency(totalDue);
-        }
+    function handleReportSearch(value) {
+        reportsFilter.searchTerm = value;
+        renderReports();
     }
     
     function updateReportFilter(key, value) {
@@ -2735,14 +3120,42 @@
         
         const ws = XLSX.utils.aoa_to_sheet(wsData);
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'التقارير');
+        XLSX.utils.book_append_sheet(wb, ws, 'تقارير الفواتير');
         
         const colWidths = wsData[0].map((_, i) => ({
             wch: Math.max(...wsData.map(row => String(row[i] || '').length)) + 5
         }));
         ws['!cols'] = colWidths;
         
-        XLSX.writeFile(wb, `تقرير_${new Date().toISOString().split('T')[0]}.xlsx`);
+        XLSX.writeFile(wb, `تقرير_الفواتير_${new Date().toISOString().split('T')[0]}.xlsx`);
+    }
+    
+    function exportExpensesReportToExcel() {
+        const filteredExpenses = getFilteredExpensesForReports();
+        const wsData = [['التاريخ', 'البيان', 'المبلغ', 'ملاحظات']];
+        
+        filteredExpenses.forEach(exp => {
+            wsData.push([
+                exp.date,
+                exp.description,
+                exp.amount,
+                exp.notes || ''
+            ]);
+        });
+        
+        const total = filteredExpenses.reduce((s, e) => s + (e.amount || 0), 0);
+        wsData.push(['', 'الإجمالي', total, '']);
+        
+        const ws = XLSX.utils.aoa_to_sheet(wsData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'تقارير المصروفات');
+        
+        const colWidths = wsData[0].map((_, i) => ({
+            wch: Math.max(...wsData.map(row => String(row[i] || '').length)) + 5
+        }));
+        ws['!cols'] = colWidths;
+        
+        XLSX.writeFile(wb, `تقرير_المصروفات_${new Date().toISOString().split('T')[0]}.xlsx`);
     }
     
     function showInvoiceProductDetails(type, id) { 
@@ -2780,10 +3193,10 @@
     function renderBackup() { 
         const html = `
             <div class="table-card">
-                <h5>💾 النسخ الاحتياطي</h5>
+                <h5 style="color: #ffffff;">💾 النسخ الاحتياطي</h5>
                 <div class="alert alert-info">Firebase: ${firebaseSyncEnabled ? 'متصل ✅' : 'غير متصل ⚠️'}</div>
                 <div class="row"><div class="col-md-6"><button class="btn btn-primary w-100" onclick="backupData()">تصدير JSON</button></div><div class="col-md-6"><button class="btn btn-success w-100" onclick="exportToExcel()">تصدير Excel</button></div></div>
-                <hr><h6>استعادة</h6>
+                <hr><h6 style="color: #ffffff;">استعادة</h6>
                 <input type="file" id="restoreFile" class="form-control mb-2" accept=".json">
                 <button class="btn btn-warning" onclick="restoreData()">استعادة</button>
             </div>
@@ -2839,7 +3252,7 @@
     function renderSettings() { 
         const html = `
             <div class="table-card">
-                <h5>⚙️ الإعدادات</h5>
+                <h5 style="color: #ffffff;">⚙️ الإعدادات</h5>
                 <div class="mb-3"><label>اسم الشركة</label><input id="companyName" class="form-control" value="${appData.settings.companyName || ''}"></div>
                 <div class="mb-3"><label>العنوان</label><input id="companyAddress" class="form-control" value="${appData.settings.companyAddress || ''}"></div>
                 <div class="mb-3"><label>الهاتف</label><input id="companyPhone" class="form-control" value="${appData.settings.companyPhone || ''}"></div>
