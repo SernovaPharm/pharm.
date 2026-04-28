@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
-    <title>شركة سيرنوفا فارماسيوتكالز</title>
+    <title>شركة سيرنوفا فارماسيوتكالز </title>
     
     <!-- Bootstrap 5 RTL + Icons + Fonts -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
@@ -136,7 +136,6 @@
         .sidebar .nav-link:nth-child(6) { animation-delay: 0.6s; }
         .sidebar .nav-link:nth-child(7) { animation-delay: 0.7s; }
         .sidebar .nav-link:nth-child(8) { animation-delay: 0.8s; }
-        .sidebar .nav-link:nth-child(9) { animation-delay: 0.9s; }
         
         .sidebar .nav-link:hover {
             background: rgba(255,255,255,0.15);
@@ -252,7 +251,6 @@
         .stat-card:nth-child(2) { animation-delay: 0.2s; }
         .stat-card:nth-child(3) { animation-delay: 0.3s; }
         .stat-card:nth-child(4) { animation-delay: 0.4s; }
-        .stat-card:nth-child(5) { animation-delay: 0.5s; }
         
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(30px); }
@@ -634,6 +632,11 @@
         #passwordModal .modal-header {
             background: linear-gradient(135deg, #2a3a5c 0%, #3a4a6c 100%);
         }
+        
+        /* Expense Supplier Select Styling */
+        #expenseSupplierSelect option, #editExpenseSupplierSelect option {
+            padding: 8px;
+        }
     </style>
 </head>
 <body>
@@ -657,6 +660,33 @@
                 <button class="btn btn-primary w-100" onclick="checkPassword()">
                     <i class="fas fa-sign-in-alt"></i> دخول
                 </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-exclamation-triangle" style="color: #e94560;"></i> تأكيد الحذف</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <i class="fas fa-trash-alt fa-3x mb-3" style="color: #e94560;"></i>
+                <p class="mb-3" style="color: #e0e0e0;">تحذير: سيتم حذف هذا العنصر نهائياً</p>
+                <p class="mb-3" style="color: #e0e0e0;">الرجاء إدخال كلمة المرور للتأكيد</p>
+                <div class="mb-3">
+                    <input type="password" id="deletePasswordInput" class="form-control text-center" placeholder="كلمة المرور" style="letter-spacing: 5px;">
+                </div>
+                <div id="deletePasswordError" class="text-danger mb-2" style="display: none;">كلمة المرور غير صحيحة</div>
+                <input type="hidden" id="deleteTargetId">
+                <input type="hidden" id="deleteTargetType">
+                <button class="btn btn-danger w-100" onclick="confirmDelete()">
+                    <i class="fas fa-trash"></i> تأكيد الحذف
+                </button>
+                <button class="btn btn-secondary w-100 mt-2" data-bs-dismiss="modal">إلغاء</button>
             </div>
         </div>
     </div>
@@ -688,10 +718,7 @@
                     <i class="fas fa-shopping-cart"></i> فواتير البيع
                 </a>
                 <a class="nav-link" data-page="purchases" href="#">
-                    <i class="fas fa-truck"></i> فواتير الشراء
-                </a>
-                <a class="nav-link" data-page="expenses" href="#">
-                    <i class="fas fa-receipt"></i> المصروفات
+                    <i class="fas fa-money-bill-wave"></i> المصروفات
                 </a>
                 <a class="nav-link" data-page="reports" href="#">
                     <i class="fas fa-chart-bar"></i> التقارير
@@ -736,7 +763,9 @@
 <script>
     // ==================== PASSWORD PROTECTION ====================
     const CORRECT_PASSWORD = "YFM@2017";
+    const DELETE_PASSWORD = "789";
     let isAuthenticated = false;
+    let pendingDeleteCallback = null;
     
     function checkPassword() {
         const passwordInput = document.getElementById('passwordInput');
@@ -758,11 +787,52 @@
         }
     }
     
+    // Delete confirmation functions
+    function showDeleteConfirm(type, id, callback) {
+        document.getElementById('deleteTargetType').value = type;
+        document.getElementById('deleteTargetId').value = id;
+        document.getElementById('deletePasswordInput').value = '';
+        document.getElementById('deletePasswordError').style.display = 'none';
+        pendingDeleteCallback = callback;
+        
+        const modal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+        modal.show();
+        
+        setTimeout(() => {
+            document.getElementById('deletePasswordInput').focus();
+        }, 500);
+    }
+    
+    function confirmDelete() {
+        const password = document.getElementById('deletePasswordInput').value;
+        const errorDiv = document.getElementById('deletePasswordError');
+        
+        if (password === DELETE_PASSWORD) {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal'));
+            modal.hide();
+            
+            if (pendingDeleteCallback) {
+                pendingDeleteCallback();
+                pendingDeleteCallback = null;
+            }
+        } else {
+            errorDiv.style.display = 'block';
+            document.getElementById('deletePasswordInput').value = '';
+            document.getElementById('deletePasswordInput').focus();
+        }
+    }
+    
     // Allow Enter key to submit password
     document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('passwordInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 checkPassword();
+            }
+        });
+        
+        document.getElementById('deletePasswordInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                confirmDelete();
             }
         });
     });
@@ -788,8 +858,8 @@
         products: [],
         salesInvoices: [],
         purchaseInvoices: [],
+        expenses: [],
         payments: [],
-        expenses: [], // إضافة مصفوفة المصروفات
         settings: {
             companyName: '',
             companyAddress: '',
@@ -806,6 +876,7 @@
     
     let currentInvoiceNumber = 1000;
     let currentPurchaseNumber = 2000;
+    let currentExpenseNumber = 5000;
     let customerCounter = 0;
     let currentPage = 'dashboard';
     let firebaseSyncEnabled = true;
@@ -826,8 +897,8 @@
         if (!data.products) data.products = [];
         if (!data.salesInvoices) data.salesInvoices = [];
         if (!data.purchaseInvoices) data.purchaseInvoices = [];
+        if (!data.expenses) data.expenses = [];
         if (!data.payments) data.payments = [];
-        if (!data.expenses) data.expenses = []; // التأكد من وجود مصفوفة المصروفات
         if (!data.settings) data.settings = {};
         if (!data.settings.commercialRegister) data.settings.commercialRegister = '';
         if (!data.settings.taxCard) data.settings.taxCard = '';
@@ -836,10 +907,6 @@
         data.settings.maxDiscountPercent = data.settings.maxDiscountPercent || 30;
         data.customers.forEach(c => { if (!c.code) c.code = generateCustomerCode(c.id); });
         data.products.forEach(p => { if (!p.batchNumber) p.batchNumber = ''; });
-        // التأكد من أن جميع المصروفات لها تاريخ
-        if (data.expenses) {
-            data.expenses.forEach(e => { if (!e.date) e.date = new Date().toISOString().split('T')[0]; });
-        }
         customerCounter = Math.max(...data.customers.map(c => parseInt(c.code?.split('-')[1]) || 0), 0);
         return data;
     }
@@ -940,6 +1007,10 @@
             const maxNum = Math.max(...appData.purchaseInvoices.map(i => parseInt(i.invoiceNumber.split('-')[1]) || 0));
             currentPurchaseNumber = maxNum + 1;
         }
+        if (appData.expenses && appData.expenses.length > 0) {
+            const maxNum = Math.max(...appData.expenses.map(e => parseInt(e.expenseNumber?.split('-')[1]) || 0));
+            currentExpenseNumber = maxNum + 1;
+        }
     }
     
     function addSampleData() {
@@ -957,8 +1028,8 @@
         
         appData.salesInvoices = [];
         appData.purchaseInvoices = [];
+        appData.expenses = [];
         appData.payments = [];
-        appData.expenses = []; // تهيئة مصفوفة المصروفات فارغة
         appData.settings = { 
             currency: '', 
             maxDiscountPercent: 30, 
@@ -981,8 +1052,7 @@
             case 'customers': renderCustomers(); break;
             case 'products': renderProducts(); break;
             case 'sales': renderSalesInvoices(); break;
-            case 'purchases': renderPurchaseInvoices(); break;
-            case 'expenses': renderExpenses(); break;
+            case 'purchases': renderExpenses(); break;
             case 'reports': renderReports(); break;
             case 'backup': renderBackup(); break;
             case 'settings': renderSettings(); break;
@@ -992,6 +1062,7 @@
     
     function generateInvoiceNumber() { return `INV-${currentInvoiceNumber++}`; }
     function generatePurchaseNumber() { return `PUR-${currentPurchaseNumber++}`; }
+    function generateExpenseNumber() { return `EXP-${currentExpenseNumber++}`; }
     function formatCurrency(amount) { 
         const num = amount?.toFixed(2) || '0.00';
         return appData.settings.currency ? `${num} ${appData.settings.currency}` : num;
@@ -1039,9 +1110,9 @@
     // ==================== DASHBOARD ====================
     function renderDashboard() {
         const totalSalesDue = appData.salesInvoices.reduce((sum, inv) => sum + inv.due, 0);
-        const totalPurchaseDue = appData.purchaseInvoices.reduce((sum, inv) => sum + inv.due, 0);
-        const totalProducts = appData.products.length;
-        const totalExpenses = appData.expenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
+        const totalPaid = appData.salesInvoices.reduce((sum, inv) => sum + inv.paid, 0);
+        const totalExpenses = (appData.expenses || []).reduce((sum, exp) => sum + (exp.amount || 0), 0);
+        const balance = totalPaid - totalExpenses;
         
         const html = `
             <div class="row g-3 justify-content-center">
@@ -1054,30 +1125,30 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-xl-3 col-md-6" onclick="showDueDetails('purchases')">
+                <div class="col-xl-3 col-md-6" onclick="showPaidDetails()">
+                    <div class="stat-card" style="border-right: 5px solid #10b981;">
+                        <i class="fas fa-check-circle icon" style="color: #10b981;"></i>
+                        <div>
+                            <small class="label">المدفوع </small>
+                            <div class="value" style="color: #10b981;">${formatCurrency(totalPaid)}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6" onclick="showExpensesDetails()">
                     <div class="stat-card" style="border-right: 5px solid #f59e0b;">
-                        <i class="fas fa-hand-holding-usd icon" style="color: #f59e0b;"></i>
+                        <i class="fas fa-money-bill-wave icon" style="color: #f59e0b;"></i>
                         <div>
-                            <small class="label">ديون فواتير الشراء</small>
-                            <div class="value" style="color: #f59e0b;">${formatCurrency(totalPurchaseDue)}</div>
+                            <small class="label">المصروفات</small>
+                            <div class="value" style="color: #f59e0b;">${formatCurrency(totalExpenses)}</div>
                         </div>
                     </div>
                 </div>
-                <div class="col-xl-3 col-md-6" onclick="showProductsInventoryModal()">
+                <div class="col-xl-3 col-md-6" onclick="showBalanceDetails()">
                     <div class="stat-card" style="border-right: 5px solid #6366f1;">
-                        <i class="fas fa-boxes icon" style="color: #6366f1;"></i>
+                        <i class="fas fa-balance-scale icon" style="color: #6366f1;"></i>
                         <div>
-                            <small class="label">المنتجات المسجلة</small>
-                            <div class="value" style="color: #6366f1;">${totalProducts}</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6" onclick="navigateToPage('expenses')">
-                    <div class="stat-card" style="border-right: 5px solid #ef4444;">
-                        <i class="fas fa-receipt icon" style="color: #ef4444;"></i>
-                        <div>
-                            <small class="label">إجمالي المصروفات</small>
-                            <div class="value" style="color: #ef4444;">${formatCurrency(totalExpenses)}</div>
+                            <small class="label">الرصيد</small>
+                            <div class="value" style="color: #6366f1;">${formatCurrency(balance)}</div>
                         </div>
                     </div>
                 </div>
@@ -1118,12 +1189,128 @@
         document.getElementById('pageTitle').innerHTML = '📊 لوحة التحكم';
     }
     
-    function navigateToPage(page) {
-        currentPage = page;
-        document.querySelectorAll('[data-page]').forEach(l => l.classList.remove('active'));
-        const link = document.querySelector(`[data-page="${page}"]`);
-        if (link) link.classList.add('active');
-        renderCurrentPage();
+    function showPaidDetails() {
+        const totalPaid = appData.salesInvoices.reduce((sum, inv) => sum + inv.paid, 0);
+        const invoices = appData.salesInvoices.filter(inv => inv.paid > 0);
+        
+        const modalHtml = `
+            <div class="modal fade" id="paidDetailsModal" tabindex="-1">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title"><i class="fas fa-check-circle" style="color: #10b981;"></i> تفاصيل المدفوعات (فواتير البيع)</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <h5 class="mb-3">إجمالي المدفوع: <span style="color: #10b981;">${formatCurrency(totalPaid)}</span></h5>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead><tr><th>رقم الفاتورة</th><th>العميل</th><th>التاريخ</th><th>إجمالي الفاتورة</th><th>المدفوع</th><th>المتبقي</th></tr></thead>
+                                    <tbody>
+                                        ${invoices.map(inv => {
+                                            const c = appData.customers.find(c => c.id === inv.customerId);
+                                            return `<tr>
+                                                <td>${inv.invoiceNumber}</td>
+                                                <td>${c?.name || 'غير محدد'}</td>
+                                                <td>${new Date(inv.date).toLocaleDateString('ar')}</td>
+                                                <td>${formatCurrency(inv.total)}</td>
+                                                <td style="color: #10b981; font-weight: bold;">${formatCurrency(inv.paid)}</td>
+                                                <td>${formatCurrency(inv.due)}</td>
+                                            </tr>`;
+                                        }).join('') || '<tr><td colspan="6" class="text-center">لا توجد مدفوعات</td></tr>'}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        showModal(modalHtml, 'paidDetailsModal');
+    }
+    
+    function showExpensesDetails() {
+        const expenses = appData.expenses || [];
+        const totalExpenses = expenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
+        
+        const modalHtml = `
+            <div class="modal fade" id="expensesDetailsModal" tabindex="-1">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title"><i class="fas fa-money-bill-wave" style="color: #f59e0b;"></i> تفاصيل المصروفات</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <h5 class="mb-3">إجمالي المصروفات: <span style="color: #f59e0b;">${formatCurrency(totalExpenses)}</span></h5>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead><tr><th>رقم المصروف</th><th>المورد</th><th>البيان</th><th>التاريخ</th><th>التكلفة</th><th>المدفوع</th><th>المتبقي</th><th>ملاحظات</th></tr></thead>
+                                    <tbody>
+                                        ${expenses.map(exp => {
+                                            const supplier = exp.supplierId ? appData.customers.find(c => c.id === exp.supplierId) : null;
+                                            return `<tr>
+                                                <td>${exp.expenseNumber || '-'}</td>
+                                                <td>${supplier?.name || '-'}</td>
+                                                <td>${exp.description || '-'}</td>
+                                                <td>${exp.date ? new Date(exp.date).toLocaleDateString('ar') : '-'}</td>
+                                                <td>${formatCurrency(exp.amount || 0)}</td>
+                                                <td style="color: #10b981;">${formatCurrency(exp.paid || 0)}</td>
+                                                <td style="color: #e94560;">${formatCurrency(exp.due || 0)}</td>
+                                                <td>${exp.notes || '-'}</td>
+                                            </tr>`;
+                                        }).join('') || '<tr><td colspan="8" class="text-center">لا توجد مصروفات</td></tr>'}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        showModal(modalHtml, 'expensesDetailsModal');
+    }
+    
+    function showBalanceDetails() {
+        const totalPaid = appData.salesInvoices.reduce((sum, inv) => sum + inv.paid, 0);
+        const totalExpenses = (appData.expenses || []).reduce((sum, exp) => sum + (exp.amount || 0), 0);
+        const balance = totalPaid - totalExpenses;
+        
+        const modalHtml = `
+            <div class="modal fade" id="balanceDetailsModal" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title"><i class="fas fa-balance-scale" style="color: #6366f1;"></i> تفاصيل الرصيد</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row text-center">
+                                <div class="col-md-6 mb-3">
+                                    <div class="p-3 rounded" style="background: rgba(16, 185, 129, 0.2);">
+                                        <h6>إجمالي المدفوعات</h6>
+                                        <h3 style="color: #10b981;">${formatCurrency(totalPaid)}</h3>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="p-3 rounded" style="background: rgba(245, 158, 11, 0.2);">
+                                        <h6>إجمالي المصروفات</h6>
+                                        <h3 style="color: #f59e0b;">${formatCurrency(totalExpenses)}</h3>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="p-3 rounded" style="background: rgba(99, 102, 241, 0.2);">
+                                        <h6>الرصيد النهائي</h6>
+                                        <h3 style="color: #6366f1;">${formatCurrency(balance)}</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        showModal(modalHtml, 'balanceDetailsModal');
     }
     
     function showProductsInventoryModal() {
@@ -1149,10 +1336,7 @@
         const html = `
             <div class="d-flex justify-content-between mb-4 flex-wrap gap-2">
                 <h5 style="color: #ffffff;">👥 إدارة العملاء والموردين</h5>
-                <div>
-                    <button class="btn btn-success rounded-pill me-2" onclick="exportCustomersToExcel()"><i class="fas fa-file-excel"></i> تصدير Excel</button>
-                    <button class="btn btn-primary rounded-pill" onclick="showCustomerModal()"><i class="fas fa-plus"></i> إضافة جديد</button>
-                </div>
+                <button class="btn btn-primary rounded-pill" onclick="showCustomerModal()"><i class="fas fa-plus"></i> إضافة جديد</button>
             </div>
             <div class="search-box">
                 <i class="fas fa-search" style="color: #b0b0b0;"></i>
@@ -1187,7 +1371,7 @@
                                     <td class="fw-bold" style="color: #e94560;">${formatCurrency(getCustomerDue(c.id))}</td>
                                     <td>
                                         <button class="btn btn-sm btn-info rounded-pill" onclick="editCustomer(${c.id})"><i class="fas fa-edit"></i></button>
-                                        <button class="btn btn-sm btn-danger rounded-pill" onclick="deleteCustomer(${c.id})"><i class="fas fa-trash"></i></button>
+                                        <button class="btn btn-sm btn-danger rounded-pill" onclick="deleteCustomerRequest(${c.id})"><i class="fas fa-trash"></i></button>
                                     </td>
                                 </tr>
                             `).join('')}
@@ -1198,34 +1382,6 @@
         `;
         document.getElementById('pageContent').innerHTML = html;
         document.getElementById('pageTitle').innerHTML = '👥 العملاء والموردين';
-    }
-    
-    function exportCustomersToExcel() {
-        const wsData = [['النوع', 'الكود', 'الاسم', 'الهاتف', 'العنوان', 'إجمالي المشتريات', 'المدفوع', 'المتبقي']];
-        
-        appData.customers.forEach(c => {
-            wsData.push([
-                c.type === 'supplier' ? 'مورد' : 'عميل',
-                c.code,
-                c.name,
-                c.phone,
-                c.address || '',
-                getCustomerTotal(c.id),
-                getCustomerPaid(c.id),
-                getCustomerDue(c.id)
-            ]);
-        });
-        
-        const ws = XLSX.utils.aoa_to_sheet(wsData);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'العملاء والموردين');
-        
-        const colWidths = wsData[0].map((_, i) => ({
-            wch: Math.max(...wsData.map(row => String(row[i] || '').length)) + 5
-        }));
-        ws['!cols'] = colWidths;
-        
-        XLSX.writeFile(wb, `العملاء_والموردين_${new Date().toISOString().split('T')[0]}.xlsx`);
     }
     
     function filterTableContains(tableId, searchId) {
@@ -1284,7 +1440,7 @@
                                     <td>${p.quantity <= 0 ? '<span class="badge bg-danger">نفذ</span>' : '<span class="badge bg-success">متوفر</span>'}</td>
                                     <td>
                                         <button class="btn btn-sm btn-info" onclick="editProduct(${p.id})"><i class="fas fa-edit"></i></button>
-                                        <button class="btn btn-sm btn-danger" onclick="deleteProduct(${p.id})"><i class="fas fa-trash"></i></button>
+                                        <button class="btn btn-sm btn-danger" onclick="deleteProductRequest(${p.id})"><i class="fas fa-trash"></i></button>
                                     </td>
                                 </tr>
                             `).join('')}
@@ -1297,278 +1453,7 @@
         document.getElementById('pageTitle').innerHTML = '📦 المنتجات';
     }
     
-    // ==================== EXPENSES MANAGEMENT ====================
-    function renderExpenses() {
-        // فلترة المصروفات حسب البحث
-        const searchTerm = document.getElementById('expenseSearch')?.value?.toLowerCase().trim() || '';
-        const monthFilter = document.getElementById('expenseMonthFilter')?.value || '';
-        
-        let filteredExpenses = [...appData.expenses];
-        
-        // فلترة بالبحث في البيان
-        if (searchTerm) {
-            filteredExpenses = filteredExpenses.filter(exp => 
-                (exp.description || '').toLowerCase().includes(searchTerm) ||
-                (exp.notes || '').toLowerCase().includes(searchTerm)
-            );
-        }
-        
-        // فلترة بالشهر
-        if (monthFilter) {
-            filteredExpenses = filteredExpenses.filter(exp => {
-                const expDate = exp.date || '';
-                return expDate.startsWith(monthFilter);
-            });
-        }
-        
-        // ترتيب المصروفات من الأحدث إلى الأقدم
-        filteredExpenses.sort((a, b) => new Date(b.date) - new Date(a.date));
-        
-        const totalFiltered = filteredExpenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
-        
-        // تجميع فريد للشهور الموجودة في المصروفات
-        const months = [...new Set(appData.expenses.map(exp => (exp.date || '').substring(0, 7)))].filter(m => m).sort().reverse();
-        
-        const html = `
-            <div class="d-flex justify-content-between mb-4 flex-wrap gap-2">
-                <h5 style="color: #ffffff;">💸 إدارة المصروفات</h5>
-                <button class="btn btn-primary rounded-pill" onclick="showExpenseModal()"><i class="fas fa-plus"></i> إضافة مصروف</button>
-            </div>
-            
-            <!-- Filter Section -->
-            <div class="filter-section">
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label><i class="fas fa-search"></i> بحث بالبيان</label>
-                        <input type="text" class="form-control" id="expenseSearch" placeholder="اكتب أي جزء من البيان..." value="${searchTerm}" oninput="renderExpenses()" style="border-radius: 10px;">
-                    </div>
-                    <div class="col-md-3">
-                        <label><i class="fas fa-calendar"></i> فلترة بالشهر</label>
-                        <input type="month" class="form-control" id="expenseMonthFilter" value="${monthFilter}" onchange="renderExpenses()" style="border-radius: 10px;">
-                    </div>
-                    <div class="col-md-3">
-                        <label><i class="fas fa-filter"></i> الشهور المتاحة</label>
-                        <select class="form-control" id="expenseMonthSelect" onchange="document.getElementById('expenseMonthFilter').value = this.value; renderExpenses();" style="border-radius: 10px;">
-                            <option value="">كل الشهور</option>
-                            ${months.map(m => `<option value="${m}" ${monthFilter === m ? 'selected' : ''}>${m}</option>`).join('')}
-                        </select>
-                    </div>
-                    <div class="col-md-2 d-flex align-items-end">
-                        <button class="btn btn-outline-light rounded-pill w-100" onclick="document.getElementById('expenseSearch').value=''; document.getElementById('expenseMonthFilter').value=''; renderExpenses();">
-                            <i class="fas fa-times"></i> مسح الفلاتر
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Summary -->
-            <div class="row g-3 mb-3">
-                <div class="col-md-4">
-                    <div class="stat-card text-center" style="border-right: 5px solid #ef4444;">
-                        <small class="label">عدد المصروفات</small>
-                        <div class="value" style="color: #ef4444; font-size: 1.5rem;">${filteredExpenses.length}</div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="stat-card text-center" style="border-right: 5px solid #f59e0b;">
-                        <small class="label">إجمالي المصروفات المفلترة</small>
-                        <div class="value" style="color: #f59e0b; font-size: 1.5rem;">${formatCurrency(totalFiltered)}</div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="stat-card text-center" style="border-right: 5px solid #6366f1;">
-                        <small class="label">إجمالي كل المصروفات</small>
-                        <div class="value" style="color: #6366f1; font-size: 1.5rem;">${formatCurrency(appData.expenses.reduce((s, e) => s + (e.amount || 0), 0))}</div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Export Button -->
-            <div class="d-flex justify-content-end mb-3">
-                <button class="btn btn-success rounded-pill" onclick="exportExpensesToExcel()">
-                    <i class="fas fa-file-excel"></i> تصدير Excel
-                </button>
-            </div>
-            
-            <!-- Expenses Table -->
-            <div class="table-card">
-                <div class="table-responsive">
-                    <table class="table" id="expensesTable">
-                        <thead>
-                            <tr>
-                                <th>التاريخ</th>
-                                <th>البيان</th>
-                                <th>المبلغ</th>
-                                <th>ملاحظات</th>
-                                <th>إجراءات</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${filteredExpenses.length > 0 ? filteredExpenses.map(exp => `
-                                <tr>
-                                    <td>${new Date(exp.date).toLocaleDateString('ar')}</td>
-                                    <td><strong>${exp.description || ''}</strong></td>
-                                    <td style="color: #ef4444; font-weight: bold;">${formatCurrency(exp.amount)}</td>
-                                    <td>${exp.notes || '-'}</td>
-                                    <td>
-                                        <button class="btn btn-sm btn-info rounded-pill" onclick="editExpense(${exp.id})"><i class="fas fa-edit"></i></button>
-                                        <button class="btn btn-sm btn-danger rounded-pill" onclick="deleteExpense(${exp.id})"><i class="fas fa-trash"></i></button>
-                                    </td>
-                                </tr>
-                            `).join('') : '<tr><td colspan="5" class="text-center py-4">لا توجد مصروفات</td></tr>'}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        `;
-        document.getElementById('pageContent').innerHTML = html;
-        document.getElementById('pageTitle').innerHTML = '💸 المصروفات';
-    }
-    
-    function showExpenseModal(id = null) {
-        const exp = id ? appData.expenses.find(e => e.id === id) : null;
-        const today = new Date().toISOString().split('T')[0];
-        
-        const html = `
-            <div class="modal fade" id="expenseModal" tabindex="-1">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">${exp ? 'تعديل مصروف' : 'إضافة مصروف جديد'}</h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <input type="hidden" id="expenseId" value="${exp?.id || ''}">
-                            
-                            <div class="mb-3">
-                                <label class="fw-bold"><i class="fas fa-calendar"></i> التاريخ</label>
-                                <input type="date" class="form-control" id="expenseDate" value="${exp?.date || today}" style="border-radius: 12px;">
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label class="fw-bold"><i class="fas fa-file-alt"></i> البيان</label>
-                                <input type="text" class="form-control" id="expenseDescription" value="${exp?.description || ''}" placeholder="أدخل بيان المصروف" style="border-radius: 12px;">
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label class="fw-bold"><i class="fas fa-money-bill"></i> المبلغ</label>
-                                <input type="number" class="form-control" id="expenseAmount" value="${exp?.amount || ''}" placeholder="0.00" step="0.01" style="border-radius: 12px;">
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label class="fw-bold"><i class="fas fa-sticky-note"></i> ملاحظات</label>
-                                <textarea class="form-control" id="expenseNotes" rows="3" placeholder="ملاحظات إضافية..." style="border-radius: 12px;">${exp?.notes || ''}</textarea>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">إلغاء</button>
-                            <button class="btn btn-primary rounded-pill" onclick="saveExpense()">
-                                <i class="fas fa-save"></i> حفظ
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        showModal(html, 'expenseModal');
-    }
-    
-    function saveExpense() {
-        const id = document.getElementById('expenseId').value;
-        const date = document.getElementById('expenseDate').value;
-        const description = document.getElementById('expenseDescription').value.trim();
-        const amount = parseFloat(document.getElementById('expenseAmount').value) || 0;
-        const notes = document.getElementById('expenseNotes').value.trim();
-        
-        if (!date) return alert('الرجاء إدخال التاريخ');
-        if (!description) return alert('الرجاء إدخال البيان');
-        if (amount <= 0) return alert('الرجاء إدخال مبلغ صحيح');
-        
-        const expenseData = {
-            id: id ? parseInt(id) : Date.now(),
-            date: date,
-            description: description,
-            amount: amount,
-            notes: notes
-        };
-        
-        if (id) {
-            const idx = appData.expenses.findIndex(e => e.id === parseInt(id));
-            if (idx !== -1) {
-                appData.expenses[idx] = expenseData;
-            }
-        } else {
-            appData.expenses.push(expenseData);
-        }
-        
-        saveData();
-        bootstrap.Modal.getInstance(document.getElementById('expenseModal')).hide();
-        renderExpenses();
-    }
-    
-    function editExpense(id) {
-        showExpenseModal(id);
-    }
-    
-    function deleteExpense(id) {
-        if (confirm('هل أنت متأكد من حذف هذا المصروف؟')) {
-            appData.expenses = appData.expenses.filter(e => e.id !== id);
-            saveData();
-            renderExpenses();
-        }
-    }
-    
-    function exportExpensesToExcel() {
-        const wsData = [['التاريخ', 'البيان', 'المبلغ', 'ملاحظات']];
-        
-        // استخدام نفس الفلترة الحالية
-        const searchTerm = document.getElementById('expenseSearch')?.value?.toLowerCase().trim() || '';
-        const monthFilter = document.getElementById('expenseMonthFilter')?.value || '';
-        
-        let filteredExpenses = [...appData.expenses];
-        
-        if (searchTerm) {
-            filteredExpenses = filteredExpenses.filter(exp => 
-                (exp.description || '').toLowerCase().includes(searchTerm) ||
-                (exp.notes || '').toLowerCase().includes(searchTerm)
-            );
-        }
-        
-        if (monthFilter) {
-            filteredExpenses = filteredExpenses.filter(exp => {
-                const expDate = exp.date || '';
-                return expDate.startsWith(monthFilter);
-            });
-        }
-        
-        filteredExpenses.sort((a, b) => new Date(b.date) - new Date(a.date));
-        
-        filteredExpenses.forEach(exp => {
-            wsData.push([
-                exp.date,
-                exp.description,
-                exp.amount,
-                exp.notes || ''
-            ]);
-        });
-        
-        // إضافة صف الإجمالي
-        const total = filteredExpenses.reduce((s, e) => s + (e.amount || 0), 0);
-        wsData.push(['', 'الإجمالي', total, '']);
-        
-        const ws = XLSX.utils.aoa_to_sheet(wsData);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'المصروفات');
-        
-        const colWidths = wsData[0].map((_, i) => ({
-            wch: Math.max(...wsData.map(row => String(row[i] || '').length)) + 5
-        }));
-        ws['!cols'] = colWidths;
-        
-        XLSX.writeFile(wb, `المصروفات_${new Date().toISOString().split('T')[0]}.xlsx`);
-    }
-    
-    // ==================== INVOICES (Sales + Purchases) ====================
+    // ==================== SALES INVOICES ====================
     function renderSalesInvoices() {
         const html = `
             <div class="d-flex justify-content-between mb-4">
@@ -1610,7 +1495,7 @@
                                         <button class="btn btn-sm btn-outline-info" onclick="editSaleInvoice(${inv.id})" title="تعديل"><i class="fas fa-edit"></i></button>
                                         <button class="btn btn-sm btn-outline-secondary" onclick="printInvoice(${inv.id})" title="طباعة"><i class="fas fa-print"></i></button>
                                         <button class="btn btn-sm btn-outline-success" onclick="addPayment(${inv.id})" title="دفعة"><i class="fas fa-money-bill"></i></button>
-                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteInvoice('sales', ${inv.id})" title="حذف"><i class="fas fa-trash"></i></button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteInvoiceRequest('sales', ${inv.id})" title="حذف"><i class="fas fa-trash"></i></button>
                                     </td>
                                 </tr>`;
                             }).join('')}
@@ -1623,67 +1508,299 @@
         document.getElementById('pageTitle').innerHTML = '🧾 فواتير البيع';
     }
     
-    function renderPurchaseInvoices() {
+    // ==================== EXPENSES (المصروفات) ====================
+    function renderExpenses() {
+        const expenses = appData.expenses || [];
         const html = `
             <div class="d-flex justify-content-between mb-4">
-                <h5>🚚 فواتير الشراء</h5>
-                <button class="btn btn-primary" onclick="showPurchaseInvoiceModal()"><i class="fas fa-plus"></i> فاتورة جديدة</button>
+                <h5>💰 المصروفات</h5>
+                <button class="btn btn-primary" onclick="showExpenseModal()"><i class="fas fa-plus"></i> مصروف جديد</button>
             </div>
             <div class="search-box">
                 <i class="fas fa-search"></i>
-                <input type="text" class="form-control" id="purchaseSearch" placeholder="بحث..." onkeyup="filterTableContains('purchasesTable', 'purchaseSearch')">
+                <input type="text" class="form-control" id="expenseSearch" placeholder="بحث..." onkeyup="filterTableContains('expensesTable', 'expenseSearch')">
             </div>
             <div class="table-card">
                 <div class="table-responsive">
-                    <table class="table" id="purchasesTable">
+                    <table class="table" id="expensesTable">
                         <thead>
                             <tr>
-                                <th>رقم الفاتورة</th>
+                                <th>رقم المصروف</th>
                                 <th>المورد</th>
+                                <th>البيان</th>
                                 <th>التاريخ</th>
-                                <th>الإجمالي</th>
+                                <th>التكلفة</th>
                                 <th>المدفوع</th>
                                 <th>المتبقي</th>
-                                <th>الحالة</th>
+                                <th>ملاحظات</th>
                                 <th>إجراءات</th>
                             </tr>
                         </thead>
                         <tbody>
-                            ${appData.purchaseInvoices.map(inv => { 
-                                const s = appData.customers.find(c => c.id === inv.supplierId); 
+                            ${expenses.map(exp => {
+                                const supplier = exp.supplierId ? appData.customers.find(c => c.id === exp.supplierId) : null;
                                 return `
-                                <tr data-search="${inv.invoiceNumber} ${s?.name} ${s?.address || ''}">
-                                    <td><strong>${inv.invoiceNumber}</strong></td>
-                                    <td>${s?.name}</td>
-                                    <td>${new Date(inv.date).toLocaleDateString('ar')}</td>
-                                    <td>${formatCurrency(inv.total)}</td>
-                                    <td>${formatCurrency(inv.paid)}</td>
-                                    <td class="text-danger">${formatCurrency(inv.due)}</td>
-                                    <td>${inv.due === 0 ? '<span class="badge bg-success">مسددة</span>' : '<span class="badge bg-warning">غير مسددة</span>'}</td>
+                                <tr data-search="${exp.description || ''} ${supplier?.name || ''} ${exp.notes || ''} ${exp.expenseNumber || ''}">
+                                    <td><strong>${exp.expenseNumber || '-'}</strong></td>
+                                    <td>${supplier?.name || '-'}</td>
+                                    <td>${exp.description || '-'}</td>
+                                    <td>${exp.date ? new Date(exp.date).toLocaleDateString('ar') : '-'}</td>
+                                    <td>${formatCurrency(exp.amount || 0)}</td>
+                                    <td style="color: #10b981;">${formatCurrency(exp.paid || 0)}</td>
+                                    <td style="color: #e94560;">${formatCurrency(exp.due || 0)}</td>
+                                    <td>${exp.notes || '-'}</td>
                                     <td>
-                                        <button class="btn btn-sm btn-outline-info" onclick="editPurchaseInvoice(${inv.id})" title="تعديل"><i class="fas fa-edit"></i></button>
-                                        <button class="btn btn-sm btn-outline-secondary" onclick="printPurchaseInvoice(${inv.id})" title="طباعة"><i class="fas fa-print"></i></button>
-                                        <button class="btn btn-sm btn-outline-success" onclick="addPurchasePayment(${inv.id})" title="دفعة"><i class="fas fa-money-bill"></i></button>
-                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteInvoice('purchases', ${inv.id})" title="حذف"><i class="fas fa-trash"></i></button>
+                                        <button class="btn btn-sm btn-outline-info" onclick="editExpense(${exp.id})" title="تعديل"><i class="fas fa-edit"></i></button>
+                                        <button class="btn btn-sm btn-outline-success" onclick="addExpensePayment(${exp.id})" title="دفعة"><i class="fas fa-money-bill"></i></button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteExpenseRequest(${exp.id})" title="حذف"><i class="fas fa-trash"></i></button>
                                     </td>
                                 </tr>`;
-                            }).join('')}
+                            }).join('') || '<tr><td colspan="9" class="text-center py-4">لا توجد مصروفات</td></tr>'}
                         </tbody>
                     </table>
                 </div>
             </div>
         `;
         document.getElementById('pageContent').innerHTML = html;
-        document.getElementById('pageTitle').innerHTML = '🚚 فواتير الشراء';
+        document.getElementById('pageTitle').innerHTML = '💰 المصروفات';
+    }
+    
+    function showExpenseModal(id = null) {
+        const exp = id ? (appData.expenses || []).find(e => e.id === id) : null;
+        const suppliers = appData.customers.filter(c => c.type === 'supplier');
+        
+        const modalHtml = `
+            <div class="modal fade" id="expenseModal" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5><i class="fas fa-money-bill-wave"></i> ${exp ? 'تعديل مصروف' : 'مصروف جديد'}</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" id="expenseId" value="${exp?.id || ''}">
+                            
+                            <!-- اختيار المورد والتاريخ -->
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label class="fw-bold mb-2"><i class="fas fa-user-tie"></i> المورد</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                        <input type="text" class="form-control" id="expenseSupplierSearch" placeholder="ابحث بأي جزء من اسم المورد..." onkeyup="filterExpenseSupplierSelect()" autocomplete="off" value="${exp?.supplierId ? (appData.customers.find(c => c.id === exp.supplierId)?.name || '') : ''}">
+                                    </div>
+                                    <select class="form-control mt-1" id="expenseSupplierSelect" size="4" onchange="onExpenseSupplierSelected()" style="border-radius: 12px;">
+                                        <option value="">-- بدون مورد --</option>
+                                        ${suppliers.map(s => `<option value="${s.id}" data-name="${s.name}" ${exp?.supplierId === s.id ? 'selected' : ''}>${s.name} (${s.code})</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="fw-bold mb-2"><i class="fas fa-calendar"></i> التاريخ</label>
+                                    <input type="date" class="form-control" id="expenseDate" value="${exp?.date || new Date().toISOString().split('T')[0]}" style="border-radius: 12px;">
+                                </div>
+                            </div>
+                            
+                            <!-- البيان -->
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-12">
+                                    <label class="fw-bold mb-2"><i class="fas fa-file-alt"></i> البيان</label>
+                                    <input type="text" class="form-control" id="expenseDescription" value="${exp?.description || ''}" placeholder="أدخل بيان المصروف" style="border-radius: 12px;">
+                                </div>
+                            </div>
+                            
+                            <!-- التكلفة - المدفوع - المتبقي -->
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-4">
+                                    <label class="fw-bold mb-2"><i class="fas fa-dollar-sign"></i> التكلفة</label>
+                                    <input type="number" class="form-control" id="expenseAmount" value="${exp?.amount || 0}" step="0.01" style="border-radius: 12px;" onchange="calculateExpenseDue()">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="fw-bold mb-2"><i class="fas fa-hand-holding-usd"></i> المدفوع</label>
+                                    <input type="number" class="form-control" id="expensePaid" value="${exp?.paid || 0}" step="0.01" style="border-radius: 12px;" onchange="calculateExpenseDue()">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="fw-bold mb-2"><i class="fas fa-calculator"></i> المتبقي</label>
+                                    <input type="text" class="form-control" id="expenseDue" value="${exp?.due || 0}" readonly style="background: rgba(233,69,96,0.2); border-radius: 12px; color: #e94560; font-weight: bold;">
+                                </div>
+                            </div>
+                            
+                            <!-- ملاحظات -->
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-12">
+                                    <label class="fw-bold mb-2"><i class="fas fa-sticky-note"></i> ملاحظات</label>
+                                    <input type="text" class="form-control" id="expenseNotes" value="${exp?.notes || ''}" placeholder="ملاحظات إضافية" style="border-radius: 12px;">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">إلغاء</button>
+                            <button class="btn btn-primary rounded-pill" onclick="saveExpense()"><i class="fas fa-save"></i> حفظ المصروف</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        showModal(modalHtml, 'expenseModal');
+        setTimeout(() => calculateExpenseDue(), 100);
+    }
+    
+    function filterExpenseSupplierSelect() {
+        const searchTerm = document.getElementById('expenseSupplierSearch')?.value.toLowerCase().trim() || '';
+        const select = document.getElementById('expenseSupplierSelect');
+        if (!select) return;
+        Array.from(select.options).forEach(opt => {
+            if (opt.value === '') {
+                opt.style.display = '';
+                return;
+            }
+            const name = opt.getAttribute('data-name')?.toLowerCase() || '';
+            opt.style.display = !searchTerm || name.includes(searchTerm) ? '' : 'none';
+        });
+    }
+    
+    function onExpenseSupplierSelected() {
+        const select = document.getElementById('expenseSupplierSelect');
+        const searchInput = document.getElementById('expenseSupplierSearch');
+        if (select && searchInput && select.selectedOptions.length > 0) {
+            const selectedOption = select.selectedOptions[0];
+            if (selectedOption.value) {
+                searchInput.value = selectedOption.getAttribute('data-name') || selectedOption.text;
+            } else {
+                searchInput.value = '';
+            }
+        }
+    }
+    
+    function calculateExpenseDue() {
+        const amount = parseFloat(document.getElementById('expenseAmount')?.value) || 0;
+        const paid = parseFloat(document.getElementById('expensePaid')?.value) || 0;
+        const due = amount - paid;
+        const dueField = document.getElementById('expenseDue');
+        if (dueField) dueField.value = due.toFixed(2);
+    }
+    
+    function saveExpense() {
+        const id = document.getElementById('expenseId').value;
+        const supplierSelect = document.getElementById('expenseSupplierSelect');
+        const supplierId = supplierSelect?.value ? parseInt(supplierSelect.value) : null;
+        const description = document.getElementById('expenseDescription').value.trim();
+        const amount = parseFloat(document.getElementById('expenseAmount').value) || 0;
+        const paid = parseFloat(document.getElementById('expensePaid').value) || 0;
+        const due = amount - paid;
+        const notes = document.getElementById('expenseNotes').value.trim();
+        const date = document.getElementById('expenseDate').value;
+        
+        if (!description) {
+            alert('الرجاء إدخال البيان');
+            return;
+        }
+        
+        if (amount <= 0) {
+            alert('الرجاء إدخال التكلفة');
+            return;
+        }
+        
+        const expenseData = {
+            id: id ? parseInt(id) : Date.now(),
+            expenseNumber: id ? ((appData.expenses || []).find(e => e.id === parseInt(id))?.expenseNumber || generateExpenseNumber()) : generateExpenseNumber(),
+            supplierId: supplierId,
+            description: description,
+            amount: amount,
+            paid: paid,
+            due: due,
+            notes: notes,
+            date: date
+        };
+        
+        if (!appData.expenses) appData.expenses = [];
+        
+        if (id) {
+            const idx = appData.expenses.findIndex(e => e.id === parseInt(id));
+            if (idx !== -1) {
+                expenseData.expenseNumber = appData.expenses[idx].expenseNumber;
+                appData.expenses[idx] = expenseData;
+            }
+        } else {
+            appData.expenses.push(expenseData);
+        }
+        
+        saveData();
+        bootstrap.Modal.getInstance(document.getElementById('expenseModal')).hide();
+        renderExpenses();
+    }
+    
+    function editExpense(id) {
+        showExpenseModal(id);
+    }
+    
+    function addExpensePayment(id) {
+        const expense = (appData.expenses || []).find(e => e.id === id);
+        if (!expense) return;
+        const amount = prompt(`💰 المبلغ المتبقي: ${formatCurrency(expense.due)}\nأدخل مبلغ الدفعة:`);
+        if (amount && !isNaN(amount)) {
+            const paymentAmount = parseFloat(amount);
+            if (paymentAmount > expense.due) { alert('المبلغ أكبر من المتبقي'); return; }
+            expense.paid = (expense.paid || 0) + paymentAmount;
+            expense.due = expense.amount - expense.paid;
+            
+            if (!appData.payments) appData.payments = [];
+            appData.payments.push({ id: Date.now(), expenseId: id, amount: paymentAmount, date: new Date().toISOString(), type: 'expense' });
+            
+            saveData();
+            renderExpenses();
+            alert('✅ تم تسجيل الدفعة بنجاح');
+        }
+    }
+    
+    function deleteExpenseRequest(id) {
+        showDeleteConfirm('expense', id, function() {
+            appData.expenses = (appData.expenses || []).filter(e => e.id !== id);
+            saveData();
+            renderExpenses();
+        });
+    }
+    
+    function deleteExpense(id) {
+        deleteExpenseRequest(id);
+    }
+    
+    function deleteInvoiceRequest(type, id) {
+        showDeleteConfirm(type, id, function() {
+            if (type === 'sales') {
+                appData.salesInvoices = appData.salesInvoices.filter(i => i.id !== id);
+            } else if (type === 'purchases') {
+                appData.purchaseInvoices = appData.purchaseInvoices.filter(i => i.id !== id);
+            }
+            saveData();
+            renderCurrentPage();
+        });
     }
     
     function deleteInvoice(type, id) {
-        if(confirm('حذف الفاتورة؟')) {
-            if(type === 'sales') appData.salesInvoices = appData.salesInvoices.filter(i => i.id !== id);
-            else appData.purchaseInvoices = appData.purchaseInvoices.filter(i => i.id !== id);
+        deleteInvoiceRequest(type, id);
+    }
+    
+    function deleteCustomerRequest(id) {
+        showDeleteConfirm('customer', id, function() {
+            appData.customers = appData.customers.filter(c => c.id !== id);
             saveData();
-            renderCurrentPage();
-        }
+            renderCustomers();
+        });
+    }
+    
+    function deleteCustomer(id) {
+        deleteCustomerRequest(id);
+    }
+    
+    function deleteProductRequest(id) {
+        showDeleteConfirm('product', id, function() {
+            appData.products = appData.products.filter(p => p.id !== id);
+            saveData();
+            renderProducts();
+        });
+    }
+    
+    function deleteProduct(id) {
+        deleteProductRequest(id);
     }
     
     // ==================== MODALS & ACTIONS ====================
@@ -1791,105 +1908,6 @@
         }
     }
     
-    function showPurchaseInvoiceModal() {
-        const suppliers = appData.customers.filter(c => c.type === 'supplier');
-        const modalHtml = `
-            <div class="modal fade" id="purchaseModal" tabindex="-1">
-                <div class="modal-dialog modal-xl">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5><i class="fas fa-truck-loading"></i> فاتورة شراء جديدة</h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="row g-3 mb-4">
-                                <div class="col-md-6">
-                                    <label class="fw-bold mb-2"><i class="fas fa-industry"></i> المورد</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text"><i class="fas fa-search"></i></span>
-                                        <input type="text" class="form-control" id="supplierSearchInput" placeholder="ابحث بأي جزء من الاسم..." onkeyup="filterSupplierSelect()" autocomplete="off">
-                                    </div>
-                                    <select class="form-control mt-1" id="supplierSelect" size="4" onchange="onSupplierSelected()" style="border-radius: 12px;">
-                                        ${suppliers.map(c => `<option value="${c.id}" data-name="${c.name}">${c.name} (${c.code})</option>`).join('')}
-                                    </select>
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="fw-bold mb-2"><i class="fas fa-calendar"></i> التاريخ</label>
-                                    <input type="date" class="form-control" id="purchaseDate" value="${new Date().toISOString().split('T')[0]}" style="border-radius: 12px;">
-                                </div>
-                            </div>
-                            
-                            <div class="invoice-items-header">
-                                <div class="row align-items-center">
-                                    <div class="col-md-3"><strong>المنتج</strong></div>
-                                    <div class="col-md-1"><strong>الكمية</strong></div>
-                                    <div class="col-md-2"><strong>سعر الوحدة</strong></div>
-                                    <div class="col-md-2"><strong>الإجمالي</strong></div>
-                                    <div class="col-md-1"><strong>خصم %</strong></div>
-                                    <div class="col-md-2"><strong>بعد الخصم</strong></div>
-                                    <div class="col-md-1"><strong>حذف</strong></div>
-                                </div>
-                            </div>
-                            
-                            <div id="purchaseItemsContainer"></div>
-                            <button class="btn btn-outline-light mt-3 rounded-pill" onclick="addPurchaseItemRow()" style="border: 2px dashed rgba(255,255,255,0.3);">
-                                <i class="fas fa-plus-circle"></i> إضافة منتج آخر
-                            </button>
-                            
-                            <hr style="border-color: rgba(255,255,255,0.1);">
-                            <div class="row">
-                                <div class="col-md-5 offset-md-7">
-                                    <div class="card bg-transparent border-light p-3 rounded-4" style="background: rgba(0,0,0,0.3) !important; border: 1px solid rgba(255,255,255,0.2) !important;">
-                                        <div class="mb-3 d-flex justify-content-between align-items-center">
-                                            <span style="color: #ffffff;">الإجمالي قبل الخصم:</span>
-                                            <input type="text" class="form-control w-50 text-end summary-input-white" id="purchaseSubtotal" readonly>
-                                        </div>
-                                        <div class="mb-3 d-flex justify-content-between align-items-center">
-                                            <span style="color: #ffffff;">الإجمالي بعد الخصم:</span>
-                                            <input type="text" class="form-control w-50 text-end summary-input-green" id="purchaseTotal" readonly>
-                                        </div>
-                                        <div class="mb-3 d-flex justify-content-between align-items-center">
-                                            <span style="color: #ffffff;">المدفوع:</span>
-                                            <input type="number" class="form-control w-50 text-end" id="purchasePaid" value="0" onchange="calculatePurchaseDue()" style="border-radius: 8px; background: rgba(255,255,255,0.1); color: #ffffff;">
-                                        </div>
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <span style="color: #ffffff;">المتبقي:</span>
-                                            <input type="text" class="form-control w-50 text-end summary-input-red" id="purchaseDue" readonly>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">إلغاء</button>
-                            <button class="btn btn-primary rounded-pill" onclick="savePurchaseInvoice()"><i class="fas fa-save"></i> حفظ الفاتورة</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        showModal(modalHtml, 'purchaseModal');
-        window.purchaseItemsList = [];
-        addPurchaseItemRow();
-    }
-    
-    function filterSupplierSelect() {
-        const searchTerm = document.getElementById('supplierSearchInput')?.value.toLowerCase().trim() || '';
-        const select = document.getElementById('supplierSelect');
-        if (!select) return;
-        Array.from(select.options).forEach(opt => {
-            const name = opt.getAttribute('data-name')?.toLowerCase() || '';
-            opt.style.display = !searchTerm || name.includes(searchTerm) ? '' : 'none';
-        });
-    }
-    
-    function onSupplierSelected() {
-        const select = document.getElementById('supplierSelect');
-        if (select && select.selectedOptions.length > 0) {
-            document.getElementById('supplierSearchInput').value = select.selectedOptions[0].text;
-        }
-    }
-    
     // Invoice Items Helpers
     function addInvoiceItemRow() {
         const container = document.getElementById('itemsContainer');
@@ -1918,33 +1936,6 @@
         window.invoiceItemsList.push({ productId: null, quantity: 1, price: 0, total: 0, discountPercent: 0, totalAfterDiscount: 0, batchNumber: '' });
     }
     
-    function addPurchaseItemRow() {
-        const container = document.getElementById('purchaseItemsContainer');
-        const idx = window.purchaseItemsList.length;
-        const row = document.createElement('div'); 
-        row.className = 'invoice-item-row'; 
-        row.id = `purchaseItemRow_${idx}`;
-        row.innerHTML = `
-            <div class="row align-items-center g-2">
-                <div class="col-md-3">
-                    <select class="form-control" id="purchaseItemProduct_${idx}" onchange="updatePurchaseItemPrice(${idx})" style="border-radius: 10px;">
-                        <option value="">-- اختر منتج --</option>
-                        ${appData.products.map(p => `<option value="${p.id}" data-price="${p.sellPrice}" data-qty="${p.quantity}" data-batch="${p.batchNumber}">${p.name}${p.batchNumber ? ' (تشغيلة: ' + p.batchNumber + ')' : ''} | السعر: ${formatCurrency(p.sellPrice)}</option>`).join('')}
-                    </select>
-                </div>
-                <div class="col-md-1"><input type="number" class="form-control" id="purchaseItemQty_${idx}" value="1" onchange="updatePurchaseItemTotal(${idx})" placeholder="الكمية" style="border-radius: 10px;"></div>
-                <div class="col-md-2"><input type="number" class="form-control" id="purchaseItemPrice_${idx}" onchange="updatePurchaseItemTotal(${idx})" placeholder="السعر" step="0.01" style="border-radius: 10px;"></div>
-                <div class="col-md-2"><input type="text" class="form-control" id="purchaseItemTotal_${idx}" readonly placeholder="0.00" style="background: rgba(255,255,255,0.05); border-radius: 10px; color: #fff;"></div>
-                <div class="col-md-1"><input type="number" class="form-control" id="purchaseItemDiscount_${idx}" value="0" onchange="updatePurchaseItemTotal(${idx})" placeholder="0" step="0.01" style="border-radius: 10px;"></div>
-                <div class="col-md-2"><input type="text" class="form-control" id="purchaseItemTotalAfterDiscount_${idx}" readonly placeholder="0.00" style="background: rgba(16, 185, 129, 0.2); border-radius: 10px; color: #10b981; font-weight: bold;"></div>
-                <div class="col-md-1"><button class="btn btn-outline-danger btn-sm rounded-pill" onclick="removePurchaseItemRow(${idx})"><i class="fas fa-times"></i></button></div>
-                <div class="col-12 mt-1"><small class="text-info" id="purchaseStockInfo_${idx}"></small></div>
-            </div>
-        `;
-        container.appendChild(row);
-        window.purchaseItemsList.push({ productId: null, quantity: 1, price: 0, total: 0, discountPercent: 0, totalAfterDiscount: 0, batchNumber: '' });
-    }
-    
     function updateItemPrice(idx) {
         const sel = document.getElementById(`itemProduct_${idx}`);
         if (!sel) return;
@@ -1958,22 +1949,6 @@
             const stockInfo = document.getElementById(`stockInfo_${idx}`);
             if (stockInfo) stockInfo.innerHTML = `<i class="fas fa-warehouse"></i> المخزون المتاح: <strong>${p.quantity}</strong>`;
             updateItemTotal(idx);
-        }
-    }
-    
-    function updatePurchaseItemPrice(idx) {
-        const sel = document.getElementById(`purchaseItemProduct_${idx}`);
-        if (!sel) return;
-        const pid = parseInt(sel.value);
-        const p = appData.products.find(pr => pr.id === pid);
-        if(p) {
-            document.getElementById(`purchaseItemPrice_${idx}`).value = p.sellPrice;
-            window.purchaseItemsList[idx].price = p.sellPrice;
-            window.purchaseItemsList[idx].productId = pid;
-            window.purchaseItemsList[idx].batchNumber = p.batchNumber || '';
-            const stockInfo = document.getElementById(`purchaseStockInfo_${idx}`);
-            if (stockInfo) stockInfo.innerHTML = `<i class="fas fa-warehouse"></i> المخزون الحالي: <strong>${p.quantity}</strong>`;
-            updatePurchaseItemTotal(idx);
         }
     }
     
@@ -1994,23 +1969,6 @@
         calculateInvoiceTotal();
     }
     
-    function updatePurchaseItemTotal(idx) {
-        const qty = parseFloat(document.getElementById(`purchaseItemQty_${idx}`)?.value) || 0;
-        const price = parseFloat(document.getElementById(`purchaseItemPrice_${idx}`)?.value) || 0;
-        const tot = qty * price;
-        const discountPercent = parseFloat(document.getElementById(`purchaseItemDiscount_${idx}`)?.value) || 0;
-        const totalAfterDiscount = tot - (tot * discountPercent / 100);
-        
-        document.getElementById(`purchaseItemTotal_${idx}`).value = tot.toFixed(2);
-        document.getElementById(`purchaseItemTotalAfterDiscount_${idx}`).value = totalAfterDiscount.toFixed(2);
-        
-        window.purchaseItemsList[idx].quantity = qty;
-        window.purchaseItemsList[idx].total = tot;
-        window.purchaseItemsList[idx].discountPercent = discountPercent;
-        window.purchaseItemsList[idx].totalAfterDiscount = totalAfterDiscount;
-        calculatePurchaseTotal();
-    }
-    
     function removeInvoiceItemRow(idx) { 
         const row = document.getElementById(`itemRow_${idx}`);
         if (row) {
@@ -2025,20 +1983,6 @@
         }
     }
     
-    function removePurchaseItemRow(idx) { 
-        const row = document.getElementById(`purchaseItemRow_${idx}`);
-        if (row) {
-            row.style.transition = 'all 0.3s';
-            row.style.opacity = '0';
-            row.style.transform = 'translateX(50px)';
-            setTimeout(() => {
-                row.remove();
-                window.purchaseItemsList.splice(idx,1); 
-                calculatePurchaseTotal(); 
-            }, 300);
-        }
-    }
-    
     function calculateInvoiceTotal() { 
         const sub = window.invoiceItemsList.reduce((s,i) => s + (i.total || 0), 0);
         const totalAfterDiscount = window.invoiceItemsList.reduce((s,i) => s + (i.totalAfterDiscount || 0), 0);
@@ -2048,25 +1992,10 @@
         calculateDue(); 
     }
     
-    function calculatePurchaseTotal() { 
-        const sub = window.purchaseItemsList.reduce((s,i) => s + (i.total || 0), 0);
-        const totalAfterDiscount = window.purchaseItemsList.reduce((s,i) => s + (i.totalAfterDiscount || 0), 0);
-        
-        document.getElementById('purchaseSubtotal').value = sub.toFixed(2);
-        document.getElementById('purchaseTotal').value = totalAfterDiscount.toFixed(2);
-        calculatePurchaseDue(); 
-    }
-    
     function calculateDue() { 
         const total = parseFloat(document.getElementById('invoiceTotal')?.value) || 0; 
         const paid = parseFloat(document.getElementById('invoicePaid')?.value) || 0; 
         document.getElementById('invoiceDue').value = (total - paid).toFixed(2); 
-    }
-    
-    function calculatePurchaseDue() { 
-        const total = parseFloat(document.getElementById('purchaseTotal')?.value) || 0; 
-        const paid = parseFloat(document.getElementById('purchasePaid')?.value) || 0; 
-        document.getElementById('purchaseDue').value = (total - paid).toFixed(2); 
     }
     
     function saveSaleInvoice() {
@@ -2125,57 +2054,6 @@
         bootstrap.Modal.getInstance(document.getElementById('saleModal')).hide();
         renderCurrentPage();
         alert('✅ تم حفظ الفاتورة');
-    }
-    
-    function savePurchaseInvoice() {
-        const select = document.getElementById('supplierSelect');
-        const supplierId = parseInt(select?.value);
-        if(!supplierId) { alert('اختر مورد'); return; }
-        const items = window.purchaseItemsList
-            .filter(i => i.productId)
-            .map(i => ({ 
-                productId: i.productId, 
-                quantity: i.quantity, 
-                price: i.price, 
-                total: i.total,
-                discountPercent: i.discountPercent,
-                totalAfterDiscount: i.totalAfterDiscount,
-                batchNumber: i.batchNumber 
-            }));
-        
-        if(items.length === 0) { alert('أضف منتج'); return; }
-        
-        const subtotal = window.purchaseItemsList.reduce((s,i) => s + i.total, 0);
-        const total = parseFloat(document.getElementById('purchaseTotal').value);
-        const paid = parseFloat(document.getElementById('purchasePaid').value);
-        const due = total - paid;
-        
-        const newInvoice = { 
-            id: Date.now(), 
-            invoiceNumber: generatePurchaseNumber(), 
-            supplierId, 
-            date: document.getElementById('purchaseDate').value, 
-            items, 
-            subtotal: subtotal,
-            total: total,
-            paid, 
-            due, 
-            status: due === 0 ? 'paid' : 'partial' 
-        };
-        
-        appData.purchaseInvoices.push(newInvoice);
-        items.forEach(item => { 
-            const prod = appData.products.find(p => p.id === item.productId); 
-            if(prod){ 
-                if(prod.initialQuantity === undefined) prod.initialQuantity = prod.quantity; 
-                prod.quantity += item.quantity; 
-            } 
-        });
-        
-        saveData();
-        bootstrap.Modal.getInstance(document.getElementById('purchaseModal')).hide();
-        renderCurrentPage();
-        alert('✅ تم حفظ فاتورة الشراء');
     }
     
     // ==================== EDIT INVOICE FUNCTIONS ====================
@@ -2288,116 +2166,6 @@
         calculateEditTotal();
     }
     
-    function editPurchaseInvoice(id) {
-        const inv = appData.purchaseInvoices.find(i => i.id === id);
-        if(!inv) return;
-        
-        const suppliers = appData.customers.filter(c => c.type === 'supplier');
-        const modalHtml = `
-            <div class="modal fade" id="editPurchaseModal" tabindex="-1">
-                <div class="modal-dialog modal-xl">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5>تعديل فاتورة الشراء ${inv.invoiceNumber}</h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="row g-3 mb-4">
-                                <div class="col-md-6">
-                                    <label class="fw-bold mb-2">المورد</label>
-                                    <select class="form-control" id="editSupplierSelect" style="border-radius: 12px;">
-                                        ${suppliers.map(s => `<option value="${s.id}" ${s.id === inv.supplierId ? 'selected' : ''}>${s.name} (${s.code})</option>`).join('')}
-                                    </select>
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="fw-bold mb-2">التاريخ</label>
-                                    <input type="date" class="form-control" id="editPurchaseDate" value="${inv.date}" style="border-radius: 12px;">
-                                </div>
-                            </div>
-                            
-                            <div class="invoice-items-header">
-                                <div class="row align-items-center">
-                                    <div class="col-md-3"><strong>المنتج</strong></div>
-                                    <div class="col-md-1"><strong>الكمية</strong></div>
-                                    <div class="col-md-2"><strong>سعر الوحدة</strong></div>
-                                    <div class="col-md-2"><strong>الإجمالي</strong></div>
-                                    <div class="col-md-1"><strong>خصم %</strong></div>
-                                    <div class="col-md-2"><strong>بعد الخصم</strong></div>
-                                    <div class="col-md-1"><strong>حذف</strong></div>
-                                </div>
-                            </div>
-                            
-                            <div id="editPurchaseItemsContainer"></div>
-                            <button class="btn btn-outline-light mt-3 rounded-pill" onclick="addEditPurchaseItemRow()" style="border: 2px dashed rgba(255,255,255,0.3);">
-                                <i class="fas fa-plus-circle"></i> إضافة منتج
-                            </button>
-                            
-                            <hr style="border-color: rgba(255,255,255,0.1);">
-                            <div class="row">
-                                <div class="col-md-5 offset-md-7">
-                                    <div class="card bg-transparent border-light p-3 rounded-4" style="background: rgba(0,0,0,0.3) !important; border: 1px solid rgba(255,255,255,0.2) !important;">
-                                        <div class="mb-3 d-flex justify-content-between align-items-center">
-                                            <span style="color: #ffffff;">الإجمالي قبل الخصم:</span>
-                                            <input type="text" class="form-control w-50 text-end summary-input-white" id="editPurchaseSubtotal" readonly>
-                                        </div>
-                                        <div class="mb-3 d-flex justify-content-between align-items-center">
-                                            <span style="color: #ffffff;">الإجمالي بعد الخصم:</span>
-                                            <input type="text" class="form-control w-50 text-end summary-input-green" id="editPurchaseTotal" readonly>
-                                        </div>
-                                        <div class="mb-3 d-flex justify-content-between align-items-center">
-                                            <span style="color: #ffffff;">المدفوع:</span>
-                                            <input type="number" class="form-control w-50 text-end" id="editPurchasePaid" value="${inv.paid}" onchange="calculateEditPurchaseDue()" style="border-radius: 8px; background: rgba(255,255,255,0.1); color: #ffffff;">
-                                        </div>
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <span style="color: #ffffff;">المتبقي:</span>
-                                            <input type="text" class="form-control w-50 text-end summary-input-red" id="editPurchaseDue" readonly>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">إلغاء</button>
-                            <button class="btn btn-primary rounded-pill" onclick="updatePurchaseInvoice(${id})">تحديث</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        showModal(modalHtml, 'editPurchaseModal');
-        
-        window.editPurchaseItemsList = inv.items.map(item => ({...item}));
-        
-        const container = document.getElementById('editPurchaseItemsContainer');
-        container.innerHTML = '';
-        window.editPurchaseItemsList.forEach((item, idx) => {
-            const p = appData.products.find(pr => pr.id === item.productId);
-            const row = document.createElement('div');
-            row.className = 'invoice-item-row';
-            row.id = `editPurchaseItemRow_${idx}`;
-            row.innerHTML = `
-                <div class="row align-items-center g-2">
-                    <div class="col-md-3">
-                        <select class="form-control" id="editPurchaseItemProduct_${idx}" onchange="updateEditPurchaseItemPrice(${idx})" style="border-radius: 10px;">
-                            <option value="">اختر منتج</option>
-                            ${appData.products.map(pr => `<option value="${pr.id}" data-price="${pr.sellPrice}" data-qty="${pr.quantity}" data-batch="${pr.batchNumber}" ${pr.id === item.productId ? 'selected' : ''}>${pr.name}${pr.batchNumber ? ' (' + pr.batchNumber + ')' : ''}</option>`).join('')}
-                        </select>
-                    </div>
-                    <div class="col-md-1"><input type="number" class="form-control" id="editPurchaseItemQty_${idx}" value="${item.quantity}" onchange="updateEditPurchaseItemTotal(${idx})" style="border-radius: 10px;"></div>
-                    <div class="col-md-2"><input type="number" class="form-control" id="editPurchaseItemPrice_${idx}" value="${item.price}" onchange="updateEditPurchaseItemTotal(${idx})" step="0.01" style="border-radius: 10px;"></div>
-                    <div class="col-md-2"><input type="text" class="form-control" id="editPurchaseItemTotal_${idx}" value="${item.total.toFixed(2)}" readonly style="background: rgba(255,255,255,0.05); border-radius: 10px; color: #fff;"></div>
-                    <div class="col-md-1"><input type="number" class="form-control" id="editPurchaseItemDiscount_${idx}" value="${item.discountPercent || 0}" onchange="updateEditPurchaseItemTotal(${idx})" step="0.01" style="border-radius: 10px;"></div>
-                    <div class="col-md-2"><input type="text" class="form-control" id="editPurchaseItemTotalAfterDiscount_${idx}" value="${(item.totalAfterDiscount || item.total).toFixed(2)}" readonly style="background: rgba(16, 185, 129, 0.2); border-radius: 10px; color: #10b981; font-weight: bold;"></div>
-                    <div class="col-md-1"><button class="btn btn-outline-danger btn-sm rounded-pill" onclick="removeEditPurchaseItemRow(${idx})"><i class="fas fa-times"></i></button></div>
-                </div>
-            `;
-            container.appendChild(row);
-        });
-        
-        calculateEditPurchaseTotal();
-    }
-    
-    // Edit Invoice Item Functions
     function addEditInvoiceItemRow() {
         const container = document.getElementById('editItemsContainer');
         const idx = window.editInvoiceItemsList.length;
@@ -2424,32 +2192,6 @@
         window.editInvoiceItemsList.push({ productId: null, quantity: 1, price: 0, total: 0, discountPercent: 0, totalAfterDiscount: 0, batchNumber: '' });
     }
     
-    function addEditPurchaseItemRow() {
-        const container = document.getElementById('editPurchaseItemsContainer');
-        const idx = window.editPurchaseItemsList.length;
-        const row = document.createElement('div');
-        row.className = 'invoice-item-row';
-        row.id = `editPurchaseItemRow_${idx}`;
-        row.innerHTML = `
-            <div class="row align-items-center g-2">
-                <div class="col-md-3">
-                    <select class="form-control" id="editPurchaseItemProduct_${idx}" onchange="updateEditPurchaseItemPrice(${idx})" style="border-radius: 10px;">
-                        <option value="">اختر منتج</option>
-                        ${appData.products.map(p => `<option value="${p.id}" data-price="${p.sellPrice}" data-qty="${p.quantity}" data-batch="${p.batchNumber}">${p.name}${p.batchNumber ? ' (' + p.batchNumber + ')' : ''}</option>`).join('')}
-                    </select>
-                </div>
-                <div class="col-md-1"><input type="number" class="form-control" id="editPurchaseItemQty_${idx}" value="1" onchange="updateEditPurchaseItemTotal(${idx})" style="border-radius: 10px;"></div>
-                <div class="col-md-2"><input type="number" class="form-control" id="editPurchaseItemPrice_${idx}" onchange="updateEditPurchaseItemTotal(${idx})" step="0.01" style="border-radius: 10px;"></div>
-                <div class="col-md-2"><input type="text" class="form-control" id="editPurchaseItemTotal_${idx}" readonly style="background: rgba(255,255,255,0.05); border-radius: 10px; color: #fff;"></div>
-                <div class="col-md-1"><input type="number" class="form-control" id="editPurchaseItemDiscount_${idx}" value="0" onchange="updateEditPurchaseItemTotal(${idx})" step="0.01" style="border-radius: 10px;"></div>
-                <div class="col-md-2"><input type="text" class="form-control" id="editPurchaseItemTotalAfterDiscount_${idx}" readonly style="background: rgba(16, 185, 129, 0.2); border-radius: 10px; color: #10b981; font-weight: bold;"></div>
-                <div class="col-md-1"><button class="btn btn-outline-danger btn-sm rounded-pill" onclick="removeEditPurchaseItemRow(${idx})"><i class="fas fa-times"></i></button></div>
-            </div>
-        `;
-        container.appendChild(row);
-        window.editPurchaseItemsList.push({ productId: null, quantity: 1, price: 0, total: 0, discountPercent: 0, totalAfterDiscount: 0, batchNumber: '' });
-    }
-    
     function updateEditItemPrice(idx) {
         const sel = document.getElementById(`editItemProduct_${idx}`);
         if (!sel) return;
@@ -2461,20 +2203,6 @@
             window.editInvoiceItemsList[idx].productId = pid;
             window.editInvoiceItemsList[idx].batchNumber = p.batchNumber || '';
             updateEditItemTotal(idx);
-        }
-    }
-    
-    function updateEditPurchaseItemPrice(idx) {
-        const sel = document.getElementById(`editPurchaseItemProduct_${idx}`);
-        if (!sel) return;
-        const pid = parseInt(sel.value);
-        const p = appData.products.find(pr => pr.id === pid);
-        if(p) {
-            document.getElementById(`editPurchaseItemPrice_${idx}`).value = p.sellPrice;
-            window.editPurchaseItemsList[idx].price = p.sellPrice;
-            window.editPurchaseItemsList[idx].productId = pid;
-            window.editPurchaseItemsList[idx].batchNumber = p.batchNumber || '';
-            updateEditPurchaseItemTotal(idx);
         }
     }
     
@@ -2495,23 +2223,6 @@
         calculateEditTotal();
     }
     
-    function updateEditPurchaseItemTotal(idx) {
-        const qty = parseFloat(document.getElementById(`editPurchaseItemQty_${idx}`)?.value) || 0;
-        const price = parseFloat(document.getElementById(`editPurchaseItemPrice_${idx}`)?.value) || 0;
-        const tot = qty * price;
-        const discountPercent = parseFloat(document.getElementById(`editPurchaseItemDiscount_${idx}`)?.value) || 0;
-        const totalAfterDiscount = tot - (tot * discountPercent / 100);
-        
-        document.getElementById(`editPurchaseItemTotal_${idx}`).value = tot.toFixed(2);
-        document.getElementById(`editPurchaseItemTotalAfterDiscount_${idx}`).value = totalAfterDiscount.toFixed(2);
-        
-        window.editPurchaseItemsList[idx].quantity = qty;
-        window.editPurchaseItemsList[idx].total = tot;
-        window.editPurchaseItemsList[idx].discountPercent = discountPercent;
-        window.editPurchaseItemsList[idx].totalAfterDiscount = totalAfterDiscount;
-        calculateEditPurchaseTotal();
-    }
-    
     function removeEditItemRow(idx) {
         const row = document.getElementById(`editItemRow_${idx}`);
         if (row) {
@@ -2526,20 +2237,6 @@
         }
     }
     
-    function removeEditPurchaseItemRow(idx) {
-        const row = document.getElementById(`editPurchaseItemRow_${idx}`);
-        if (row) {
-            row.style.transition = 'all 0.3s';
-            row.style.opacity = '0';
-            row.style.transform = 'translateX(50px)';
-            setTimeout(() => {
-                row.remove();
-                window.editPurchaseItemsList.splice(idx,1);
-                calculateEditPurchaseTotal();
-            }, 300);
-        }
-    }
-    
     function calculateEditTotal() {
         const sub = window.editInvoiceItemsList.reduce((s,i) => s + (i.total || 0), 0);
         const totalAfterDiscount = window.editInvoiceItemsList.reduce((s,i) => s + (i.totalAfterDiscount || 0), 0);
@@ -2549,25 +2246,10 @@
         calculateEditDue();
     }
     
-    function calculateEditPurchaseTotal() {
-        const sub = window.editPurchaseItemsList.reduce((s,i) => s + (i.total || 0), 0);
-        const totalAfterDiscount = window.editPurchaseItemsList.reduce((s,i) => s + (i.totalAfterDiscount || 0), 0);
-        
-        document.getElementById('editPurchaseSubtotal').value = sub.toFixed(2);
-        document.getElementById('editPurchaseTotal').value = totalAfterDiscount.toFixed(2);
-        calculateEditPurchaseDue();
-    }
-    
     function calculateEditDue() {
         const total = parseFloat(document.getElementById('editInvoiceTotal')?.value) || 0;
         const paid = parseFloat(document.getElementById('editInvoicePaid')?.value) || 0;
         document.getElementById('editInvoiceDue').value = (total - paid).toFixed(2);
-    }
-    
-    function calculateEditPurchaseDue() {
-        const total = parseFloat(document.getElementById('editPurchaseTotal')?.value) || 0;
-        const paid = parseFloat(document.getElementById('editPurchasePaid')?.value) || 0;
-        document.getElementById('editPurchaseDue').value = (total - paid).toFixed(2);
     }
     
     function updateSaleInvoice(id) {
@@ -2621,66 +2303,9 @@
         alert('✅ تم تحديث الفاتورة');
     }
     
-    function updatePurchaseInvoice(id) {
-        const inv = appData.purchaseInvoices.find(i => i.id === id);
-        if(!inv) return;
-        
-        const items = window.editPurchaseItemsList.filter(i => i.productId);
-        if(items.length === 0) { alert('أضف منتج'); return; }
-        
-        inv.items.forEach(item => {
-            const prod = appData.products.find(p => p.id === item.productId);
-            if(prod) prod.quantity -= item.quantity;
-        });
-        
-        const subtotal = window.editPurchaseItemsList.reduce((s,i) => s + i.total, 0);
-        const total = parseFloat(document.getElementById('editPurchaseTotal').value);
-        const paid = parseFloat(document.getElementById('editPurchasePaid').value);
-        const due = total - paid;
-        
-        inv.supplierId = parseInt(document.getElementById('editSupplierSelect').value);
-        inv.date = document.getElementById('editPurchaseDate').value;
-        inv.items = items;
-        inv.subtotal = subtotal;
-        inv.total = total;
-        inv.paid = paid;
-        inv.due = due;
-        inv.status = due === 0 ? 'paid' : 'partial';
-        
-        items.forEach(item => {
-            const prod = appData.products.find(p => p.id === item.productId);
-            if(prod) prod.quantity += item.quantity;
-        });
-        
-        saveData();
-        bootstrap.Modal.getInstance(document.getElementById('editPurchaseModal')).hide();
-        renderCurrentPage();
-        alert('✅ تم تحديث فاتورة الشراء');
-    }
-    
     // ==================== PAYMENTS ====================
     function addPayment(invoiceId) {
         const invoice = appData.salesInvoices.find(inv => inv.id === invoiceId);
-        if(!invoice) return;
-        const amount = prompt(`💰 المبلغ المتبقي: ${formatCurrency(invoice.due)}\nأدخل مبلغ الدفعة:`);
-        if(amount && !isNaN(amount)) {
-            const paymentAmount = parseFloat(amount);
-            if(paymentAmount > invoice.due) { alert('المبلغ أكبر من المتبقي'); return; }
-            invoice.paid += paymentAmount;
-            invoice.due -= paymentAmount;
-            invoice.status = invoice.due === 0 ? 'paid' : 'partial';
-            
-            if(!appData.payments) appData.payments = [];
-            appData.payments.push({ id: Date.now(), invoiceId: invoiceId, amount: paymentAmount, date: new Date().toISOString() });
-            
-            saveData();
-            renderCurrentPage();
-            alert('✅ تم تسجيل الدفعة بنجاح');
-        }
-    }
-    
-    function addPurchasePayment(invoiceId) {
-        const invoice = appData.purchaseInvoices.find(inv => inv.id === invoiceId);
         if(!invoice) return;
         const amount = prompt(`💰 المبلغ المتبقي: ${formatCurrency(invoice.due)}\nأدخل مبلغ الدفعة:`);
         if(amount && !isNaN(amount)) {
@@ -2766,13 +2391,6 @@
     }
     
     function editCustomer(id) { showCustomerModal(id); }
-    function deleteCustomer(id) { 
-        if(confirm('حذف؟')) { 
-            appData.customers = appData.customers.filter(c => c.id !== id); 
-            saveData(); 
-            renderCustomers(); 
-        } 
-    }
     
     function showProductModal(id=null) { 
         const p = id ? appData.products.find(p => p.id === id) : null; 
@@ -2826,38 +2444,32 @@
     }
     
     function editProduct(id) { showProductModal(id); }
-    function deleteProduct(id) { 
-        if(confirm('حذف المنتج؟')) { 
-            appData.products = appData.products.filter(p => p.id !== id); 
-            saveData(); 
-            renderProducts(); 
-        } 
-    }
     
-    // ==================== REPORTS (ENHANCED) ====================
+    // ==================== REPORTS ====================
     function getFilteredInvoices() {
         let invoices = [];
         
-        // Combine based on type filter
         if (reportsFilter.type === 'all' || reportsFilter.type === 'sales') {
             invoices.push(...appData.salesInvoices.map(i => ({...i, invoiceType: 'بيع', partyId: i.customerId})));
         }
         if (reportsFilter.type === 'all' || reportsFilter.type === 'purchases') {
             invoices.push(...appData.purchaseInvoices.map(i => ({...i, invoiceType: 'شراء', partyId: i.supplierId})));
         }
+        if (reportsFilter.type === 'all' || reportsFilter.type === 'expenses') {
+            invoices.push(...(appData.expenses || []).map(e => ({...e, invoiceType: 'مصروف', partyId: e.supplierId, invoiceNumber: e.expenseNumber, total: e.amount, due: e.due, paid: e.paid})));
+        }
         
-        // Filter by search term
         if (reportsFilter.searchTerm) {
             const term = reportsFilter.searchTerm.toLowerCase();
             invoices = invoices.filter(inv => {
-                const party = appData.customers.find(c => c.id === inv.partyId);
-                return inv.invoiceNumber.toLowerCase().includes(term) ||
+                const party = inv.partyId ? appData.customers.find(c => c.id === inv.partyId) : null;
+                return (inv.invoiceNumber || '').toLowerCase().includes(term) ||
                        (party?.name || '').toLowerCase().includes(term) ||
-                       (party?.code || '').toLowerCase().includes(term);
+                       (party?.code || '').toLowerCase().includes(term) ||
+                       (inv.description || '').toLowerCase().includes(term);
             });
         }
         
-        // Filter by date range
         if (reportsFilter.dateFrom) {
             invoices = invoices.filter(inv => inv.date >= reportsFilter.dateFrom);
         }
@@ -2865,57 +2477,29 @@
             invoices = invoices.filter(inv => inv.date <= reportsFilter.dateTo);
         }
         
-        // Filter by status
         if (reportsFilter.status === 'paid') {
-            invoices = invoices.filter(inv => inv.due === 0);
+            invoices = invoices.filter(inv => (inv.due || 0) === 0);
         } else if (reportsFilter.status === 'unpaid') {
-            invoices = invoices.filter(inv => inv.due > 0);
+            invoices = invoices.filter(inv => (inv.due || 0) > 0);
         }
         
         return invoices;
     }
     
-    function getFilteredExpensesForReports() {
-        let expenses = [...appData.expenses];
-        
-        // Filter by date range
-        if (reportsFilter.dateFrom) {
-            expenses = expenses.filter(exp => exp.date >= reportsFilter.dateFrom);
-        }
-        if (reportsFilter.dateTo) {
-            expenses = expenses.filter(exp => exp.date <= reportsFilter.dateTo);
-        }
-        
-        // Filter by search term (description)
-        if (reportsFilter.searchTerm) {
-            const term = reportsFilter.searchTerm.toLowerCase();
-            expenses = expenses.filter(exp => 
-                (exp.description || '').toLowerCase().includes(term) ||
-                (exp.notes || '').toLowerCase().includes(term)
-            );
-        }
-        
-        return expenses;
-    }
-    
     function renderReports() {
         const filteredInvoices = getFilteredInvoices();
-        const filteredExpenses = getFilteredExpensesForReports();
-        
-        const totalAmount = filteredInvoices.reduce((s, i) => s + i.total, 0);
-        const totalPaid = filteredInvoices.reduce((s, i) => s + i.paid, 0);
-        const totalDue = filteredInvoices.reduce((s, i) => s + i.due, 0);
-        const totalExpenses = filteredExpenses.reduce((s, e) => s + (e.amount || 0), 0);
+        const totalAmount = filteredInvoices.reduce((s, i) => s + (i.total || 0), 0);
+        const totalPaid = filteredInvoices.reduce((s, i) => s + (i.paid || 0), 0);
+        const totalDue = filteredInvoices.reduce((s, i) => s + (i.due || 0), 0);
         
         const html = `
-            <h5 class="mb-4" style="color: #ffffff;">📈 التقارير</h5>
+            <h5 class="mb-4">📈 التقارير</h5>
             
-            <!-- Filter Section -->
             <div class="filter-section">
                 <div class="row g-3">
                     <div class="col-md-3">
                         <label><i class="fas fa-search"></i> بحث</label>
-                        <input type="text" class="form-control" id="reportSearch" placeholder="بحث برقم الفاتورة، الاسم، المنتج..." value="${reportsFilter.searchTerm}" oninput="handleReportSearch(this.value)" style="border-radius: 10px;">
+                        <input type="text" class="form-control" id="reportSearch" placeholder="بحث برقم الفاتورة، الاسم، البيان..." value="${reportsFilter.searchTerm}" oninput="handleReportSearch(this.value)" style="border-radius: 10px;">
                     </div>
                     <div class="col-md-2">
                         <label><i class="fas fa-filter"></i> النوع</label>
@@ -2923,6 +2507,7 @@
                             <option value="all" ${reportsFilter.type === 'all' ? 'selected' : ''}>الكل</option>
                             <option value="sales" ${reportsFilter.type === 'sales' ? 'selected' : ''}>مبيعات</option>
                             <option value="purchases" ${reportsFilter.type === 'purchases' ? 'selected' : ''}>مشتريات</option>
+                            <option value="expenses" ${reportsFilter.type === 'expenses' ? 'selected' : ''}>مصروفات</option>
                         </select>
                     </div>
                     <div class="col-md-2">
@@ -2941,16 +2526,9 @@
                             <option value="unpaid" ${reportsFilter.status === 'unpaid' ? 'selected' : ''}>غير مسددة</option>
                         </select>
                     </div>
-                    <div class="col-md-1 d-flex align-items-end">
-                        <button class="btn btn-outline-light rounded-pill w-100" onclick="clearReportFilters()">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
                 </div>
             </div>
             
-            <!-- Summary Cards - Invoices -->
-            <h6 class="mb-3" style="color: #6366f1;"><i class="fas fa-file-invoice"></i> ملخص الفواتير</h6>
             <div class="row g-3 mb-3">
                 <div class="col-md-3">
                     <div class="stat-card text-center" style="border-right: 5px solid #6366f1;">
@@ -2978,21 +2556,20 @@
                 </div>
             </div>
             
-            <!-- Invoices Table -->
             <div class="d-flex justify-content-end mb-3">
                 <button class="btn btn-success rounded-pill" onclick="exportFilteredToExcel()">
-                    <i class="fas fa-file-excel"></i> تصدير Excel للفواتير
+                    <i class="fas fa-file-excel"></i> تصدير Excel
                 </button>
             </div>
             
-            <div class="table-card mb-4">
+            <div class="table-card">
                 <div class="table-responsive">
                     <table class="table" id="reportsTable">
                         <thead>
                             <tr>
                                 <th>النوع</th>
                                 <th>رقم الفاتورة</th>
-                                <th>الطرف</th>
+                                <th>الطرف / البيان</th>
                                 <th>التاريخ</th>
                                 <th>الإجمالي</th>
                                 <th>المدفوع</th>
@@ -3002,67 +2579,26 @@
                         </thead>
                         <tbody>
                             ${filteredInvoices.length > 0 ? filteredInvoices.map(inv => {
-                                const party = appData.customers.find(c => c.id === inv.partyId); 
+                                let partyName = '';
+                                if (inv.invoiceType === 'مصروف') {
+                                    const supplier = inv.partyId ? appData.customers.find(c => c.id === inv.partyId) : null;
+                                    partyName = supplier?.name || inv.description || 'مصروف';
+                                } else {
+                                    const party = appData.customers.find(c => c.id === inv.partyId);
+                                    partyName = party?.name || 'غير محدد';
+                                }
                                 return `
                                 <tr>
-                                    <td><span class="badge ${inv.invoiceType === 'بيع' ? 'bg-info' : 'bg-warning'} badge-status">${inv.invoiceType}</span></td>
+                                    <td><span class="badge ${inv.invoiceType === 'بيع' ? 'bg-info' : inv.invoiceType === 'شراء' ? 'bg-warning' : 'bg-secondary'} badge-status">${inv.invoiceType}</span></td>
                                     <td><strong>${inv.invoiceNumber}</strong></td>
-                                    <td>${party?.name || 'غير محدد'}</td>
-                                    <td>${new Date(inv.date).toLocaleDateString('ar')}</td>
-                                    <td>${formatCurrency(inv.total)}</td>
-                                    <td>${formatCurrency(inv.paid)}</td>
-                                    <td class="fw-bold" style="color: #e94560;">${formatCurrency(inv.due)}</td>
-                                    <td><button class="btn btn-sm btn-info rounded-pill" onclick="showInvoiceProductDetails('${inv.invoiceType}', ${inv.id})"><i class="fas fa-eye"></i> عرض</button></td>
+                                    <td>${partyName}</td>
+                                    <td>${inv.date ? new Date(inv.date).toLocaleDateString('ar') : '-'}</td>
+                                    <td>${formatCurrency(inv.total || 0)}</td>
+                                    <td>${formatCurrency(inv.paid || 0)}</td>
+                                    <td class="fw-bold" style="color: #e94560;">${formatCurrency(inv.due || 0)}</td>
+                                    <td>${inv.invoiceType !== 'مصروف' ? `<button class="btn btn-sm btn-info rounded-pill" onclick="showInvoiceProductDetails('${inv.invoiceType}', ${inv.id})"><i class="fas fa-eye"></i> عرض</button>` : '-'}</td>
                                 </tr>`;
                             }).join('') : '<tr><td colspan="8" class="text-center py-4">لا توجد نتائج مطابقة للفلتر</td></tr>'}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            
-            <!-- Expenses Section in Reports -->
-            <h6 class="mb-3 mt-4" style="color: #ef4444;"><i class="fas fa-receipt"></i> ملخص المصروفات</h6>
-            <div class="row g-3 mb-3">
-                <div class="col-md-4">
-                    <div class="stat-card text-center" style="border-right: 5px solid #ef4444;">
-                        <small class="label">عدد المصروفات</small>
-                        <div class="value" style="color: #ef4444; font-size: 1.5rem;">${filteredExpenses.length}</div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="stat-card text-center" style="border-right: 5px solid #f59e0b;">
-                        <small class="label">إجمالي المصروفات</small>
-                        <div class="value" style="color: #f59e0b; font-size: 1.5rem;">${formatCurrency(totalExpenses)}</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="d-flex justify-content-end mb-3">
-                <button class="btn btn-success rounded-pill" onclick="exportExpensesReportToExcel()">
-                    <i class="fas fa-file-excel"></i> تصدير Excel للمصروفات
-                </button>
-            </div>
-            
-            <div class="table-card">
-                <div class="table-responsive">
-                    <table class="table" id="reportExpensesTable">
-                        <thead>
-                            <tr>
-                                <th>التاريخ</th>
-                                <th>البيان</th>
-                                <th>المبلغ</th>
-                                <th>ملاحظات</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${filteredExpenses.length > 0 ? filteredExpenses.map(exp => `
-                                <tr>
-                                    <td>${new Date(exp.date).toLocaleDateString('ar')}</td>
-                                    <td><strong>${exp.description || ''}</strong></td>
-                                    <td style="color: #ef4444; font-weight: bold;">${formatCurrency(exp.amount)}</td>
-                                    <td>${exp.notes || '-'}</td>
-                                </tr>
-                            `).join('') : '<tr><td colspan="4" class="text-center py-4">لا توجد مصروفات في هذه الفترة</td></tr>'}
                         </tbody>
                     </table>
                 </div>
@@ -3071,7 +2607,6 @@
         document.getElementById('pageContent').innerHTML = html; 
         document.getElementById('pageTitle').innerHTML = '📈 التقارير';
         
-        // Refocus on search input
         const searchInput = document.getElementById('reportSearch');
         if (searchInput && reportsFilter.searchTerm) {
             searchInput.focus();
@@ -3079,20 +2614,54 @@
         }
     }
     
-    function clearReportFilters() {
-        reportsFilter = {
-            searchTerm: '',
-            type: 'all',
-            dateFrom: '',
-            dateTo: '',
-            status: 'all'
-        };
-        renderReports();
-    }
-    
     function handleReportSearch(value) {
         reportsFilter.searchTerm = value;
-        renderReports();
+        updateReportResults();
+    }
+    
+    function updateReportResults() {
+        const filteredInvoices = getFilteredInvoices();
+        
+        const tableBody = document.querySelector('#reportsTable tbody');
+        if (tableBody) {
+            if (filteredInvoices.length > 0) {
+                tableBody.innerHTML = filteredInvoices.map(inv => {
+                    let partyName = '';
+                    if (inv.invoiceType === 'مصروف') {
+                        const supplier = inv.partyId ? appData.customers.find(c => c.id === inv.partyId) : null;
+                        partyName = supplier?.name || inv.description || 'مصروف';
+                    } else {
+                        const party = appData.customers.find(c => c.id === inv.partyId);
+                        partyName = party?.name || 'غير محدد';
+                    }
+                    return `
+                    <tr>
+                        <td><span class="badge ${inv.invoiceType === 'بيع' ? 'bg-info' : inv.invoiceType === 'شراء' ? 'bg-warning' : 'bg-secondary'} badge-status">${inv.invoiceType}</span></td>
+                        <td><strong>${inv.invoiceNumber}</strong></td>
+                        <td>${partyName}</td>
+                        <td>${inv.date ? new Date(inv.date).toLocaleDateString('ar') : '-'}</td>
+                        <td>${formatCurrency(inv.total || 0)}</td>
+                        <td>${formatCurrency(inv.paid || 0)}</td>
+                        <td class="fw-bold" style="color: #e94560;">${formatCurrency(inv.due || 0)}</td>
+                        <td>${inv.invoiceType !== 'مصروف' ? `<button class="btn btn-sm btn-info rounded-pill" onclick="showInvoiceProductDetails('${inv.invoiceType}', ${inv.id})"><i class="fas fa-eye"></i> عرض</button>` : '-'}</td>
+                    </tr>`;
+                }).join('');
+            } else {
+                tableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4">لا توجد نتائج مطابقة للفلتر</td></tr>';
+            }
+        }
+        
+        const totalAmount = filteredInvoices.reduce((s, i) => s + (i.total || 0), 0);
+        const totalPaid = filteredInvoices.reduce((s, i) => s + (i.paid || 0), 0);
+        const totalDue = filteredInvoices.reduce((s, i) => s + (i.due || 0), 0);
+        
+        const statValues = document.querySelectorAll('.stat-card .value');
+        if (statValues.length >= 4) {
+            statValues[0].textContent = filteredInvoices.length;
+            statValues[1].textContent = formatCurrency(totalAmount);
+            statValues[2].textContent = formatCurrency(totalPaid);
+            statValues[3].textContent = formatCurrency(totalDue);
+        }
     }
     
     function updateReportFilter(key, value) {
@@ -3102,60 +2671,39 @@
     
     function exportFilteredToExcel() {
         const filteredInvoices = getFilteredInvoices();
-        const wsData = [['النوع', 'رقم الفاتورة', 'الطرف', 'التاريخ', 'الإجمالي', 'المدفوع', 'المتبقي', 'الحالة']];
+        const wsData = [['النوع', 'رقم الفاتورة', 'الطرف / البيان', 'التاريخ', 'الإجمالي', 'المدفوع', 'المتبقي', 'الحالة']];
         
         filteredInvoices.forEach(inv => {
-            const party = appData.customers.find(c => c.id === inv.partyId);
+            let partyName = '';
+            if (inv.invoiceType === 'مصروف') {
+                const supplier = inv.partyId ? appData.customers.find(c => c.id === inv.partyId) : null;
+                partyName = supplier?.name || inv.description || 'مصروف';
+            } else {
+                const party = appData.customers.find(c => c.id === inv.partyId);
+                partyName = party?.name || '';
+            }
             wsData.push([
                 inv.invoiceType,
-                inv.invoiceNumber,
-                party?.name || '',
-                inv.date,
-                inv.total,
-                inv.paid,
-                inv.due,
-                inv.due === 0 ? 'مسددة' : 'غير مسددة'
+                inv.invoiceNumber || '',
+                partyName,
+                inv.date || '',
+                inv.total || 0,
+                inv.paid || 0,
+                inv.due || 0,
+                (inv.due || 0) === 0 ? 'مسددة' : 'غير مسددة'
             ]);
         });
         
         const ws = XLSX.utils.aoa_to_sheet(wsData);
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'تقارير الفواتير');
+        XLSX.utils.book_append_sheet(wb, ws, 'التقارير');
         
         const colWidths = wsData[0].map((_, i) => ({
             wch: Math.max(...wsData.map(row => String(row[i] || '').length)) + 5
         }));
         ws['!cols'] = colWidths;
         
-        XLSX.writeFile(wb, `تقرير_الفواتير_${new Date().toISOString().split('T')[0]}.xlsx`);
-    }
-    
-    function exportExpensesReportToExcel() {
-        const filteredExpenses = getFilteredExpensesForReports();
-        const wsData = [['التاريخ', 'البيان', 'المبلغ', 'ملاحظات']];
-        
-        filteredExpenses.forEach(exp => {
-            wsData.push([
-                exp.date,
-                exp.description,
-                exp.amount,
-                exp.notes || ''
-            ]);
-        });
-        
-        const total = filteredExpenses.reduce((s, e) => s + (e.amount || 0), 0);
-        wsData.push(['', 'الإجمالي', total, '']);
-        
-        const ws = XLSX.utils.aoa_to_sheet(wsData);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'تقارير المصروفات');
-        
-        const colWidths = wsData[0].map((_, i) => ({
-            wch: Math.max(...wsData.map(row => String(row[i] || '').length)) + 5
-        }));
-        ws['!cols'] = colWidths;
-        
-        XLSX.writeFile(wb, `تقرير_المصروفات_${new Date().toISOString().split('T')[0]}.xlsx`);
+        XLSX.writeFile(wb, `تقرير_${new Date().toISOString().split('T')[0]}.xlsx`);
     }
     
     function showInvoiceProductDetails(type, id) { 
@@ -3193,10 +2741,10 @@
     function renderBackup() { 
         const html = `
             <div class="table-card">
-                <h5 style="color: #ffffff;">💾 النسخ الاحتياطي</h5>
+                <h5>💾 النسخ الاحتياطي</h5>
                 <div class="alert alert-info">Firebase: ${firebaseSyncEnabled ? 'متصل ✅' : 'غير متصل ⚠️'}</div>
                 <div class="row"><div class="col-md-6"><button class="btn btn-primary w-100" onclick="backupData()">تصدير JSON</button></div><div class="col-md-6"><button class="btn btn-success w-100" onclick="exportToExcel()">تصدير Excel</button></div></div>
-                <hr><h6 style="color: #ffffff;">استعادة</h6>
+                <hr><h6>استعادة</h6>
                 <input type="file" id="restoreFile" class="form-control mb-2" accept=".json">
                 <button class="btn btn-warning" onclick="restoreData()">استعادة</button>
             </div>
@@ -3241,7 +2789,11 @@
         ...appData.purchaseInvoices.map(i => { 
             const s = appData.customers.find(c => c.id === i.supplierId); 
             return ['شراء', i.invoiceNumber, s?.name, i.date, i.total, i.paid, i.due]; 
-        })]]; 
+        }),
+        ...(appData.expenses || []).map(e => {
+            const supplier = e.supplierId ? appData.customers.find(c => c.id === e.supplierId) : null;
+            return ['مصروف', e.expenseNumber || '-', supplier?.name || e.description || '-', e.date, e.amount, e.paid || 0, e.due || 0];
+        })]];
         const ws = XLSX.utils.aoa_to_sheet(wsData); 
         const wb = XLSX.utils.book_new(); 
         XLSX.utils.book_append_sheet(wb, ws, 'التقارير'); 
@@ -3252,7 +2804,7 @@
     function renderSettings() { 
         const html = `
             <div class="table-card">
-                <h5 style="color: #ffffff;">⚙️ الإعدادات</h5>
+                <h5>⚙️ الإعدادات</h5>
                 <div class="mb-3"><label>اسم الشركة</label><input id="companyName" class="form-control" value="${appData.settings.companyName || ''}"></div>
                 <div class="mb-3"><label>العنوان</label><input id="companyAddress" class="form-control" value="${appData.settings.companyAddress || ''}"></div>
                 <div class="mb-3"><label>الهاتف</label><input id="companyPhone" class="form-control" value="${appData.settings.companyPhone || ''}"></div>
@@ -3358,8 +2910,6 @@
             .party-info p{margin:3px 0;font-size:14px;}
             .totals-section{position:relative;margin-top:20px;border-top:1px solid #eee;padding-top:15px;}
             .totals-section p{margin:5px 0;text-align:right;}
-            .stamp-text{position:absolute;left:0;bottom:0;border:2px solid #999;padding:15px 10px;border-radius:10px;text-align:center;width:130px;color:#999;font-size:13px;}
-            .stamp-text .inner{border:1px dashed #999;padding:8px;}
             table{width:100%;border-collapse:collapse;margin:20px 0;}
             th{background:#d3d3d3;color:#000000;font-weight:bold;padding:10px;text-align:center;border:1px solid #b0b0b0;}
             td{border:1px solid #ddd;padding:10px;text-align:center;}
@@ -3380,8 +2930,6 @@
             <p><strong>${type === 'sale' ? 'العميل' : 'المورد'}:</strong> ${party?.name || ''} ${party?.code ? '('+party.code+')' : ''}</p>
                 ${party?.address ? `<p><strong>العنوان:</strong> ${party.address}</p>` : ''}
                 ${party?.phone ? `<p><strong>الهاتف:</strong> ${party.phone}</p>` : ''}
-         
-            
             <p><strong>التاريخ:</strong> ${new Date(inv.date).toLocaleDateString('ar')}</p>
             
             <table>
@@ -3418,12 +2966,10 @@
     });
     
     // ==================== INITIALIZATION ====================
-    // Show password modal immediately
     document.addEventListener('DOMContentLoaded', function() {
         const passwordModal = new bootstrap.Modal(document.getElementById('passwordModal'));
         passwordModal.show();
         
-        // Focus on password input
         setTimeout(() => {
             document.getElementById('passwordInput').focus();
         }, 500);
