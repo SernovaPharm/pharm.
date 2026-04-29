@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
-    <title>Sernova Pharmaceuticals </title>
+    <title>Sernova Pharmaceuticals</title>
     
     <!-- Bootstrap 5 RTL + Icons + Fonts -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
@@ -136,6 +136,7 @@
         .sidebar .nav-link:nth-child(6) { animation-delay: 0.6s; }
         .sidebar .nav-link:nth-child(7) { animation-delay: 0.7s; }
         .sidebar .nav-link:nth-child(8) { animation-delay: 0.8s; }
+        .sidebar .nav-link:nth-child(9) { animation-delay: 0.9s; }
         
         .sidebar .nav-link:hover {
             background: rgba(255,255,255,0.15);
@@ -701,7 +702,7 @@
                     <img id="logoPreviewSidebar" src="" alt="شعار" style="max-width: 100%; max-height: 100%; display: none;">
                     <i class="fas fa-chart-pie fa-2x" id="defaultSidebarIcon"></i>
                 </div>
-                <h5 class="mt-3 fw-bold" style="letter-spacing: 0.5px; color: #ffffff;">سيرنوفا فارماسيوتكالز</h5>
+                <h5 class="mt-3 fw-bold" style="letter-spacing: 0.5px; color: #ffffff;">Sernova Pharmaceuticals</h5>
                
             </div>
             <nav class="nav flex-column">
@@ -719,6 +720,9 @@
                 </a>
                 <a class="nav-link" data-page="purchases" href="#">
                     <i class="fas fa-money-bill-wave"></i> المصروفات
+                </a>
+                <a class="nav-link" data-page="factory_balances" href="#">
+                    <i class="fas fa-industry"></i> أرصدة المصنع
                 </a>
                 <a class="nav-link" data-page="reports" href="#">
                     <i class="fas fa-chart-bar"></i> التقارير
@@ -744,7 +748,7 @@
                     <i class="fas fa-bars"></i>
                 </button>
                 <h4 id="pageTitle" class="fw-bold mb-0" style="color: #ffffff;">لوحة التحكم</h4>
-                <div class="company-name-animated" id="companyNameDisplay">سيرنوفا فارماسيوتكالز</div>
+                <div class="company-name-animated" id="companyNameDisplay">Sernova Pharmaceuticals</div>
                 <div>
                     <span id="dateTime" class="fw-bold" style="color: #e94560;"></span>
                 </div>
@@ -860,8 +864,9 @@
         purchaseInvoices: [],
         expenses: [],
         payments: [],
+        factoryBalances: [],
         settings: {
-            companyName: '',
+            companyName: 'Sernova Pharmaceuticals',
             companyAddress: '',
             companyPhone: '',
             commercialRegister: '',
@@ -899,6 +904,7 @@
         if (!data.purchaseInvoices) data.purchaseInvoices = [];
         if (!data.expenses) data.expenses = [];
         if (!data.payments) data.payments = [];
+        if (!data.factoryBalances) data.factoryBalances = [];
         if (!data.settings) data.settings = {};
         if (!data.settings.commercialRegister) data.settings.commercialRegister = '';
         if (!data.settings.taxCard) data.settings.taxCard = '';
@@ -908,7 +914,10 @@
         data.customers.forEach(c => { if (!c.code) c.code = generateCustomerCode(c.id); });
         data.products.forEach(p => { if (!p.batchNumber) p.batchNumber = ''; });
         if (!data.expenses) data.expenses = [];
-        data.expenses.forEach(e => { if (!e.expenseType) e.expenseType = 'مصروفات تشغيلية'; });
+        data.expenses.forEach(e => { 
+            if (!e.expenseType) e.expenseType = 'مصروفات تشغيلية';
+            if (!e.quantity) e.quantity = 0;
+        });
         customerCounter = Math.max(...data.customers.map(c => parseInt(c.code?.split('-')[1]) || 0), 0);
         return data;
     }
@@ -1032,13 +1041,14 @@
         appData.purchaseInvoices = [];
         appData.expenses = [];
         appData.payments = [];
+        appData.factoryBalances = [];
         appData.settings = { 
             currency: '', 
             maxDiscountPercent: 30, 
             commercialRegister: '1234567890', 
             taxCard: '987654321', 
             logo: '',
-            companyName: 'سيرنوفا فارماسيوتكالز',
+            companyName: 'Sernova Pharmaceuticals',
             companyAddress: 'الرياض',
             companyPhone: '0110000000'
         };
@@ -1055,6 +1065,7 @@
             case 'products': renderProducts(); break;
             case 'sales': renderSalesInvoices(); break;
             case 'purchases': renderExpenses(); break;
+            case 'factory_balances': renderFactoryBalances(); break;
             case 'reports': renderReports(); break;
             case 'backup': renderBackup(); break;
             case 'settings': renderSettings(); break;
@@ -1558,6 +1569,7 @@
                                 <th>الإجمالي</th>
                                 <th>المدفوع</th>
                                 <th>المتبقي</th>
+                                <th>Sales Manager</th>
                                 <th>الحالة</th>
                                 <th>إجراءات</th>
                             </tr>
@@ -1566,18 +1578,19 @@
                             ${appData.salesInvoices.map(inv => { 
                                 const c = appData.customers.find(c => c.id === inv.customerId); 
                                 return `
-                                <tr data-search="${inv.invoiceNumber} ${c?.name} ${c?.address || ''}">
+                                <tr data-search="${inv.invoiceNumber} ${c?.name} ${c?.address || ''} ${inv.salesManager || ''}">
                                     <td><strong>${inv.invoiceNumber}</strong></td>
                                     <td>${c?.name}</td>
                                     <td>${new Date(inv.date).toLocaleDateString('ar')}</td>
                                     <td>${formatCurrency(inv.total)}</td>
                                     <td>${formatCurrency(inv.paid)}</td>
                                     <td class="text-danger">${formatCurrency(inv.due)}</td>
+                                    <td>${inv.salesManager || '-'}</td>
                                     <td>${inv.due === 0 ? '<span class="badge bg-success">مسددة</span>' : '<span class="badge bg-warning">غير مسددة</span>'}</td>
                                     <td>
                                         <button class="btn btn-sm btn-outline-info" onclick="editSaleInvoice(${inv.id})" title="تعديل"><i class="fas fa-edit"></i></button>
                                         <button class="btn btn-sm btn-outline-secondary" onclick="printInvoice(${inv.id})" title="طباعة"><i class="fas fa-print"></i></button>
-                                        <button class="btn btn-sm btn-outline-success" onclick="addPayment(${inv.id})" title="دفعة"><i class="fas fa-money-bill"></i></button>
+                                        <button class="btn btn-sm btn-outline-success" onclick="addPaymentWithDate('sales', ${inv.id})" title="دفعة"><i class="fas fa-money-bill"></i></button>
                                         <button class="btn btn-sm btn-outline-danger" onclick="deleteInvoiceRequest('sales', ${inv.id})" title="حذف"><i class="fas fa-trash"></i></button>
                                     </td>
                                 </tr>`;
@@ -1592,7 +1605,7 @@
     }
     
     function exportSalesInvoicesToExcel() {
-        const wsData = [['رقم الفاتورة', 'العميل', 'التاريخ', 'الإجمالي', 'المدفوع', 'المتبقي', 'الحالة']];
+        const wsData = [['رقم الفاتورة', 'العميل', 'التاريخ', 'الإجمالي', 'المدفوع', 'المتبقي', 'Sales Manager', 'الحالة']];
         appData.salesInvoices.forEach(inv => {
             const c = appData.customers.find(c => c.id === inv.customerId);
             wsData.push([
@@ -1602,6 +1615,7 @@
                 inv.total,
                 inv.paid,
                 inv.due,
+                inv.salesManager || '',
                 inv.due === 0 ? 'مسددة' : 'غير مسددة'
             ]);
         });
@@ -1636,6 +1650,7 @@
                                 <th>رقم المصروف</th>
                                 <th>المورد</th>
                                 <th>البيان</th>
+                                <th>الكمية</th>
                                 <th>التاريخ</th>
                                 <th>التكلفة</th>
                                 <th>المدفوع</th>
@@ -1652,6 +1667,7 @@
                                     <td><strong>${exp.expenseNumber || '-'}</strong></td>
                                     <td>${supplier?.name || '-'}</td>
                                     <td>${exp.description || '-'}</td>
+                                    <td>${exp.quantity || 0}</td>
                                     <td>${exp.date ? new Date(exp.date).toLocaleDateString('ar') : '-'}</td>
                                     <td>${formatCurrency(exp.amount || 0)}</td>
                                     <td style="color: #10b981;">${formatCurrency(exp.paid || 0)}</td>
@@ -1659,11 +1675,11 @@
                                     <td>${exp.notes || '-'}</td>
                                     <td>
                                         <button class="btn btn-sm btn-outline-info" onclick="editExpense(${exp.id})" title="تعديل"><i class="fas fa-edit"></i></button>
-                                        <button class="btn btn-sm btn-outline-success" onclick="addExpensePayment(${exp.id})" title="دفعة"><i class="fas fa-money-bill"></i></button>
+                                        <button class="btn btn-sm btn-outline-success" onclick="addPaymentWithDate('expense', ${exp.id})" title="دفعة"><i class="fas fa-money-bill"></i></button>
                                         <button class="btn btn-sm btn-outline-danger" onclick="deleteExpenseRequest(${exp.id})" title="حذف"><i class="fas fa-trash"></i></button>
                                     </td>
                                 </tr>`;
-                            }).join('') || '<tr><td colspan="9" class="text-center py-4">لا توجد مصروفات</td></tr>'}
+                            }).join('') || '<tr><td colspan="10" class="text-center py-4">لا توجد مصروفات</td></tr>'}
                         </tbody>
                     </table>
                 </div>
@@ -1674,13 +1690,14 @@
     }
     
     function exportExpensesToExcel() {
-        const wsData = [['رقم المصروف', 'المورد', 'البيان', 'التاريخ', 'التكلفة', 'المدفوع', 'المتبقي', 'ملاحظات']];
+        const wsData = [['رقم المصروف', 'المورد', 'البيان', 'الكمية', 'التاريخ', 'التكلفة', 'المدفوع', 'المتبقي', 'ملاحظات']];
         (appData.expenses || []).forEach(exp => {
             const supplier = exp.supplierId ? appData.customers.find(c => c.id === exp.supplierId) : null;
             wsData.push([
                 exp.expenseNumber || '-',
                 supplier?.name || '-',
                 exp.description || '-',
+                exp.quantity || 0,
                 exp.date || '',
                 exp.amount || 0,
                 exp.paid || 0,
@@ -1696,6 +1713,133 @@
         XLSX.writeFile(wb, `المصروفات_${new Date().toISOString().split('T')[0]}.xlsx`);
     }
     
+    // ==================== FACTORY BALANCES (أرصدة المصنع) ====================
+    function renderFactoryBalances() {
+        const balances = appData.factoryBalances || [];
+        const html = `
+            <div class="d-flex justify-content-between mb-4">
+                <h5>🏭 أرصدة المصنع</h5>
+                <button class="btn btn-primary" onclick="showFactoryBalanceModal()"><i class="fas fa-plus"></i> إضافة رصيد</button>
+            </div>
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" class="form-control" id="factoryBalanceSearch" placeholder="بحث بالمادة الفعالة..." onkeyup="filterTableContains('factoryBalancesTable', 'factoryBalanceSearch')">
+            </div>
+            <div class="table-card">
+                <div class="d-flex justify-content-end mb-3">
+                    <button class="btn btn-success rounded-pill" onclick="exportFactoryBalancesToExcel()"><i class="fas fa-file-excel"></i> تصدير Excel</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table" id="factoryBalancesTable">
+                        <thead>
+                            <tr>
+                                <th>المادة الفعالة</th>
+                                <th>الرصيد</th>
+                                <th>تاريخ الانتهاء</th>
+                                <th>تاريخ الجرد</th>
+                                <th>إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${balances.map(b => `
+                                <tr data-search="${b.activeIngredient}">
+                                    <td><strong>${b.activeIngredient}</strong></td>
+                                    <td>${b.balance}</td>
+                                    <td>${b.expiryDate ? new Date(b.expiryDate).toLocaleDateString('ar') : '-'}</td>
+                                    <td>${b.inventoryDate ? new Date(b.inventoryDate).toLocaleDateString('ar') : '-'}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-info" onclick="editFactoryBalance(${b.id})"><i class="fas fa-edit"></i></button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteFactoryBalanceRequest(${b.id})"><i class="fas fa-trash"></i></button>
+                                    </td>
+                                </tr>
+                            `).join('') || '<tr><td colspan="5" class="text-center py-4">لا توجد أرصدة</td></tr>'}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+        document.getElementById('pageContent').innerHTML = html;
+        document.getElementById('pageTitle').innerHTML = '🏭 أرصدة المصنع';
+    }
+
+    function exportFactoryBalancesToExcel() {
+        const wsData = [['المادة الفعالة', 'الرصيد', 'تاريخ الانتهاء', 'تاريخ الجرد']];
+        (appData.factoryBalances || []).forEach(b => {
+            wsData.push([
+                b.activeIngredient,
+                b.balance,
+                b.expiryDate || '',
+                b.inventoryDate || ''
+            ]);
+        });
+        const ws = XLSX.utils.aoa_to_sheet(wsData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'ارصدة_المصنع');
+        const colWidths = wsData[0].map((_, i) => ({ wch: Math.max(...wsData.map(row => String(row[i] || '').length)) + 5 }));
+        ws['!cols'] = colWidths;
+        XLSX.writeFile(wb, `ارصدة_المصنع_${new Date().toISOString().split('T')[0]}.xlsx`);
+    }
+
+    function showFactoryBalanceModal(id = null) {
+        const bal = id ? (appData.factoryBalances || []).find(b => b.id === id) : null;
+        const modalHtml = `
+            <div class="modal fade" id="factoryBalanceModal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5><i class="fas fa-industry"></i> ${bal ? 'تعديل رصيد' : 'رصيد جديد'}</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" id="factoryBalanceId" value="${bal?.id || ''}">
+                            <div class="mb-3"><label class="fw-bold">المادة الفعالة</label><input id="factoryActiveIngredient" class="form-control" value="${bal?.activeIngredient || ''}"></div>
+                            <div class="mb-3"><label class="fw-bold">الرصيد</label><input id="factoryBalance" type="number" class="form-control" value="${bal?.balance || 0}"></div>
+                            <div class="mb-3"><label class="fw-bold">تاريخ الانتهاء</label><input id="factoryExpiryDate" type="date" class="form-control" value="${bal?.expiryDate || ''}"></div>
+                            <div class="mb-3"><label class="fw-bold">تاريخ الجرد</label><input id="factoryInventoryDate" type="date" class="form-control" value="${bal?.inventoryDate || ''}"></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">إلغاء</button>
+                            <button class="btn btn-primary rounded-pill" onclick="saveFactoryBalance()">حفظ</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        showModal(modalHtml, 'factoryBalanceModal');
+    }
+
+    function saveFactoryBalance() {
+        const id = document.getElementById('factoryBalanceId').value;
+        const data = {
+            id: id ? parseInt(id) : Date.now(),
+            activeIngredient: document.getElementById('factoryActiveIngredient').value,
+            balance: parseFloat(document.getElementById('factoryBalance').value) || 0,
+            expiryDate: document.getElementById('factoryExpiryDate').value,
+            inventoryDate: document.getElementById('factoryInventoryDate').value
+        };
+        if (!data.activeIngredient) return alert('أدخل المادة الفعالة');
+        if (!appData.factoryBalances) appData.factoryBalances = [];
+        if (id) {
+            const idx = appData.factoryBalances.findIndex(b => b.id === parseInt(id));
+            if (idx !== -1) appData.factoryBalances[idx] = data;
+        } else {
+            appData.factoryBalances.push(data);
+        }
+        saveData();
+        bootstrap.Modal.getInstance(document.getElementById('factoryBalanceModal')).hide();
+        renderFactoryBalances();
+    }
+
+    function editFactoryBalance(id) { showFactoryBalanceModal(id); }
+
+    function deleteFactoryBalanceRequest(id) {
+        showDeleteConfirm('factoryBalance', id, function() {
+            appData.factoryBalances = (appData.factoryBalances || []).filter(b => b.id !== id);
+            saveData();
+            renderFactoryBalances();
+        });
+    }
+
     function showExpenseModal(id = null) {
         const exp = id ? (appData.expenses || []).find(e => e.id === id) : null;
         const suppliers = appData.customers.filter(c => c.type === 'supplier');
@@ -1727,22 +1871,17 @@
                                     <label class="fw-bold mb-2"><i class="fas fa-calendar"></i> التاريخ</label>
                                     <input type="date" class="form-control" id="expenseDate" value="${exp?.date || new Date().toISOString().split('T')[0]}" style="border-radius: 12px;">
                                 </div>
-                                <div class="col-md-3">
-                                    <label class="fw-bold mb-2"><i class="fas fa-tag"></i> نوع المصروف</label>
-                                    <select class="form-control" id="expenseType" style="border-radius: 12px;">
-                                        <option value="مصروفات تشغيلية" ${exp?.expenseType === 'مصروفات تشغيلية' ? 'selected' : ''}>مصروفات تشغيلية</option>
-                                        <option value="مصروفات ادارية" ${exp?.expenseType === 'مصروفات ادارية' ? 'selected' : ''}>مصروفات ادارية</option>
-                                        <option value="مصروفات تسويقية" ${exp?.expenseType === 'مصروفات تسويقية' ? 'selected' : ''}>مصروفات تسويقية</option>
-                                        <option value="اخري" ${exp?.expenseType === 'اخري' ? 'selected' : ''}>اخري</option>
-                                    </select>
-                                </div>
                             </div>
                             
-                            <!-- البيان -->
+                            <!-- البيان والكمية -->
                             <div class="row g-3 mb-4">
-                                <div class="col-md-12">
+                                <div class="col-md-8">
                                     <label class="fw-bold mb-2"><i class="fas fa-file-alt"></i> البيان</label>
                                     <input type="text" class="form-control" id="expenseDescription" value="${exp?.description || ''}" placeholder="أدخل بيان المصروف" style="border-radius: 12px;">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="fw-bold mb-2"><i class="fas fa-cubes"></i> الكمية</label>
+                                    <input type="number" class="form-control" id="expenseQuantity" value="${exp?.quantity || 0}" step="0.01" style="border-radius: 12px;">
                                 </div>
                             </div>
                             
@@ -1822,12 +1961,12 @@
         const supplierSelect = document.getElementById('expenseSupplierSelect');
         const supplierId = supplierSelect?.value ? parseInt(supplierSelect.value) : null;
         const description = document.getElementById('expenseDescription').value.trim();
+        const quantity = parseFloat(document.getElementById('expenseQuantity').value) || 0;
         const amount = parseFloat(document.getElementById('expenseAmount').value) || 0;
         const paid = parseFloat(document.getElementById('expensePaid').value) || 0;
         const due = amount - paid;
         const notes = document.getElementById('expenseNotes').value.trim();
         const date = document.getElementById('expenseDate').value;
-        const expenseType = document.getElementById('expenseType').value;
         
         if (!description) {
             alert('الرجاء إدخال البيان');
@@ -1844,12 +1983,12 @@
             expenseNumber: id ? ((appData.expenses || []).find(e => e.id === parseInt(id))?.expenseNumber || generateExpenseNumber()) : generateExpenseNumber(),
             supplierId: supplierId,
             description: description,
+            quantity: quantity,
             amount: amount,
             paid: paid,
             due: due,
             notes: notes,
-            date: date,
-            expenseType: expenseType
+            date: date
         };
         
         if (!appData.expenses) appData.expenses = [];
@@ -1873,23 +2012,82 @@
         showExpenseModal(id);
     }
     
-    function addExpensePayment(id) {
-        const expense = (appData.expenses || []).find(e => e.id === id);
-        if (!expense) return;
-        const amount = prompt(`💰 المبلغ المتبقي: ${formatCurrency(expense.due)}\nأدخل مبلغ الدفعة:`);
-        if (amount && !isNaN(amount)) {
-            const paymentAmount = parseFloat(amount);
-            if (paymentAmount > expense.due) { alert('المبلغ أكبر من المتبقي'); return; }
-            expense.paid = (expense.paid || 0) + paymentAmount;
-            expense.due = expense.amount - expense.paid;
-            
-            if (!appData.payments) appData.payments = [];
-            appData.payments.push({ id: Date.now(), expenseId: id, amount: paymentAmount, date: new Date().toISOString(), type: 'expense' });
-            
-            saveData();
-            renderExpenses();
-            alert('✅ تم تسجيل الدفعة بنجاح');
+    function addPaymentWithDate(type, id) {
+        const isExpense = type === 'expense';
+        const entity = isExpense ? (appData.expenses || []).find(e => e.id === id) : appData.salesInvoices.find(i => i.id === id);
+        if (!entity) return;
+        
+        const entityLabel = isExpense ? 'المصروف' : 'الفاتورة';
+        const modalHtml = `
+            <div class="modal fade" id="paymentDateModal" tabindex="-1">
+                <div class="modal-dialog modal-sm">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5><i class="fas fa-money-bill"></i> إضافة دفعة</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>${entityLabel} رقم: <strong>${entity.invoiceNumber || entity.expenseNumber}</strong></p>
+                            <p>المبلغ المتبقي: <strong style="color: #e94560;">${formatCurrency(entity.due)}</strong></p>
+                            <div class="mb-3">
+                                <label class="fw-bold">المبلغ</label>
+                                <input type="number" id="paymentAmount" class="form-control" step="0.01" value="${entity.due}">
+                            </div>
+                            <div class="mb-3">
+                                <label class="fw-bold">التاريخ</label>
+                                <input type="date" id="paymentDate" class="form-control" value="${new Date().toISOString().split('T')[0]}">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                            <button class="btn btn-primary" onclick="confirmAddPayment('${type}', ${id})">حفظ الدفعة</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        showModal(modalHtml, 'paymentDateModal');
+    }
+
+    function confirmAddPayment(type, id) {
+        const amount = parseFloat(document.getElementById('paymentAmount')?.value) || 0;
+        const date = document.getElementById('paymentDate')?.value;
+        
+        if (!amount || amount <= 0) {
+            alert('أدخل مبلغ صحيح');
+            return;
         }
+        
+        const isExpense = type === 'expense';
+        const entity = isExpense ? (appData.expenses || []).find(e => e.id === id) : appData.salesInvoices.find(i => i.id === id);
+        if (!entity) return;
+        
+        if (amount > entity.due) {
+            alert('المبلغ أكبر من المتبقي');
+            return;
+        }
+        
+        entity.paid = (entity.paid || 0) + amount;
+        entity.due = (entity.total || entity.amount) - entity.paid;
+        if (entity.status !== undefined) entity.status = entity.due === 0 ? 'paid' : 'partial';
+        
+        if (!appData.payments) appData.payments = [];
+        appData.payments.push({
+            id: Date.now(),
+            type: type,
+            referenceId: id,
+            amount: amount,
+            date: date || new Date().toISOString()
+        });
+        
+        saveData();
+        bootstrap.Modal.getInstance(document.getElementById('paymentDateModal')).hide();
+        renderCurrentPage();
+        alert('✅ تم تسجيل الدفعة بنجاح');
+    }
+    
+    function addExpensePayment(id) {
+        addPaymentWithDate('expense', id);
     }
     
     function deleteExpenseRequest(id) {
@@ -1898,10 +2096,6 @@
             saveData();
             renderExpenses();
         });
-    }
-    
-    function deleteExpense(id) {
-        deleteExpenseRequest(id);
     }
     
     function deleteInvoiceRequest(type, id) {
@@ -1916,10 +2110,6 @@
         });
     }
     
-    function deleteInvoice(type, id) {
-        deleteInvoiceRequest(type, id);
-    }
-    
     function deleteCustomerRequest(id) {
         showDeleteConfirm('customer', id, function() {
             appData.customers = appData.customers.filter(c => c.id !== id);
@@ -1928,20 +2118,12 @@
         });
     }
     
-    function deleteCustomer(id) {
-        deleteCustomerRequest(id);
-    }
-    
     function deleteProductRequest(id) {
         showDeleteConfirm('product', id, function() {
             appData.products = appData.products.filter(p => p.id !== id);
             saveData();
             renderProducts();
         });
-    }
-    
-    function deleteProduct(id) {
-        deleteProductRequest(id);
     }
     
     // ==================== MODALS & ACTIONS ====================
@@ -1957,7 +2139,7 @@
                         </div>
                         <div class="modal-body">
                             <div class="row g-3 mb-4">
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <label class="fw-bold mb-2"><i class="fas fa-user"></i> العميل</label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="fas fa-search"></i></span>
@@ -1967,11 +2149,15 @@
                                         ${customers.map(c => `<option value="${c.id}" data-discount="${c.discountPercent}" data-name="${c.name}">${c.name} (${c.code})</option>`).join('')}
                                     </select>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <label class="fw-bold mb-2"><i class="fas fa-calendar"></i> التاريخ</label>
                                     <input type="date" class="form-control" id="invoiceDate" value="${new Date().toISOString().split('T')[0]}" style="border-radius: 12px;">
                                 </div>
-                                <div class="col-md-3 d-flex align-items-end">
+                                <div class="col-md-2">
+                                    <label class="fw-bold mb-2"><i class="fas fa-user-tie"></i> Sales Manager</label>
+                                    <input type="text" class="form-control" id="salesManager" placeholder="اسم المدير" style="border-radius: 12px;">
+                                </div>
+                                <div class="col-md-4 d-flex align-items-end">
                                     <div class="alert alert-info mb-0 w-100 text-center py-2" style="background: rgba(15,52,96,0.5); border: 1px solid rgba(255,255,255,0.2);">
                                         <small><i class="fas fa-boxes"></i> المنتجات المتاحة: <strong>${appData.products.length}</strong></small>
                                     </div>
@@ -2168,6 +2354,7 @@
         const total = parseFloat(document.getElementById('invoiceTotal').value);
         const paid = parseFloat(document.getElementById('invoicePaid').value);
         const due = total - paid;
+        const salesManager = document.getElementById('salesManager').value.trim();
         
         const newInvoice = { 
             id: Date.now(), 
@@ -2179,6 +2366,7 @@
             total: total,
             paid, 
             due, 
+            salesManager: salesManager,
             status: due === 0 ? 'paid' : 'partial' 
         };
         
@@ -2213,15 +2401,19 @@
                         </div>
                         <div class="modal-body">
                             <div class="row g-3 mb-4">
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <label class="fw-bold mb-2">العميل</label>
                                     <select class="form-control" id="editCustomerSelect" style="border-radius: 12px;">
                                         ${customers.map(c => `<option value="${c.id}" ${c.id === inv.customerId ? 'selected' : ''}>${c.name} (${c.code})</option>`).join('')}
                                     </select>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <label class="fw-bold mb-2">التاريخ</label>
                                     <input type="date" class="form-control" id="editInvoiceDate" value="${inv.date}" style="border-radius: 12px;">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="fw-bold mb-2">Sales Manager</label>
+                                    <input type="text" class="form-control" id="editSalesManager" value="${inv.salesManager || ''}" style="border-radius: 12px;">
                                 </div>
                             </div>
                             
@@ -2426,6 +2618,7 @@
         
         inv.customerId = parseInt(document.getElementById('editCustomerSelect').value);
         inv.date = document.getElementById('editInvoiceDate').value;
+        inv.salesManager = document.getElementById('editSalesManager').value.trim();
         inv.items = items;
         inv.subtotal = subtotal;
         inv.total = total;
@@ -2446,23 +2639,7 @@
     
     // ==================== PAYMENTS ====================
     function addPayment(invoiceId) {
-        const invoice = appData.salesInvoices.find(inv => inv.id === invoiceId);
-        if(!invoice) return;
-        const amount = prompt(`💰 المبلغ المتبقي: ${formatCurrency(invoice.due)}\nأدخل مبلغ الدفعة:`);
-        if(amount && !isNaN(amount)) {
-            const paymentAmount = parseFloat(amount);
-            if(paymentAmount > invoice.due) { alert('المبلغ أكبر من المتبقي'); return; }
-            invoice.paid += paymentAmount;
-            invoice.due -= paymentAmount;
-            invoice.status = invoice.due === 0 ? 'paid' : 'partial';
-            
-            if(!appData.payments) appData.payments = [];
-            appData.payments.push({ id: Date.now(), invoiceId: invoiceId, amount: paymentAmount, date: new Date().toISOString() });
-            
-            saveData();
-            renderCurrentPage();
-            alert('✅ تم تسجيل الدفعة بنجاح');
-        }
+        addPaymentWithDate('sales', invoiceId);
     }
     
     // ==================== CUSTOMER / PRODUCT CRUD ====================
@@ -2614,7 +2791,8 @@
                        (party?.name || '').toLowerCase().includes(term) ||
                        (party?.code || '').toLowerCase().includes(term) ||
                        (inv.description || '').toLowerCase().includes(term) ||
-                       (inv.expenseType || '').toLowerCase().includes(term);
+                       (inv.expenseType || '').toLowerCase().includes(term) ||
+                       (inv.salesManager || '').toLowerCase().includes(term);
             });
         }
         
@@ -2634,172 +2812,9 @@
         return invoices;
     }
     
-    // Reports detail modals (for cards)
-    function showReportSalesDueDetails() {
-        const filtered = getFilteredInvoices().filter(inv => inv.invoiceType === 'بيع' && inv.due > 0);
-        const totalDue = filtered.reduce((s, inv) => s + (inv.due || 0), 0);
-        const modalHtml = `
-            <div class="modal fade" id="reportSalesDueModal" tabindex="-1">
-                <div class="modal-dialog modal-xl">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title"><i class="fas fa-credit-card" style="color: #e94560;"></i> ديون فواتير البيع (حسب الفلتر)</h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <h5 class="mb-3">إجمالي الديون: <span style="color: #e94560;">${formatCurrency(totalDue)}</span></h5>
-                            <div class="table-responsive">
-                                <table class="table">
-                                    <thead><tr><th>رقم الفاتورة</th><th>العميل</th><th>التاريخ</th><th>الإجمالي</th><th>المدفوع</th><th>المتبقي</th></tr></thead>
-                                    <tbody>
-                                        ${filtered.map(inv => {
-                                            const c = appData.customers.find(c => c.id === inv.partyId);
-                                            return `<tr>
-                                                <td>${inv.invoiceNumber}</td>
-                                                <td>${c?.name || 'غير محدد'}</td>
-                                                <td>${new Date(inv.date).toLocaleDateString('ar')}</td>
-                                                <td>${formatCurrency(inv.total)}</td>
-                                                <td>${formatCurrency(inv.paid)}</td>
-                                                <td class="fw-bold" style="color: #e94560;">${formatCurrency(inv.due)}</td>
-                                            </tr>`;
-                                        }).join('') || '<tr><td colspan="6" class="text-center">لا توجد نتائج</td></tr>'}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        showModal(modalHtml, 'reportSalesDueModal');
-    }
-    
-    function showReportPaidDetails() {
-        const filtered = getFilteredInvoices().filter(inv => (inv.paid || 0) > 0 && inv.invoiceType === 'بيع');
-        const totalPaid = filtered.reduce((s, inv) => s + (inv.paid || 0), 0);
-        const modalHtml = `
-            <div class="modal fade" id="reportPaidModal" tabindex="-1">
-                <div class="modal-dialog modal-xl">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title"><i class="fas fa-check-circle" style="color: #10b981;"></i> المدفوع من فواتير البيع (حسب الفلتر)</h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <h5 class="mb-3">إجمالي المدفوع: <span style="color: #10b981;">${formatCurrency(totalPaid)}</span></h5>
-                            <div class="table-responsive">
-                                <table class="table">
-                                    <thead><tr><th>رقم الفاتورة</th><th>العميل</th><th>التاريخ</th><th>الإجمالي</th><th>المدفوع</th></tr></thead>
-                                    <tbody>
-                                        ${filtered.map(inv => {
-                                            const c = appData.customers.find(c => c.id === inv.partyId);
-                                            return `<tr>
-                                                <td>${inv.invoiceNumber}</td>
-                                                <td>${c?.name || 'غير محدد'}</td>
-                                                <td>${inv.date ? new Date(inv.date).toLocaleDateString('ar') : '-'}</td>
-                                                <td>${formatCurrency(inv.total || 0)}</td>
-                                                <td style="color: #10b981; font-weight: bold;">${formatCurrency(inv.paid || 0)}</td>
-                                            </tr>`;
-                                        }).join('') || '<tr><td colspan="5" class="text-center">لا توجد نتائج</td></tr>'}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        showModal(modalHtml, 'reportPaidModal');
-    }
-    
-    function showReportExpensesDetails() {
-        const filtered = getFilteredInvoices().filter(inv => inv.invoiceType === 'مصروف');
-        const totalExpenses = filtered.reduce((s, inv) => s + (inv.total || 0), 0);
-        const modalHtml = `
-            <div class="modal fade" id="reportExpensesModal" tabindex="-1">
-                <div class="modal-dialog modal-xl">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title"><i class="fas fa-money-bill-wave" style="color: #f59e0b;"></i> المصروفات (حسب الفلتر)</h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <h5 class="mb-3">إجمالي المصروفات: <span style="color: #f59e0b;">${formatCurrency(totalExpenses)}</span></h5>
-                            <div class="table-responsive">
-                                <table class="table">
-                                    <thead><tr><th>النوع</th><th>رقم المصروف</th><th>المورد</th><th>البيان</th><th>التاريخ</th><th>التكلفة</th><th>المدفوع</th><th>المتبقي</th></tr></thead>
-                                    <tbody>
-                                        ${filtered.map(inv => {
-                                            const supplier = inv.partyId ? appData.customers.find(c => c.id === inv.partyId) : null;
-                                            return `<tr>
-                                                <td>${inv.expenseType || 'مصروفات تشغيلية'}</td>
-                                                <td>${inv.invoiceNumber || '-'}</td>
-                                                <td>${supplier?.name || '-'}</td>
-                                                <td>${inv.description || '-'}</td>
-                                                <td>${inv.date ? new Date(inv.date).toLocaleDateString('ar') : '-'}</td>
-                                                <td>${formatCurrency(inv.total || 0)}</td>
-                                                <td style="color: #10b981;">${formatCurrency(inv.paid || 0)}</td>
-                                                <td style="color: #e94560;">${formatCurrency(inv.due || 0)}</td>
-                                            </tr>`;
-                                        }).join('') || '<tr><td colspan="8" class="text-center">لا توجد نتائج</td></tr>'}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        showModal(modalHtml, 'reportExpensesModal');
-    }
-    
-    function showReportBalanceDetails() {
-        const filtered = getFilteredInvoices();
-        const totalPaid = filtered.filter(inv => inv.invoiceType === 'بيع').reduce((s, inv) => s + (inv.paid || 0), 0);
-        const totalExpenses = filtered.filter(inv => inv.invoiceType === 'مصروف').reduce((s, inv) => s + (inv.total || 0), 0);
-        const balance = totalPaid - totalExpenses;
-        
-        const modalHtml = `
-            <div class="modal fade" id="reportBalanceModal" tabindex="-1">
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title"><i class="fas fa-balance-scale" style="color: #6366f1;"></i> الرصيد (حسب الفلتر)</h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="row text-center">
-                                <div class="col-md-6 mb-3">
-                                    <div class="p-3 rounded" style="background: rgba(16, 185, 129, 0.2);">
-                                        <h6>إجمالي المدفوعات )</h6>
-                                        <h3 style="color: #10b981;">${formatCurrency(totalPaid)}</h3>
-                                    </div>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <div class="p-3 rounded" style="background: rgba(245, 158, 11, 0.2);">
-                                        <h6>إجمالي المصروفات</h6>
-                                        <h3 style="color: #f59e0b;">${formatCurrency(totalExpenses)}</h3>
-                                    </div>
-                                </div>
-                                <div class="col-12">
-                                    <div class="p-3 rounded" style="background: rgba(99, 102, 241, 0.2);">
-                                        <h6>الرصيد النهائي (المدفوع - المصروفات)</h6>
-                                        <h3 style="color: #6366f1;">${formatCurrency(balance)}</h3>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        showModal(modalHtml, 'reportBalanceModal');
-    }
-    
     function renderReports() {
         const filteredInvoices = getFilteredInvoices();
         
-        // Calculate totals for cards based on filtered data
         const salesDue = filteredInvoices.filter(inv => inv.invoiceType === 'بيع').reduce((s, inv) => s + (inv.due || 0), 0);
         const totalPaid = filteredInvoices.filter(inv => inv.invoiceType === 'بيع').reduce((s, inv) => s + (inv.paid || 0), 0);
         const totalExpenses = filteredInvoices.filter(inv => inv.invoiceType === 'مصروف').reduce((s, inv) => s + (inv.total || 0), 0);
@@ -2808,42 +2823,29 @@
         const html = `
             <h5 class="mb-4">📈 التقارير</h5>
             
-            <!-- Report Cards -->
             <div class="row g-3 justify-content-center mb-4">
                 <div class="col-xl-3 col-md-6" onclick="showReportSalesDueDetails()">
                     <div class="stat-card" style="border-right: 5px solid #e94560;">
                         <i class="fas fa-credit-card icon" style="color: #e94560;"></i>
-                        <div>
-                            <small class="label">ديون فواتير البيع</small>
-                            <div class="value" style="color: #e94560;">${formatCurrency(salesDue)}</div>
-                        </div>
+                        <div><small class="label">ديون فواتير البيع</small><div class="value" style="color: #e94560;">${formatCurrency(salesDue)}</div></div>
                     </div>
                 </div>
                 <div class="col-xl-3 col-md-6" onclick="showReportPaidDetails()">
                     <div class="stat-card" style="border-right: 5px solid #10b981;">
                         <i class="fas fa-check-circle icon" style="color: #10b981;"></i>
-                        <div>
-                            <small class="label">المدفوع </small>
-                            <div class="value" style="color: #10b981;">${formatCurrency(totalPaid)}</div>
-                        </div>
+                        <div><small class="label">المدفوع</small><div class="value" style="color: #10b981;">${formatCurrency(totalPaid)}</div></div>
                     </div>
                 </div>
                 <div class="col-xl-3 col-md-6" onclick="showReportExpensesDetails()">
                     <div class="stat-card" style="border-right: 5px solid #f59e0b;">
                         <i class="fas fa-money-bill-wave icon" style="color: #f59e0b;"></i>
-                        <div>
-                            <small class="label">المصروفات</small>
-                            <div class="value" style="color: #f59e0b;">${formatCurrency(totalExpenses)}</div>
-                        </div>
+                        <div><small class="label">المصروفات</small><div class="value" style="color: #f59e0b;">${formatCurrency(totalExpenses)}</div></div>
                     </div>
                 </div>
                 <div class="col-xl-3 col-md-6" onclick="showReportBalanceDetails()">
                     <div class="stat-card" style="border-right: 5px solid #6366f1;">
                         <i class="fas fa-balance-scale icon" style="color: #6366f1;"></i>
-                        <div>
-                            <small class="label">الرصيد</small>
-                            <div class="value" style="color: #6366f1;">${formatCurrency(balance)}</div>
-                        </div>
+                        <div><small class="label">الرصيد</small><div class="value" style="color: #6366f1;">${formatCurrency(balance)}</div></div>
                     </div>
                 </div>
             </div>
@@ -2852,7 +2854,7 @@
                 <div class="row g-3">
                     <div class="col-md-3">
                         <label><i class="fas fa-search"></i> بحث</label>
-                        <input type="text" class="form-control" id="reportSearch" placeholder="بحث برقم الفاتورة، الاسم، البيان..." value="${reportsFilter.searchTerm}" oninput="handleReportSearch(this.value)" style="border-radius: 10px;">
+                        <input type="text" class="form-control" id="reportSearch" placeholder="بحث..." value="${reportsFilter.searchTerm}" oninput="handleReportSearch(this.value)" style="border-radius: 10px;">
                     </div>
                     <div class="col-md-2">
                         <label><i class="fas fa-filter"></i> النوع</label>
@@ -2882,9 +2884,7 @@
             </div>
             
             <div class="d-flex justify-content-end mb-3">
-                <button class="btn btn-success rounded-pill" onclick="exportFilteredToExcel()">
-                    <i class="fas fa-file-excel"></i> تصدير Excel
-                </button>
+                <button class="btn btn-success rounded-pill" onclick="exportFilteredToExcel()"><i class="fas fa-file-excel"></i> تصدير Excel</button>
             </div>
             
             <div class="table-card">
@@ -2895,6 +2895,7 @@
                                 <th>النوع</th>
                                 <th>رقم الفاتورة</th>
                                 <th>الطرف / البيان</th>
+                                <th>Sales Manager</th>
                                 <th>التاريخ</th>
                                 <th>الإجمالي</th>
                                 <th>المدفوع</th>
@@ -2907,8 +2908,7 @@
                                 let partyDisplay = '';
                                 if (inv.invoiceType === 'مصروف') {
                                     const supplier = inv.partyId ? appData.customers.find(c => c.id === inv.partyId) : null;
-                                    const typeLabel = inv.expenseType || 'مصروفات تشغيلية';
-                                    partyDisplay = `${typeLabel} | ${inv.description || ''}`;
+                                    partyDisplay = `${inv.expenseType || 'مصروفات تشغيلية'} | ${inv.description || ''}`;
                                     if (supplier) partyDisplay += ` (${supplier.name})`;
                                 } else {
                                     const party = appData.customers.find(c => c.id === inv.partyId);
@@ -2919,13 +2919,14 @@
                                     <td><span class="badge ${inv.invoiceType === 'بيع' ? 'bg-info' : 'bg-secondary'} badge-status">${inv.invoiceType === 'بيع' ? 'مبيعات' : inv.expenseType || 'مصروف'}</span></td>
                                     <td><strong>${inv.invoiceNumber}</strong></td>
                                     <td>${partyDisplay}</td>
+                                    <td>${inv.salesManager || '-'}</td>
                                     <td>${inv.date ? new Date(inv.date).toLocaleDateString('ar') : '-'}</td>
                                     <td>${formatCurrency(inv.total || 0)}</td>
                                     <td>${formatCurrency(inv.paid || 0)}</td>
                                     <td class="fw-bold" style="color: #e94560;">${formatCurrency(inv.due || 0)}</td>
                                     <td>${inv.invoiceType !== 'مصروف' ? `<button class="btn btn-sm btn-info rounded-pill" onclick="showInvoiceProductDetails('${inv.invoiceType}', ${inv.id})"><i class="fas fa-eye"></i> عرض</button>` : '-'}</td>
                                 </tr>`;
-                            }).join('') : '<tr><td colspan="8" class="text-center py-4">لا توجد نتائج مطابقة للفلتر</td></tr>'}
+                            }).join('') : '<tr><td colspan="9" class="text-center py-4">لا توجد نتائج</td></tr>'}
                         </tbody>
                     </table>
                 </div>
@@ -2933,12 +2934,6 @@
         `;
         document.getElementById('pageContent').innerHTML = html; 
         document.getElementById('pageTitle').innerHTML = '📈 التقارير';
-        
-        const searchInput = document.getElementById('reportSearch');
-        if (searchInput && reportsFilter.searchTerm) {
-            searchInput.focus();
-            searchInput.setSelectionRange(searchInput.value.length, searchInput.value.length);
-        }
     }
     
     function handleReportSearch(value) {
@@ -2953,14 +2948,13 @@
     
     function exportFilteredToExcel() {
         const filteredInvoices = getFilteredInvoices();
-        const wsData = [['النوع', 'رقم الفاتورة', 'الطرف / البيان', 'التاريخ', 'الإجمالي', 'المدفوع', 'المتبقي', 'الحالة']];
+        const wsData = [['النوع', 'رقم الفاتورة', 'الطرف / البيان', 'Sales Manager', 'التاريخ', 'الإجمالي', 'المدفوع', 'المتبقي', 'الحالة']];
         
         filteredInvoices.forEach(inv => {
             let partyDisplay = '';
             if (inv.invoiceType === 'مصروف') {
                 const supplier = inv.partyId ? appData.customers.find(c => c.id === inv.partyId) : null;
-                const typeLabel = inv.expenseType || 'مصروفات تشغيلية';
-                partyDisplay = `${typeLabel} | ${inv.description || ''}`;
+                partyDisplay = `${inv.expenseType || 'مصروفات تشغيلية'} | ${inv.description || ''}`;
                 if (supplier) partyDisplay += ` (${supplier.name})`;
             } else {
                 const party = appData.customers.find(c => c.id === inv.partyId);
@@ -2970,6 +2964,7 @@
                 inv.invoiceType === 'بيع' ? 'مبيعات' : (inv.expenseType || 'مصروف'),
                 inv.invoiceNumber || '',
                 partyDisplay,
+                inv.salesManager || '',
                 inv.date || '',
                 inv.total || 0,
                 inv.paid || 0,
@@ -3007,6 +3002,7 @@
                         <div class="modal-body">
                             <p><strong>الطرف:</strong> ${party?.name || 'غير محدد'} (${party?.code || ''})</p>
                             ${party?.address ? `<p><strong>العنوان:</strong> ${party.address}</p>` : ''}
+                            ${inv.salesManager ? `<p><strong>Sales Manager:</strong> ${inv.salesManager}</p>` : ''}
                             <p><strong>التاريخ:</strong> ${new Date(inv.date).toLocaleDateString('ar')}</p>
                             <table class="table"><thead><tr><th>المنتج</th><th>رقم التشغيلة</th><th>الكمية</th><th>السعر</th><th>خصم%</th><th>الإجمالي</th><th>بعد الخصم</th></tr></thead><tbody>${itemsHtml}</tbody></table>
                             <p><strong>الإجمالي قبل الخصم:</strong> ${formatCurrency(inv.subtotal)}</p>
@@ -3019,6 +3015,118 @@
             </div>
         `; 
         showModal(modalHtml, 'prodModal'); 
+    }
+
+    function showReportSalesDueDetails() {
+        const filtered = getFilteredInvoices().filter(inv => inv.invoiceType === 'بيع' && inv.due > 0);
+        const totalDue = filtered.reduce((s, inv) => s + (inv.due || 0), 0);
+        const modalHtml = `
+            <div class="modal fade" id="reportSalesDueModal" tabindex="-1">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header"><h5 class="modal-title"><i class="fas fa-credit-card" style="color: #e94560;"></i> ديون فواتير البيع</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+                        <div class="modal-body">
+                            <h5 class="mb-3">إجمالي الديون: <span style="color: #e94560;">${formatCurrency(totalDue)}</span></h5>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead><tr><th>رقم الفاتورة</th><th>العميل</th><th>Sales Manager</th><th>التاريخ</th><th>الإجمالي</th><th>المدفوع</th><th>المتبقي</th></tr></thead>
+                                    <tbody>
+                                        ${filtered.map(inv => {
+                                            const c = appData.customers.find(c => c.id === inv.partyId);
+                                            return `<tr><td>${inv.invoiceNumber}</td><td>${c?.name || 'غير محدد'}</td><td>${inv.salesManager || '-'}</td><td>${new Date(inv.date).toLocaleDateString('ar')}</td><td>${formatCurrency(inv.total)}</td><td>${formatCurrency(inv.paid)}</td><td class="fw-bold" style="color: #e94560;">${formatCurrency(inv.due)}</td></tr>`;
+                                        }).join('') || '<tr><td colspan="7" class="text-center">لا توجد نتائج</td></tr>'}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        showModal(modalHtml, 'reportSalesDueModal');
+    }
+
+    function showReportPaidDetails() {
+        const filtered = getFilteredInvoices().filter(inv => (inv.paid || 0) > 0 && inv.invoiceType === 'بيع');
+        const totalPaid = filtered.reduce((s, inv) => s + (inv.paid || 0), 0);
+        const modalHtml = `
+            <div class="modal fade" id="reportPaidModal" tabindex="-1">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header"><h5 class="modal-title"><i class="fas fa-check-circle" style="color: #10b981;"></i> المدفوع من فواتير البيع</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+                        <div class="modal-body">
+                            <h5 class="mb-3">إجمالي المدفوع: <span style="color: #10b981;">${formatCurrency(totalPaid)}</span></h5>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead><tr><th>رقم الفاتورة</th><th>العميل</th><th>Sales Manager</th><th>التاريخ</th><th>الإجمالي</th><th>المدفوع</th></tr></thead>
+                                    <tbody>
+                                        ${filtered.map(inv => {
+                                            const c = appData.customers.find(c => c.id === inv.partyId);
+                                            return `<tr><td>${inv.invoiceNumber}</td><td>${c?.name || 'غير محدد'}</td><td>${inv.salesManager || '-'}</td><td>${inv.date ? new Date(inv.date).toLocaleDateString('ar') : '-'}</td><td>${formatCurrency(inv.total || 0)}</td><td style="color: #10b981; font-weight: bold;">${formatCurrency(inv.paid || 0)}</td></tr>`;
+                                        }).join('') || '<tr><td colspan="6" class="text-center">لا توجد نتائج</td></tr>'}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        showModal(modalHtml, 'reportPaidModal');
+    }
+
+    function showReportExpensesDetails() {
+        const filtered = getFilteredInvoices().filter(inv => inv.invoiceType === 'مصروف');
+        const totalExpenses = filtered.reduce((s, inv) => s + (inv.total || 0), 0);
+        const modalHtml = `
+            <div class="modal fade" id="reportExpensesModal" tabindex="-1">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header"><h5 class="modal-title"><i class="fas fa-money-bill-wave" style="color: #f59e0b;"></i> المصروفات</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+                        <div class="modal-body">
+                            <h5 class="mb-3">إجمالي المصروفات: <span style="color: #f59e0b;">${formatCurrency(totalExpenses)}</span></h5>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead><tr><th>رقم المصروف</th><th>المورد</th><th>البيان</th><th>الكمية</th><th>التاريخ</th><th>التكلفة</th><th>المدفوع</th><th>المتبقي</th></tr></thead>
+                                    <tbody>
+                                        ${filtered.map(inv => {
+                                            const supplier = inv.partyId ? appData.customers.find(c => c.id === inv.partyId) : null;
+                                            return `<tr><td>${inv.invoiceNumber || '-'}</td><td>${supplier?.name || '-'}</td><td>${inv.description || '-'}</td><td>${inv.quantity || 0}</td><td>${inv.date ? new Date(inv.date).toLocaleDateString('ar') : '-'}</td><td>${formatCurrency(inv.total || 0)}</td><td style="color: #10b981;">${formatCurrency(inv.paid || 0)}</td><td style="color: #e94560;">${formatCurrency(inv.due || 0)}</td></tr>`;
+                                        }).join('') || '<tr><td colspan="8" class="text-center">لا توجد نتائج</td></tr>'}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        showModal(modalHtml, 'reportExpensesModal');
+    }
+
+    function showReportBalanceDetails() {
+        const filtered = getFilteredInvoices();
+        const totalPaid = filtered.filter(inv => inv.invoiceType === 'بيع').reduce((s, inv) => s + (inv.paid || 0), 0);
+        const totalExpenses = filtered.filter(inv => inv.invoiceType === 'مصروف').reduce((s, inv) => s + (inv.total || 0), 0);
+        const balance = totalPaid - totalExpenses;
+        
+        const modalHtml = `
+            <div class="modal fade" id="reportBalanceModal" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header"><h5 class="modal-title"><i class="fas fa-balance-scale" style="color: #6366f1;"></i> الرصيد</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+                        <div class="modal-body">
+                            <div class="row text-center">
+                                <div class="col-md-6 mb-3"><div class="p-3 rounded" style="background: rgba(16, 185, 129, 0.2);"><h6>إجمالي المدفوعات</h6><h3 style="color: #10b981;">${formatCurrency(totalPaid)}</h3></div></div>
+                                <div class="col-md-6 mb-3"><div class="p-3 rounded" style="background: rgba(245, 158, 11, 0.2);"><h6>إجمالي المصروفات</h6><h3 style="color: #f59e0b;">${formatCurrency(totalExpenses)}</h3></div></div>
+                                <div class="col-12"><div class="p-3 rounded" style="background: rgba(99, 102, 241, 0.2);"><h6>الرصيد النهائي</h6><h3 style="color: #6366f1;">${formatCurrency(balance)}</h3></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        showModal(modalHtml, 'reportBalanceModal');
     }
     
     // ==================== BACKUP ====================
@@ -3065,20 +3173,19 @@
     }
     
     function exportToExcel() { 
-        const wsData = [['النوع','رقم الفاتورة','الطرف','التاريخ','الإجمالي','المدفوع','المتبقي'], 
+        const wsData = [['النوع','رقم الفاتورة','الطرف','Sales Manager','التاريخ','الإجمالي','المدفوع','المتبقي'], 
         ...[...appData.salesInvoices.map(i => { 
             const c = appData.customers.find(c => c.id === i.customerId); 
-            return ['بيع', i.invoiceNumber, c?.name, i.date, i.total, i.paid, i.due]; 
+            return ['بيع', i.invoiceNumber, c?.name, i.salesManager || '', i.date, i.total, i.paid, i.due]; 
         }), 
         ...appData.purchaseInvoices.map(i => { 
             const s = appData.customers.find(c => c.id === i.supplierId); 
-            return ['شراء', i.invoiceNumber, s?.name, i.date, i.total, i.paid, i.due]; 
+            return ['شراء', i.invoiceNumber, s?.name, '', i.date, i.total, i.paid, i.due]; 
         }),
         ...(appData.expenses || []).map(e => {
             const supplier = e.supplierId ? appData.customers.find(c => c.id === e.supplierId) : null;
-            const typeLabel = e.expenseType || 'مصروفات تشغيلية';
-            const desc = `${typeLabel} | ${e.description || ''}`;
-            return ['مصروف', e.expenseNumber || '-', desc + (supplier ? ` (${supplier.name})` : ''), e.date, e.amount, e.paid || 0, e.due || 0];
+            const desc = `${e.description || ''}`;
+            return ['مصروف', e.expenseNumber || '-', desc + (supplier ? ` (${supplier.name})` : ''), '', e.date, e.amount, e.paid || 0, e.due || 0];
         })]];
         const ws = XLSX.utils.aoa_to_sheet(wsData); 
         const wb = XLSX.utils.book_new(); 
@@ -3154,7 +3261,7 @@
     }
     
     function generateInvoiceHTML(inv, party, type) { 
-        const company = appData.settings.companyName || 'إدارة الفواتير';
+        const company = appData.settings.companyName || 'Sernova Pharmaceuticals';
         const logoHtml = appData.settings.logo ? `<img src="${appData.settings.logo}" style="max-width:120px;max-height:120px;border-radius:10px;">` : '';
         const commercialRegister = appData.settings.commercialRegister || '';
         const taxCard = appData.settings.taxCard || '';
