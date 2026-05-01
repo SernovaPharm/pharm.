@@ -1625,8 +1625,7 @@
                                         <button class="btn btn-sm btn-outline-success" onclick="addPaymentWithDate('sales', ${inv.id})" title="دفعة"><i class="fas fa-money-bill"></i></button>
                                         <button class="btn btn-sm btn-outline-danger" onclick="deleteInvoiceRequest('sales', ${inv.id})" title="حذف"><i class="fas fa-trash"></i></button>
                                     </td>
-                                </tr>`;
-                            }).join('')}
+                                </tr>`; }).join('')}
                         </tbody>
                     </table>
                 </div>
@@ -1635,7 +1634,7 @@
         document.getElementById('pageContent').innerHTML = html;
         document.getElementById('pageTitle').innerHTML = '🧾 فواتير البيع';
     }
-    
+
     function exportSalesInvoicesToExcel() {
         const company = appData.settings.companyName || 'Sernova Pharmaceuticals';
         const wsData = [
@@ -1714,8 +1713,7 @@
                                         <button class="btn btn-sm btn-outline-success" onclick="addPaymentWithDate('expense', ${exp.id})" title="دفعة"><i class="fas fa-money-bill"></i></button>
                                         <button class="btn btn-sm btn-outline-danger" onclick="deleteExpenseRequest(${exp.id})" title="حذف"><i class="fas fa-trash"></i></button>
                                     </td>
-                                </tr>`;
-                            }).join('') || '<tr><td colspan="10" class="text-center py-4">لا توجد مصروفات</td></tr>'}
+                                </tr>`; }).join('') || '<tr><td colspan="10" class="text-center py-4">لا توجد مصروفات</td></tr>'}
                         </tbody>
                     </table>
                 </div>
@@ -1891,24 +1889,11 @@
     // ==================== EMPLOYEES ====================
     function renderEmployees() {
         const employees = appData.employees || [];
-        const totalEmployeeSales = appData.salesInvoices.filter(inv => inv.salesManager).length;
-        const totalEmployeeSalesAmount = appData.salesInvoices.reduce((s, inv) => inv.salesManager ? s + inv.total : s, 0);
         
         const html = `
             <div class="d-flex justify-content-between mb-4">
                 <h5>👔 الموظفين</h5>
                 <button class="btn btn-primary" onclick="showEmployeeModal()"><i class="fas fa-plus"></i> إضافة موظف</button>
-            </div>
-            <div class="row g-3 justify-content-center mb-4">
-                <div class="col-xl-3 col-md-6" onclick="showEmployeeSalesDetail()">
-                    <div class="stat-card" style="border-right: 5px solid #f59e0b;">
-                        <i class="fas fa-dollar-sign icon" style="color: #f59e0b;"></i>
-                        <div>
-                            <small class="label">إجمالي مبيعات الموظفين</small>
-                            <div class="value" style="color: #f59e0b;">${formatCurrency(totalEmployeeSalesAmount)}</div>
-                        </div>
-                    </div>
-                </div>
             </div>
             <div class="search-box">
                 <i class="fas fa-search"></i>
@@ -1935,7 +1920,8 @@
                                     <td>${emp.name}</td>
                                     <td>${emp.position}</td>
                                     <td>
-                                        <button class="btn btn-sm btn-info rounded-pill" onclick="editEmployee(${emp.id})"><i class="fas fa-edit"></i></button>
+                                        <button class="btn btn-sm btn-info rounded-pill" onclick="showEmployeeSalesDetail(${emp.id})"><i class="fas fa-eye"></i> عرض الفواتير</button>
+                                        <button class="btn btn-sm btn-warning rounded-pill" onclick="editEmployee(${emp.id})"><i class="fas fa-edit"></i></button>
                                         <button class="btn btn-sm btn-danger rounded-pill" onclick="deleteEmployeeRequest(${emp.id})"><i class="fas fa-trash"></i></button>
                                     </td>
                                 </tr>
@@ -1949,32 +1935,91 @@
         document.getElementById('pageTitle').innerHTML = '👔 الموظفين';
     }
     
-    function showEmployeeSalesDetail() {
-        const employees = appData.employees || [];
-        let contentHtml = '';
+    function showEmployeeSalesDetail(empId) {
+        const emp = (appData.employees || []).find(e => e.id === empId);
+        if (!emp) return;
         
-        employees.forEach(emp => {
-            const empInvoices = appData.salesInvoices.filter(inv => inv.salesManager === emp.name);
-            if (empInvoices.length > 0) {
-                contentHtml += `
-                    <div class="payment-customer-card mb-3">
-                        <h6><i class="fas fa-user-tie"></i> ${emp.name} (${emp.code})</h6>
-                        <p>عدد الفواتير: ${empInvoices.length} | إجمالي المبيعات: ${formatCurrency(empInvoices.reduce((s, inv) => s + inv.total, 0))}</p>
-                        <table class="table table-sm"><thead><tr><th>رقم الفاتورة</th><th>العميل</th><th>التاريخ</th><th>الإجمالي</th></tr></thead>
-                        <tbody>${empInvoices.map(inv => { const c = appData.customers.find(c => c.id === inv.customerId); return `<tr><td>${inv.invoiceNumber}</td><td>${c?.name || '-'}</td><td>${new Date(inv.date).toLocaleDateString('ar')}</td><td>${formatCurrency(inv.total)}</td></tr>`; }).join('')}</tbody></table>
-                    </div>
-                `;
-            }
-        });
+        const empInvoices = appData.salesInvoices.filter(inv => inv.salesManager === emp.name);
+        const totalSales = empInvoices.reduce((s, inv) => s + inv.total, 0);
+        const totalPaid = empInvoices.reduce((s, inv) => s + inv.paid, 0);
+        const totalDue = empInvoices.reduce((s, inv) => s + inv.due, 0);
         
-        if (!contentHtml) contentHtml = '<p class="text-center py-4">لا توجد مبيعات مسجلة</p>';
-        
-        const modalHtml = `
+        let modalHtml = `
             <div class="modal fade" id="employeeSalesModal" tabindex="-1">
                 <div class="modal-dialog modal-xl">
                     <div class="modal-content">
-                        <div class="modal-header"><h5>تفاصيل مبيعات الموظفين</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
-                        <div class="modal-body">${contentHtml}</div>
+                        <div class="modal-header">
+                            <h5><i class="fas fa-user-tie"></i> فواتير ${emp.name} (${emp.code})</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row mb-4">
+                                <div class="col-md-4">
+                                    <div class="p-3 rounded text-center" style="background: rgba(245,158,11,0.2);">
+                                        <small style="color: #b0b0b0;">إجمالي المبيعات</small>
+                                        <h4 style="color: #f59e0b;">${formatCurrency(totalSales)}</h4>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="p-3 rounded text-center" style="background: rgba(16,185,129,0.2);">
+                                        <small style="color: #b0b0b0;">إجمالي المدفوع</small>
+                                        <h4 style="color: #10b981;">${formatCurrency(totalPaid)}</h4>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="p-3 rounded text-center" style="background: rgba(233,69,96,0.2);">
+                                        <small style="color: #b0b0b0;">المتبقي</small>
+                                        <h4 style="color: #e94560;">${formatCurrency(totalDue)}</h4>
+                                    </div>
+                                </div>
+                            </div>
+        `;
+        
+        if (empInvoices.length > 0) {
+            modalHtml += `
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>رقم الفاتورة</th>
+                                <th>العميل</th>
+                                <th>التاريخ</th>
+                                <th>الإجمالي</th>
+                                <th>المدفوع</th>
+                                <th>المتبقي</th>
+                                <th>الحالة</th>
+                                <th>تفاصيل</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${empInvoices.map(inv => {
+                                const c = appData.customers.find(c => c.id === inv.customerId);
+                                return `
+                                    <tr>
+                                        <td><strong>${inv.invoiceNumber}</strong></td>
+                                        <td>${c?.name || '-'}</td>
+                                        <td>${new Date(inv.date).toLocaleDateString('ar')}</td>
+                                        <td>${formatCurrency(inv.total)}</td>
+                                        <td style="color: #10b981;">${formatCurrency(inv.paid)}</td>
+                                        <td style="color: #e94560; font-weight: bold;">${formatCurrency(inv.due)}</td>
+                                        <td>${inv.due === 0 ? '<span class="badge bg-success badge-status">مسددة</span>' : '<span class="badge bg-warning badge-status">غير مسددة</span>'}</td>
+                                        <td><button class="btn btn-sm btn-info rounded-pill" onclick="showInvoiceProductDetails('بيع', ${inv.id})"><i class="fas fa-eye"></i></button></td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        } else {
+            modalHtml += '<p class="text-center py-4">لا توجد فواتير لهذا الموظف</p>';
+        }
+        
+        modalHtml += `
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">إغلاق</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2082,7 +2127,7 @@
         });
     }
 
-    // ==================== PAYMENTS SCREEN (محسن - مع تعديل وحذف الدفعات وإضافة طباعة وتصدير) ====================
+    // ==================== PAYMENTS SCREEN (محسن - مع تعديل وحذف الدفعات وإضافة طباعة مجمعة وتصدير) ====================
     function renderPaymentsScreen() {
         const customers = appData.customers.filter(c => c.type === 'customer' || !c.type);
         
@@ -2206,7 +2251,8 @@
                         </div>
                     ` : ''}
                     <div class="d-flex justify-content-end mt-3 gap-2">
-                        <button class="btn btn-sm btn-outline-secondary rounded-pill" onclick="event.stopPropagation(); printPaymentDetails(${customerId}, ${inv.id})"><i class="fas fa-print"></i> طباعة كشف الفاتورة</button>
+                        <button class="btn btn-sm btn-outline-secondary rounded-pill" onclick="event.stopPropagation(); printInvoice(${inv.id})"><i class="fas fa-print"></i> طباعة الفاتورة</button>
+                        <button class="btn btn-sm btn-outline-secondary rounded-pill" onclick="event.stopPropagation(); printPaymentDetails(${customerId}, ${inv.id})"><i class="fas fa-print"></i> كشف حساب الفاتورة</button>
                     </div>
                 </div>
             `;
@@ -2237,9 +2283,12 @@
                             <h4 style="color: #e94560;">${formatCurrency(totalDue)}</h4>
                         </div>
                     </div>
-                    <div class="col-md-3 d-flex align-items-center justify-content-center">
+                    <div class="col-md-3 d-flex align-items-center justify-content-center gap-2">
+                        <button class="btn btn-outline-light rounded-pill" onclick="printBulkCustomerInvoices(${customerId})">
+                            <i class="fas fa-print"></i> طباعة مجمعة
+                        </button>
                         <button class="btn btn-success rounded-pill" onclick="exportCustomerPayments(${customerId})">
-                            <i class="fas fa-file-excel"></i> تصدير كشف حساب
+                            <i class="fas fa-file-excel"></i> تصدير
                         </button>
                     </div>
                 </div>
@@ -2253,6 +2302,75 @@
         
         document.getElementById('paymentDetailsSection').innerHTML = detailsHtml;
         document.getElementById('paymentDetailsSection').style.display = 'block';
+    }
+    
+    // Bulk print all invoices for customer
+    function printBulkCustomerInvoices(customerId) {
+        const customer = appData.customers.find(c => c.id === customerId);
+        if (!customer) return;
+        const customerInvoices = appData.salesInvoices.filter(inv => inv.customerId === customerId);
+        if (customerInvoices.length === 0) {
+            alert('لا توجد فواتير لهذا العميل');
+            return;
+        }
+        
+        const company = appData.settings.companyName || 'Sernova Pharmaceuticals';
+        const logoHtml = appData.settings.logo ? `<img src="${appData.settings.logo}" style="max-width:120px;max-height:120px;border-radius:10px;">` : '';
+        const commercialRegister = appData.settings.commercialRegister || '';
+        const taxCard = appData.settings.taxCard || '';
+        let infoLine = '';
+        if (commercialRegister) infoLine += `س.ت: ${commercialRegister}`;
+        if (taxCard) { if (infoLine) infoLine += ' | '; infoLine += `ب.ض: ${taxCard}`; }
+        
+        let allInvoicesHtml = '';
+        customerInvoices.forEach(inv => {
+            const invPayments = (appData.payments || []).filter(p => p.type === 'sales' && p.referenceId === inv.id);
+            const itemsRows = inv.items.map(item => {
+                const p = appData.products.find(pr => pr.id === item.productId);
+                return `<tr><td>${p?.name || 'منتج'}</td><td>${p?.batchNumber || '-'}</td><td>${item.quantity}</td><td>${item.price.toFixed(2)}</td><td>${(item.totalAfterDiscount || item.total).toFixed(2)}</td></tr>`;
+            }).join('');
+            const paymentsRows = invPayments.map(p => `<tr><td>${p.date ? new Date(p.date).toLocaleDateString('ar') : '-'}</td><td style="color:#10b981;">${formatCurrency(p.amount)}</td></tr>`).join('');
+            
+            allInvoicesHtml += `
+                <div style="page-break-after: always; margin-bottom: 20px; background:#fff; padding:20px; border:1px solid #ddd; border-radius:10px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #0f3460;padding-bottom:10px;margin-bottom:10px;">
+                        <div>
+                            <h2 style="margin:0;color:#0f3460;">${company}</h2>
+                            ${infoLine ? `<p style="margin:2px 0;color:#e94560;font-weight:bold;">${infoLine}</p>` : ''}
+                        </div>
+                        ${logoHtml ? `<div>${logoHtml}</div>` : ''}
+                    </div>
+                    <h3 style="color:#e94560;text-align:center;">فاتورة بيع - ${inv.invoiceNumber}</h3>
+                    <p><strong>العميل:</strong> ${customer.name} (${customer.code})</p>
+                    <p><strong>التاريخ:</strong> ${new Date(inv.date).toLocaleDateString('ar')}</p>
+                    <p><strong>Sales Manager:</strong> ${inv.salesManager || '-'}</p>
+                    <table style="width:100%;border-collapse:collapse;margin:15px 0;">
+                        <thead><tr style="background:#d3d3d3;"><th>المنتج</th><th>تشغيلة</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead>
+                        <tbody>${itemsRows}</tbody>
+                    </table>
+                    <p><strong>الإجمالي:</strong> ${formatCurrency(inv.total)} | <strong>المدفوع:</strong> ${formatCurrency(inv.paid)} | <strong>المتبقي:</strong> <span style="color:#e94560;">${formatCurrency(inv.due)}</span></p>
+                    ${invPayments.length > 0 ? `
+                        <h5>سجل الدفعات:</h5>
+                        <table style="width:100%;border-collapse:collapse;">
+                            <thead><tr style="background:#d3d3d3;"><th>التاريخ</th><th>المبلغ</th></tr></thead>
+                            <tbody>${paymentsRows}</tbody>
+                        </table>
+                    ` : ''}
+                </div>
+            `;
+        });
+        
+        const win = window.open('', '_blank');
+        win.document.write(`
+            <!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><title>طباعة مجمعة - ${customer.name}</title>
+            <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+            <style>
+                body{font-family:'Tajawal',sans-serif;direction:rtl;background:#f5f5f5;padding:20px;}
+                table td, table th {border:1px solid #ddd;padding:8px;text-align:center;}
+                @media print{body{background:#fff;}}
+            </style></head><body>${allInvoicesHtml}<script>window.print();<\/script></body></html>
+        `);
+        win.document.close();
     }
     
     function editPaymentAmount(paymentId, customerId) {
@@ -3367,7 +3485,7 @@
     
     function editProduct(id) { showProductModal(id); }
     
-    // ==================== REPORTS ====================
+    // ==================== REPORTS (معدلة) ====================
     function getReportTabData(tabType, filter) {
         let data = { title: '', summaryCards: [], tableHeaders: [], tableRows: [], hasFilter: false, isPaymentReport: false, isEmployeeReport: false };
         filter = filter || { searchTerm: '', dateFrom: '', dateTo: '', status: 'all', employeeId: null, customerId: null };
@@ -3395,12 +3513,12 @@
                 const totalSalesPaid = filteredSales.reduce((s, inv) => s + inv.paid, 0);
                 const totalSalesDue = filteredSales.reduce((s, inv) => s + inv.due, 0);
                 data.summaryCards = [
-                    { icon: 'fa-shopping-cart', color: '#6366f1', label: 'عدد الفواتير', value: filteredSales.length, type: 'salesCount' },
-                    { icon: 'fa-dollar-sign', color: '#f59e0b', label: 'إجمالي المبيعات', value: formatCurrency(totalSales), type: 'salesTotal' },
-                    { icon: 'fa-check-circle', color: '#10b981', label: 'المدفوع', value: formatCurrency(totalSalesPaid), type: 'salesPaid' },
-                    { icon: 'fa-credit-card', color: '#e94560', label: 'المتبقي', value: formatCurrency(totalSalesDue), type: 'salesDue' }
+                    { icon: 'fa-shopping-cart', color: '#6366f1', label: 'عدد الفواتير', value: filteredSales.length, type: 'salesCount', filteredData: filteredSales },
+                    { icon: 'fa-dollar-sign', color: '#f59e0b', label: 'إجمالي المبيعات', value: formatCurrency(totalSales), type: 'salesTotal', filteredData: filteredSales },
+                    { icon: 'fa-check-circle', color: '#10b981', label: 'المدفوع', value: formatCurrency(totalSalesPaid), type: 'salesPaid', filteredData: filteredSales },
+                    { icon: 'fa-credit-card', color: '#e94560', label: 'المتبقي', value: formatCurrency(totalSalesDue), type: 'salesDue', filteredData: filteredSales }
                 ];
-                data.tableHeaders = ['رقم الفاتورة', 'العميل', 'Sales Manager', 'التاريخ', 'الإجمالي', 'المدفوع', 'المتبقي', 'الحالة'];
+                data.tableHeaders = ['رقم الفاتورة', 'العميل', 'Sales Manager', 'التاريخ', 'الإجمالي', 'المدفوع', 'المتبقي', 'الحالة', 'تفاصيل'];
                 data.tableRows = filteredSales.map(inv => {
                     const c = appData.customers.find(c => c.id === inv.customerId);
                     return [
@@ -3438,10 +3556,10 @@
                 const totalExpPaid = filteredExp.reduce((s, exp) => s + (exp.paid || 0), 0);
                 const totalExpDue = filteredExp.reduce((s, exp) => s + (exp.due || 0), 0);
                 data.summaryCards = [
-                    { icon: 'fa-receipt', color: '#6366f1', label: 'عدد المصروفات', value: filteredExp.length, type: 'expCount' },
-                    { icon: 'fa-dollar-sign', color: '#f59e0b', label: 'إجمالي المصروفات', value: formatCurrency(totalExp), type: 'expTotal' },
-                    { icon: 'fa-check-circle', color: '#10b981', label: 'المدفوع', value: formatCurrency(totalExpPaid), type: 'expPaid' },
-                    { icon: 'fa-credit-card', color: '#e94560', label: 'المتبقي', value: formatCurrency(totalExpDue), type: 'expDue' }
+                    { icon: 'fa-receipt', color: '#6366f1', label: 'عدد المصروفات', value: filteredExp.length, type: 'expCount', filteredData: filteredExp },
+                    { icon: 'fa-dollar-sign', color: '#f59e0b', label: 'إجمالي المصروفات', value: formatCurrency(totalExp), type: 'expTotal', filteredData: filteredExp },
+                    { icon: 'fa-check-circle', color: '#10b981', label: 'المدفوع', value: formatCurrency(totalExpPaid), type: 'expPaid', filteredData: filteredExp },
+                    { icon: 'fa-credit-card', color: '#e94560', label: 'المتبقي', value: formatCurrency(totalExpDue), type: 'expDue', filteredData: filteredExp }
                 ];
                 data.tableHeaders = ['رقم المصروف', 'المورد', 'البيان', 'الكمية', 'التاريخ', 'التكلفة', 'المدفوع', 'المتبقي'];
                 data.tableRows = filteredExp.map(exp => {
@@ -3471,9 +3589,9 @@
                 const totalStock = filteredProd.reduce((s, p) => s + p.quantity, 0);
                 const totalSold = filteredProd.reduce((s, p) => s + ((p.initialQuantity || p.quantity) - p.quantity), 0);
                 data.summaryCards = [
-                    { icon: 'fa-boxes', color: '#6366f1', label: 'عدد المنتجات', value: filteredProd.length, type: 'prodCount' },
-                    { icon: 'fa-warehouse', color: '#10b981', label: 'المخزون الحالي', value: totalStock, type: 'prodStock' },
-                    { icon: 'fa-truck', color: '#f59e0b', label: 'المباع', value: totalSold, type: 'prodSold' }
+                    { icon: 'fa-boxes', color: '#6366f1', label: 'عدد المنتجات', value: filteredProd.length, type: 'prodCount', filteredData: filteredProd },
+                    { icon: 'fa-warehouse', color: '#10b981', label: 'المخزون الحالي', value: totalStock, type: 'prodStock', filteredData: filteredProd },
+                    { icon: 'fa-truck', color: '#f59e0b', label: 'المباع', value: totalSold, type: 'prodSold', filteredData: filteredProd }
                 ];
                 data.tableHeaders = ['المنتج', 'رقم التشغيلة', 'المخزون الابتدائي', 'المخزون الحالي', 'المباع', 'الحالة'];
                 data.tableRows = filteredProd.map(p => {
@@ -3498,24 +3616,30 @@
                     const term = filter.searchTerm.toLowerCase();
                     filteredCust = filteredCust.filter(c => c.name.toLowerCase().includes(term) || c.code.toLowerCase().includes(term));
                 }
+                if (filter.status === 'paid') filteredCust = filteredCust.filter(c => getCustomerDue(c.id) <= 0);
+                if (filter.status === 'unpaid') filteredCust = filteredCust.filter(c => getCustomerDue(c.id) > 0);
+                
+                const customersWithoutDebt = filteredCust.filter(c => getCustomerDue(c.id) <= 0);
                 const totalCustDue = filteredCust.reduce((s, c) => s + getCustomerDue(c.id), 0);
                 data.summaryCards = [
-                    { icon: 'fa-users', color: '#6366f1', label: 'عدد العملاء', value: filteredCust.length, type: 'custCount' },
-                    { icon: 'fa-file-invoice', color: '#f59e0b', label: 'إجمالي الفواتير', value: appData.salesInvoices.filter(i => filteredCust.find(c => c.id === i.customerId)).length, type: 'custInvoices' },
-                    { icon: 'fa-credit-card', color: '#e94560', label: 'إجمالي الديون', value: formatCurrency(totalCustDue), type: 'custDue' },
-                    { icon: 'fa-check-circle', color: '#10b981', label: 'عملاء بدون ديون', value: filteredCust.filter(c => getCustomerDue(c.id) <= 0).length, type: 'custPaid' }
+                    { icon: 'fa-users', color: '#6366f1', label: 'عدد العملاء', value: filteredCust.length, type: 'custCount', filteredData: filteredCust },
+                    { icon: 'fa-file-invoice', color: '#f59e0b', label: 'إجمالي الفواتير', value: appData.salesInvoices.filter(i => filteredCust.find(c => c.id === i.customerId)).length, type: 'custInvoices', filteredData: filteredCust },
+                    { icon: 'fa-credit-card', color: '#e94560', label: 'إجمالي الديون', value: formatCurrency(totalCustDue), type: 'custDue', filteredData: filteredCust },
+                    { icon: 'fa-check-circle', color: '#10b981', label: 'عملاء بدون ديون', value: customersWithoutDebt.length, type: 'custPaid', filteredData: customersWithoutDebt }
                 ];
-                data.tableHeaders = ['الكود', 'الاسم', 'الهاتف', 'عدد الفواتير', 'الإجمالي', 'المدفوع', 'المتبقي'];
+                data.hasFilter = true;
+                data.tableHeaders = ['الكود', 'الاسم', 'الهاتف', 'عدد الفواتير', 'الإجمالي', 'المدفوع', 'المتبقي', 'عرض الفواتير'];
                 data.tableRows = filteredCust.map(c => {
                     const invs = appData.salesInvoices.filter(i => i.customerId === c.id);
                     return [
                         c.code,
                         c.name,
                         c.phone,
-                        invs.length,
+                        `<button class="btn btn-sm btn-outline-info rounded-pill" onclick="showCustomerInvoicesModal(${c.id})">${invs.length} <i class="fas fa-external-link-alt"></i></button>`,
                         formatCurrency(invs.reduce((s,i) => s + i.total, 0)),
                         `<span style="color: #10b981;">${formatCurrency(invs.reduce((s,i) => s + i.paid, 0))}</span>`,
-                        `<span style="color: #e94560; font-weight: bold;">${formatCurrency(invs.reduce((s,i) => s + i.due, 0))}</span>`
+                        `<span style="color: #e94560; font-weight: bold;">${formatCurrency(invs.reduce((s,i) => s + i.due, 0))}</span>`,
+                        `<button class="btn btn-sm btn-info rounded-pill" onclick="showCustomerInvoicesModal(${c.id})"><i class="fas fa-eye"></i></button>`
                     ];
                 });
                 data.filteredData = filteredCust;
@@ -3548,7 +3672,6 @@
                     employeePerformance = employeePerformance.filter(ep => ep.emp.name.toLowerCase().includes(term) || ep.emp.code.toLowerCase().includes(term));
                 }
                 
-                // Apply date filter to invoices within employee performance
                 if (filter.dateFrom || filter.dateTo) {
                     employeePerformance = employeePerformance.map(ep => {
                         let filteredInvs = [...ep.invoices];
@@ -3566,9 +3689,9 @@
                 }
                 
                 data.summaryCards = [
-                    { icon: 'fa-user-tie', color: '#6366f1', label: 'عدد الموظفين', value: employeePerformance.length, type: 'empCount' },
-                    { icon: 'fa-file-invoice', color: '#f59e0b', label: 'إجمالي فواتير الموظفين', value: employeePerformance.reduce((s, ep) => s + ep.totalInvoices, 0), type: 'empInvoicesTotal' },
-                    { icon: 'fa-dollar-sign', color: '#e94560', label: 'إجمالي مبيعات الموظفين', value: formatCurrency(employeePerformance.reduce((s, ep) => s + ep.totalSales, 0)), type: 'empSalesTotal' }
+                    { icon: 'fa-user-tie', color: '#6366f1', label: 'عدد الموظفين', value: employeePerformance.length, type: 'empCount', filteredData: employeePerformance },
+                    { icon: 'fa-file-invoice', color: '#f59e0b', label: 'إجمالي فواتير الموظفين', value: employeePerformance.reduce((s, ep) => s + ep.totalInvoices, 0), type: 'empInvoicesTotal', filteredData: employeePerformance },
+                    { icon: 'fa-dollar-sign', color: '#e94560', label: 'إجمالي مبيعات الموظفين', value: formatCurrency(employeePerformance.reduce((s, ep) => s + ep.totalSales, 0)), type: 'empSalesTotal', filteredData: employeePerformance }
                 ];
                 data.hasFilter = true;
                 data.tableHeaders = [];
@@ -3585,9 +3708,10 @@
                     const term = filter.searchTerm.toLowerCase();
                     filteredFB = filteredFB.filter(b => b.activeIngredient.toLowerCase().includes(term));
                 }
+                const expiringMaterials = filteredFB.filter(b => b.expiryDate && new Date(b.expiryDate) <= new Date(Date.now() + 90*24*60*60*1000));
                 data.summaryCards = [
-                    { icon: 'fa-industry', color: '#6366f1', label: 'عدد المواد', value: filteredFB.length, type: 'fbCount' },
-                    { icon: 'fa-flask', color: '#f59e0b', label: 'مواد تقترب من الانتهاء', value: filteredFB.filter(b => b.expiryDate && new Date(b.expiryDate) <= new Date(Date.now() + 90*24*60*60*1000)).length, type: 'fbExpiring' }
+                    { icon: 'fa-industry', color: '#6366f1', label: 'عدد المواد', value: filteredFB.length, type: 'fbCount', filteredData: filteredFB },
+                    { icon: 'fa-flask', color: '#f59e0b', label: 'مواد تقترب من الانتهاء', value: expiringMaterials.length, type: 'fbExpiring', filteredData: expiringMaterials }
                 ];
                 data.tableHeaders = ['المادة الفعالة', 'الرصيد', 'وحدة القياس', 'تاريخ الانتهاء', 'تاريخ الجرد'];
                 data.hasFilter = true;
@@ -3604,7 +3728,7 @@
             case 'payments':
                 data.title = 'تقرير السداد والدفعات';
                 data.isPaymentReport = true;
-                const allPaymentsReport = (appData.payments || []).sort((a, b) => new Date(b.date) - new Date(a.date));
+                const allPaymentsReport = (appData.payments || []).filter(p => p.type === 'sales').sort((a, b) => new Date(b.date) - new Date(a.date));
                 let filteredPayments = [...allPaymentsReport];
                 
                 if (filter.customerId) {
@@ -3629,8 +3753,8 @@
                 
                 const totalPaymentsAmount = filteredPayments.reduce((s, p) => s + p.amount, 0);
                 data.summaryCards = [
-                    { icon: 'fa-hand-holding-usd', color: '#6366f1', label: 'إجمالي الدفعات', value: filteredPayments.length, type: 'payCount' },
-                    { icon: 'fa-dollar-sign', color: '#10b981', label: 'إجمالي المبالغ المسددة', value: formatCurrency(totalPaymentsAmount), type: 'payTotal' }
+                    { icon: 'fa-hand-holding-usd', color: '#6366f1', label: 'عدد الدفعات (بيع)', value: filteredPayments.length, type: 'payCount', filteredData: filteredPayments },
+                    { icon: 'fa-dollar-sign', color: '#10b981', label: 'إجمالي المبالغ المسددة', value: formatCurrency(totalPaymentsAmount), type: 'payTotal', filteredData: filteredPayments }
                 ];
                 data.hasFilter = true;
                 data.tableHeaders = [];
@@ -3669,63 +3793,56 @@
         return data;
     }
     
-    function showReportDetailModal(data, type) {
+    function showReportDetailModal(filteredData, type) {
         let title = '', contentHtml = '';
         
         if (type.includes('sales')) {
             title = 'تفاصيل المبيعات';
-            contentHtml = data.length > 0 ? `
+            contentHtml = filteredData && filteredData.length > 0 ? `
                 <table class="table"><thead><tr><th>رقم الفاتورة</th><th>العميل</th><th>التاريخ</th><th>الإجمالي</th><th>المدفوع</th><th>المتبقي</th></tr></thead>
-                <tbody>${data.map(inv => { const c = appData.customers.find(c => c.id === inv.customerId); return `<tr><td>${inv.invoiceNumber}</td><td>${c?.name || '-'}</td><td>${new Date(inv.date).toLocaleDateString('ar')}</td><td>${formatCurrency(inv.total)}</td><td>${formatCurrency(inv.paid)}</td><td style="color:#e94560;">${formatCurrency(inv.due)}</td></tr>`; }).join('')}</tbody></table>
+                <tbody>${filteredData.map(inv => { const c = appData.customers.find(c => c.id === inv.customerId); return `<tr><td>${inv.invoiceNumber}</td><td>${c?.name || '-'}</td><td>${new Date(inv.date).toLocaleDateString('ar')}</td><td>${formatCurrency(inv.total)}</td><td>${formatCurrency(inv.paid)}</td><td style="color:#e94560;">${formatCurrency(inv.due)}</td></tr>`; }).join('')}</tbody></table>
             ` : '<p class="text-center py-4">لا توجد بيانات</p>';
         } else if (type.includes('exp')) {
             title = 'تفاصيل المصروفات';
-            contentHtml = data.length > 0 ? `
+            contentHtml = filteredData && filteredData.length > 0 ? `
                 <table class="table"><thead><tr><th>رقم المصروف</th><th>المورد</th><th>البيان</th><th>التاريخ</th><th>التكلفة</th><th>المدفوع</th><th>المتبقي</th></tr></thead>
-                <tbody>${data.map(exp => { const s = exp.supplierId ? appData.customers.find(c => c.id === exp.supplierId) : null; return `<tr><td>${exp.expenseNumber || '-'}</td><td>${s?.name || '-'}</td><td>${exp.description || '-'}</td><td>${exp.date ? new Date(exp.date).toLocaleDateString('ar') : '-'}</td><td>${formatCurrency(exp.amount || 0)}</td><td style="color:#10b981;">${formatCurrency(exp.paid || 0)}</td><td style="color:#e94560;">${formatCurrency(exp.due || 0)}</td></tr>`; }).join('')}</tbody></table>
+                <tbody>${filteredData.map(exp => { const s = exp.supplierId ? appData.customers.find(c => c.id === exp.supplierId) : null; return `<tr><td>${exp.expenseNumber || '-'}</td><td>${s?.name || '-'}</td><td>${exp.description || '-'}</td><td>${exp.date ? new Date(exp.date).toLocaleDateString('ar') : '-'}</td><td>${formatCurrency(exp.amount || 0)}</td><td style="color:#10b981;">${formatCurrency(exp.paid || 0)}</td><td style="color:#e94560;">${formatCurrency(exp.due || 0)}</td></tr>`; }).join('')}</tbody></table>
             ` : '<p class="text-center py-4">لا توجد بيانات</p>';
         } else if (type.includes('cust')) {
             title = 'تفاصيل العملاء';
-            contentHtml = data.length > 0 ? `
+            contentHtml = filteredData && filteredData.length > 0 ? `
                 <table class="table"><thead><tr><th>الكود</th><th>الاسم</th><th>الهاتف</th><th>عدد الفواتير</th><th>الإجمالي</th><th>المدفوع</th><th>المتبقي</th></tr></thead>
-                <tbody>${data.map(c => { const invs = appData.salesInvoices.filter(i => i.customerId === c.id); return `<tr><td>${c.code}</td><td>${c.name}</td><td>${c.phone}</td><td>${invs.length}</td><td>${formatCurrency(invs.reduce((s,i) => s + i.total, 0))}</td><td style="color:#10b981;">${formatCurrency(invs.reduce((s,i) => s + i.paid, 0))}</td><td style="color:#e94560;">${formatCurrency(invs.reduce((s,i) => s + i.due, 0))}</td></tr>`; }).join('')}</tbody></table>
+                <tbody>${filteredData.map(c => { const invs = appData.salesInvoices.filter(i => i.customerId === c.id); return `<tr><td>${c.code}</td><td>${c.name}</td><td>${c.phone}</td><td>${invs.length}</td><td>${formatCurrency(invs.reduce((s,i) => s + i.total, 0))}</td><td style="color:#10b981;">${formatCurrency(invs.reduce((s,i) => s + i.paid, 0))}</td><td style="color:#e94560;">${formatCurrency(invs.reduce((s,i) => s + i.due, 0))}</td></tr>`; }).join('')}</tbody></table>
             ` : '<p class="text-center py-4">لا توجد بيانات</p>';
         } else if (type.includes('prod')) {
             title = 'تفاصيل المنتجات';
-            contentHtml = data.length > 0 ? `
+            contentHtml = filteredData && filteredData.length > 0 ? `
                 <table class="table"><thead><tr><th>المنتج</th><th>رقم التشغيلة</th><th>المخزون الابتدائي</th><th>المخزون الحالي</th><th>المباع</th></tr></thead>
-                <tbody>${data.map(p => { const sold = (p.initialQuantity || p.quantity) - p.quantity; return `<tr><td>${p.name}</td><td>${p.batchNumber || '-'}</td><td>${p.initialQuantity || p.quantity}</td><td>${p.quantity}</td><td>${sold > 0 ? sold : 0}</td></tr>`; }).join('')}</tbody></table>
+                <tbody>${filteredData.map(p => { const sold = (p.initialQuantity || p.quantity) - p.quantity; return `<tr><td>${p.name}</td><td>${p.batchNumber || '-'}</td><td>${p.initialQuantity || p.quantity}</td><td>${p.quantity}</td><td>${sold > 0 ? sold : 0}</td></tr>`; }).join('')}</tbody></table>
             ` : '<p class="text-center py-4">لا توجد بيانات</p>';
         } else if (type.includes('emp')) {
             title = 'تفاصيل الموظفين';
-            contentHtml = data.length > 0 ? `
+            contentHtml = filteredData && filteredData.length > 0 ? `
                 <table class="table"><thead><tr><th>الموظف</th><th>الكود</th><th>الوظيفة</th><th>عدد الفواتير</th><th>إجمالي المبيعات</th><th>المدفوع</th><th>المتبقي</th></tr></thead>
-                <tbody>${data.map(ep => `<tr><td>${ep.emp.name}</td><td>${ep.emp.code}</td><td>${ep.emp.position}</td><td>${ep.totalInvoices}</td><td>${formatCurrency(ep.totalSales)}</td><td style="color:#10b981;">${formatCurrency(ep.totalPaid)}</td><td style="color:#e94560;">${formatCurrency(ep.totalDue)}</td></tr>`).join('')}</tbody></table>
+                <tbody>${filteredData.map(ep => `<tr><td>${ep.emp.name}</td><td>${ep.emp.code}</td><td>${ep.emp.position}</td><td>${ep.totalInvoices}</td><td>${formatCurrency(ep.totalSales)}</td><td style="color:#10b981;">${formatCurrency(ep.totalPaid)}</td><td style="color:#e94560;">${formatCurrency(ep.totalDue)}</td></tr>`).join('')}</tbody></table>
             ` : '<p class="text-center py-4">لا توجد بيانات</p>';
         } else if (type.includes('fb')) {
             title = 'تفاصيل أرصدة المصنع';
-            contentHtml = data.length > 0 ? `
+            contentHtml = filteredData && filteredData.length > 0 ? `
                 <table class="table"><thead><tr><th>المادة الفعالة</th><th>الرصيد</th><th>وحدة القياس</th><th>تاريخ الانتهاء</th></tr></thead>
-                <tbody>${data.map(b => `<tr><td>${b.activeIngredient}</td><td>${b.balance}</td><td>${b.unit || 'Kg'}</td><td>${b.expiryDate ? new Date(b.expiryDate).toLocaleDateString('ar') : '-'}</td></tr>`).join('')}</tbody></table>
+                <tbody>${filteredData.map(b => `<tr><td>${b.activeIngredient}</td><td>${b.balance}</td><td>${b.unit || 'Kg'}</td><td>${b.expiryDate ? new Date(b.expiryDate).toLocaleDateString('ar') : '-'}</td></tr>`).join('')}</tbody></table>
             ` : '<p class="text-center py-4">لا توجد بيانات</p>';
         } else if (type.includes('pay')) {
             title = 'تفاصيل الدفعات';
-            contentHtml = data.length > 0 ? `
-                <table class="table"><thead><tr><th>التاريخ</th><th>النوع</th><th>المرجع</th><th>العميل/المورد</th><th>المبلغ</th></tr></thead>
-                <tbody>${data.map(p => {
+            contentHtml = filteredData && filteredData.length > 0 ? `
+                <table class="table"><thead><tr><th>التاريخ</th><th>النوع</th><th>المرجع</th><th>العميل</th><th>المبلغ</th></tr></thead>
+                <tbody>${filteredData.map(p => {
                     let reference = '', partyName = '';
-                    if (p.type === 'sales') {
-                        const inv = appData.salesInvoices.find(i => i.id === p.referenceId);
-                        reference = inv?.invoiceNumber || 'محذوفة';
-                        const c = inv ? appData.customers.find(c => c.id === inv.customerId) : null;
-                        partyName = c?.name || '-';
-                    } else if (p.type === 'expense') {
-                        const exp = (appData.expenses || []).find(e => e.id === p.referenceId);
-                        reference = exp?.expenseNumber || 'محذوفة';
-                        const s = exp?.supplierId ? appData.customers.find(c => c.id === exp.supplierId) : null;
-                        partyName = s?.name || '-';
-                    }
-                    return `<tr><td>${p.date ? new Date(p.date).toLocaleDateString('ar') : '-'}</td><td>${p.type === 'sales' ? 'بيع' : 'مصروف'}</td><td>${reference}</td><td>${partyName}</td><td style="color:#10b981;">${formatCurrency(p.amount)}</td></tr>`;
+                    const inv = appData.salesInvoices.find(i => i.id === p.referenceId);
+                    reference = inv?.invoiceNumber || 'محذوفة';
+                    const c = inv ? appData.customers.find(c => c.id === inv.customerId) : null;
+                    partyName = c?.name || '-';
+                    return `<tr><td>${p.date ? new Date(p.date).toLocaleDateString('ar') : '-'}</td><td><span class="badge bg-info">بيع</span></td><td>${reference}</td><td>${partyName}</td><td style="color:#10b981;">${formatCurrency(p.amount)}</td></tr>`;
                 }).join('')}</tbody></table>
             ` : '<p class="text-center py-4">لا توجد بيانات</p>';
         } else if (type.includes('over')) {
@@ -3755,6 +3872,40 @@
             </div>
         `;
         showModal(modalHtml, 'reportDetailModal');
+    }
+    
+    function showCustomerInvoicesModal(customerId) {
+        const customer = appData.customers.find(c => c.id === customerId);
+        if (!customer) return;
+        const invoices = appData.salesInvoices.filter(inv => inv.customerId === customerId).sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        const modalHtml = `
+            <div class="modal fade" id="customerInvoicesModal" tabindex="-1">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header"><h5>فواتير ${customer.name} (${customer.code})</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+                        <div class="modal-body">
+                            ${invoices.length > 0 ? `
+                                <table class="table"><thead><tr><th>رقم الفاتورة</th><th>التاريخ</th><th>المندوب</th><th>الإجمالي</th><th>المدفوع</th><th>المتبقي</th><th>حالة</th><th>تفاصيل</th></tr></thead>
+                                <tbody>${invoices.map(inv => `
+                                    <tr>
+                                        <td><strong>${inv.invoiceNumber}</strong></td>
+                                        <td>${new Date(inv.date).toLocaleDateString('ar')}</td>
+                                        <td>${inv.salesManager || '-'}</td>
+                                        <td>${formatCurrency(inv.total)}</td>
+                                        <td>${formatCurrency(inv.paid)}</td>
+                                        <td style="color: #e94560; font-weight: bold;">${formatCurrency(inv.due)}</td>
+                                        <td>${inv.due === 0 ? '<span class="badge bg-success">مسددة</span>' : '<span class="badge bg-warning">غير مسددة</span>'}</td>
+                                        <td><button class="btn btn-sm btn-info rounded-pill" onclick="showInvoiceProductDetails('بيع', ${inv.id})"><i class="fas fa-eye"></i></button></td>
+                                    </tr>
+                                `).join('')}</tbody></table>
+                            ` : '<p class="text-center py-4">لا توجد فواتير</p>'}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        showModal(modalHtml, 'customerInvoicesModal');
     }
     
     function renderReports() {
@@ -3804,12 +3955,13 @@
         
         let filterHtml = '';
         if (data.hasFilter && !data.isEmployeeReport && !data.isPaymentReport) {
+            const isCustomerReport = currentReportTab === 'customers';
             filterHtml = `
                 <div class="filter-section mb-4">
                     <div class="row g-3">
                         <div class="col-md-3">
                             <label><i class="fas fa-search"></i> بحث</label>
-                            <input type="text" class="form-control" id="reportSearch" placeholder="بحث..." value="${reportsFilter.searchTerm}" oninput="updateReportFilterContent('searchTerm', this.value)" style="border-radius: 10px;">
+                            <input type="text" class="form-control" id="reportSearch" placeholder="ابحث برقم الفاتورة أو اسم العميل..." value="${reportsFilter.searchTerm}" oninput="updateReportFilterContent('searchTerm', this.value)" style="border-radius: 10px;">
                         </div>
                         <div class="col-md-2">
                             <label><i class="fas fa-calendar"></i> من تاريخ</label>
@@ -3819,18 +3971,16 @@
                             <label><i class="fas fa-calendar"></i> إلى تاريخ</label>
                             <input type="date" class="form-control" id="reportDateTo" value="${reportsFilter.dateTo}" onchange="updateReportFilterContent('dateTo', this.value)" style="border-radius: 10px;">
                         </div>
-                        ${currentReportTab === 'sales' ? `
                         <div class="col-md-2">
                             <label><i class="fas fa-check-circle"></i> الحالة</label>
                             <select class="form-control" id="reportStatusFilter" onchange="updateReportFilterContent('status', this.value)" style="border-radius: 10px;">
                                 <option value="all" ${reportsFilter.status === 'all' ? 'selected' : ''}>الكل</option>
-                                <option value="paid" ${reportsFilter.status === 'paid' ? 'selected' : ''}>مسددة</option>
-                                <option value="unpaid" ${reportsFilter.status === 'unpaid' ? 'selected' : ''}>غير مسددة</option>
+                                ${isCustomerReport ? `<option value="paid" ${reportsFilter.status === 'paid' ? 'selected' : ''}>سداد كامل</option><option value="unpaid" ${reportsFilter.status === 'unpaid' ? 'selected' : ''}>غير مسدد</option>` : `<option value="paid" ${reportsFilter.status === 'paid' ? 'selected' : ''}>مسددة</option><option value="unpaid" ${reportsFilter.status === 'unpaid' ? 'selected' : ''}>غير مسددة</option>`}
                             </select>
                         </div>
-                        ` : ''}
                         <div class="col-md-3 d-flex align-items-end gap-2">
                             <button class="btn btn-success rounded-pill" onclick="exportCurrentReportToExcel()"><i class="fas fa-file-excel"></i> تصدير Excel</button>
+                            <button class="btn btn-outline-light rounded-pill" onclick="clearReportFilters()"><i class="fas fa-redo"></i> مسح الفلاتر</button>
                         </div>
                     </div>
                 </div>
@@ -3858,6 +4008,7 @@
                         </div>
                         <div class="col-md-4 d-flex align-items-end gap-2">
                             <button class="btn btn-success rounded-pill" onclick="exportPaymentReportToExcel()"><i class="fas fa-file-excel"></i> تصدير Excel</button>
+                            <button class="btn btn-outline-light rounded-pill" onclick="clearReportFilters()"><i class="fas fa-redo"></i> مسح الفلاتر</button>
                         </div>
                     </div>
                 </div>
@@ -3890,6 +4041,7 @@
                         </div>
                         <div class="col-md-4 d-flex align-items-end gap-2">
                             <button class="btn btn-success rounded-pill" onclick="exportEmployeeReportToExcel()"><i class="fas fa-file-excel"></i> تصدير Excel</button>
+                            <button class="btn btn-outline-light rounded-pill" onclick="clearReportFilters()"><i class="fas fa-redo"></i> مسح الفلاتر</button>
                         </div>
                     </div>
                 </div>
@@ -3905,7 +4057,7 @@
             <div class="row g-3 justify-content-center mb-4">
                 ${data.summaryCards.map((card, i) => `
                     <div class="col-xl-3 col-md-6">
-                        <div class="stat-card" style="border-right: 5px solid ${card.color}; animation-delay: ${0.1 + i * 0.1}s;" onclick="showReportDetailModal(${JSON.stringify(data.filteredData || []).replace(/"/g, '&quot;')}, '${card.type || 'over'}')">
+                        <div class="stat-card" style="border-right: 5px solid ${card.color}; animation-delay: ${0.1 + i * 0.1}s;" onclick="handleReportCardClick('${card.type || 'over'}')">
                             <i class="fas ${card.icon} icon" style="color: ${card.color};"></i>
                             <div>
                                 <small class="label">${card.label}</small>
@@ -3979,49 +4131,17 @@
         } else if (data.isPaymentReport) {
             let filteredPayments = data.paymentsData || [];
             
-            if (reportsFilter.customerId) {
-                const customer = appData.customers.find(c => c.id == reportsFilter.customerId);
-                if (customer) {
-                    const custInvoices = appData.salesInvoices.filter(inv => inv.customerId == reportsFilter.customerId);
-                    const custTotalPaid = custInvoices.reduce((s, inv) => s + inv.paid, 0);
-                    const custTotalAmount = custInvoices.reduce((s, inv) => s + inv.total, 0);
-                    const custTotalDue = custInvoices.reduce((s, inv) => s + inv.due, 0);
-                    
-                    summaryHtml += `
-                        <div class="payment-customer-card mb-4" style="border-right: 4px solid #e94560;">
-                            <h5><i class="fas fa-user"></i> ${customer.name} (${customer.code})</h5>
-                            <div class="row mt-3">
-                                <div class="col-md-3"><div class="p-2 rounded text-center" style="background: rgba(15, 52, 96, 0.5);"><small style="color: #b0b0b0;">إجمالي الفواتير</small><h5 style="color: #ffffff;">${formatCurrency(custTotalAmount)}</h5></div></div>
-                                <div class="col-md-3"><div class="p-2 rounded text-center" style="background: rgba(16, 185, 129, 0.2);"><small style="color: #b0b0b0;">المدفوع</small><h5 style="color: #10b981;">${formatCurrency(custTotalPaid)}</h5></div></div>
-                                <div class="col-md-3"><div class="p-2 rounded text-center" style="background: rgba(233, 69, 96, 0.2);"><small style="color: #b0b0b0;">المتبقي</small><h5 style="color: #e94560;">${formatCurrency(custTotalDue)}</h5></div></div>
-                                <div class="col-md-3"><div class="p-2 rounded text-center" style="background: rgba(99, 102, 241, 0.2);"><small style="color: #b0b0b0;">عدد الدفعات</small><h5 style="color: #6366f1;">${filteredPayments.length}</h5></div></div>
-                            </div>
-                        </div>
-                    `;
-                }
-            }
-            
             if (filteredPayments.length > 0) {
                 tableHtml = `
                     <div class="table-card">
                         <h6 class="mb-3">نتائج البحث (${filteredPayments.length} دفعة)</h6>
                         <div class="table-responsive">
                             <table class="table">
-                                <thead><tr><th>التاريخ</th><th>النوع</th><th>المرجع</th><th>العميل/المورد</th><th>المبلغ</th></tr></thead>
+                                <thead><tr><th>التاريخ</th><th>الفاتورة</th><th>العميل</th><th>المبلغ</th></tr></thead>
                                 <tbody>${filteredPayments.map(p => {
-                                    let reference = '', partyName = '';
-                                    if (p.type === 'sales') {
-                                        const inv = appData.salesInvoices.find(i => i.id === p.referenceId);
-                                        reference = inv?.invoiceNumber || 'محذوفة';
-                                        const c = inv ? appData.customers.find(c => c.id === inv.customerId) : null;
-                                        partyName = c?.name || '-';
-                                    } else if (p.type === 'expense') {
-                                        const exp = (appData.expenses || []).find(e => e.id === p.referenceId);
-                                        reference = exp?.expenseNumber || 'محذوفة';
-                                        const s = exp?.supplierId ? appData.customers.find(c => c.id === exp.supplierId) : null;
-                                        partyName = s?.name || '-';
-                                    }
-                                    return `<tr><td>${p.date ? new Date(p.date).toLocaleDateString('ar') : '-'}</td><td>${p.type === 'sales' ? '<span class="badge bg-info">بيع</span>' : '<span class="badge bg-warning">مصروف</span>'}</td><td>${reference}</td><td>${partyName}</td><td style="color: #10b981; font-weight: bold;">${formatCurrency(p.amount)}</td></tr>`;
+                                    const inv = appData.salesInvoices.find(i => i.id === p.referenceId);
+                                    const c = inv ? appData.customers.find(c => c.id === inv.customerId) : null;
+                                    return `<tr><td>${p.date ? new Date(p.date).toLocaleDateString('ar') : '-'}</td><td>${inv?.invoiceNumber || 'محذوفة'}</td><td>${c?.name || '-'}</td><td style="color: #10b981; font-weight: bold;">${formatCurrency(p.amount)}</td></tr>`;
                                 }).join('')}</tbody>
                             </table>
                         </div>
@@ -4036,7 +4156,7 @@
                     <h6 class="mb-3">نتائج البحث (${data.tableRows.length})</h6>
                     <div class="table-responsive">
                         <table class="table">
-                            <thead><tr>${data.tableHeaders.map(h => `<th>${h}</th>`).join('')}${currentReportTab === 'sales' ? '<th>تفاصيل</th>' : ''}</tr></thead>
+                            <thead><tr>${data.tableHeaders.map(h => `<th>${h}</th>`).join('')}</tr></thead>
                             <tbody>${data.tableRows.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join('')}</tr>`).join('')}</tbody>
                         </table>
                     </div>
@@ -4052,6 +4172,24 @@
         
         const contentHtml = filterHtml + summaryHtml + tableHtml;
         document.getElementById('reportContentArea').innerHTML = contentHtml;
+        
+        // Re-set active report tab button
+        document.querySelectorAll('.report-type-btn').forEach(btn => btn.classList.remove('active'));
+        const activeBtn = document.querySelector(`.report-type-btn[onclick="switchReportTab('${currentReportTab}')"]`);
+        if (activeBtn) activeBtn.classList.add('active');
+    }
+    
+    function clearReportFilters() {
+        reportsFilter = { searchTerm: '', type: 'all', dateFrom: '', dateTo: '', status: 'all', employeeId: null, customerId: null };
+        renderReportContent();
+    }
+    
+    function handleReportCardClick(type) {
+        const data = getReportTabData(currentReportTab, reportsFilter);
+        const cardData = data.summaryCards.find(c => c.type === type);
+        if (cardData && cardData.filteredData) {
+            showReportDetailModal(cardData.filteredData, type);
+        }
     }
     
     function updateReportFilterContent(key, value) {
@@ -4087,7 +4225,7 @@
             [company],
             [data.title],
             [''],
-            data.tableHeaders
+            data.tableHeaders.map(h => h.replace(/<[^>]*>/g, ''))
         ];
         data.tableRows.forEach(row => {
             const cleanRow = row.map(cell => typeof cell === 'string' ? cell.replace(/<[^>]*>/g, '') : cell);
@@ -4138,22 +4276,12 @@
             [company],
             ['تقرير السداد والدفعات'],
             [''],
-            ['التاريخ', 'النوع', 'المرجع', 'العميل/المورد', 'المبلغ']
+            ['التاريخ', 'الفاتورة', 'العميل', 'المبلغ']
         ];
         filteredPayments.forEach(p => {
-            let reference = '', partyName = '';
-            if (p.type === 'sales') {
-                const inv = appData.salesInvoices.find(i => i.id === p.referenceId);
-                reference = inv?.invoiceNumber || 'محذوفة';
-                const c = inv ? appData.customers.find(c => c.id === inv.customerId) : null;
-                partyName = c?.name || '-';
-            } else if (p.type === 'expense') {
-                const exp = (appData.expenses || []).find(e => e.id === p.referenceId);
-                reference = exp?.expenseNumber || 'محذوفة';
-                const s = exp?.supplierId ? appData.customers.find(c => c.id === exp.supplierId) : null;
-                partyName = s?.name || '-';
-            }
-            wsData.push([p.date || '', p.type === 'sales' ? 'بيع' : 'مصروف', reference, partyName, p.amount]);
+            const inv = appData.salesInvoices.find(i => i.id === p.referenceId);
+            const c = inv ? appData.customers.find(c => c.id === inv.customerId) : null;
+            wsData.push([p.date || '', inv?.invoiceNumber || 'محذوفة', c?.name || '-', p.amount]);
         });
         
         const ws = XLSX.utils.aoa_to_sheet(wsData);
