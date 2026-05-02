@@ -1121,7 +1121,7 @@
                 if (!e.quantity) e.quantity = 0;
             });
             if (!data.factoryBalances) data.factoryBalances = [];
-            data.factoryBalances.forEach(b => { if (!b.unit) b.unit = 'Kg'; });
+            data.factoryBalances.forEach(b => { if (!b.unit) b.unit = 'kg'; });
             if (!data.employees) data.employees = [];
             data.employees.forEach(emp => { if (!emp.code) emp.code = generateEmployeeCode(emp.id); });
             customerCounter = Math.max(...data.customers.map(c => parseInt(c.code?.split('-')[1]) || 0), 0);
@@ -1555,8 +1555,7 @@
             appData.salesInvoices.forEach(inv => { const c = appData.customers.find(c => c.id === inv.customerId);
                 wsData.push([inv.invoiceNumber, c?.name || '', inv.date, inv.total, inv.paid, inv.due, inv
                     .salesManager || '', inv.due === 0 ? (lang === 'ar' ? 'مسددة' : 'Paid') : (lang === 'ar' ?
-                        'غير مسددة' : 'Unpaid')
-                ]); });
+                        'غير مسددة' : 'Unpaid')]); });
             const ws = XLSX.utils.aoa_to_sheet(wsData);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, lang === 'ar' ? 'فواتير_البيع' : 'Sales_Invoices');
@@ -1571,7 +1570,7 @@
             <div class="d-flex justify-content-between mb-4"><h5>💰 ${t('purchases')}</h5><button class="btn btn-primary" onclick="showExpenseModal()"><i class="fas fa-plus"></i> ${lang==='ar'?'مصروف جديد':'New Expense'}</button></div>
             <div class="search-box"><i class="fas fa-search"></i><input type="text" class="form-control" id="expenseSearch" placeholder="${lang==='ar'?'بحث...':'Search...'}" onkeyup="filterTableContains('expensesTable', 'expenseSearch')"></div>
             <div class="table-card"><div class="d-flex justify-content-end mb-3"><button class="btn btn-success rounded-pill" onclick="exportExpensesToExcel()"><i class="fas fa-file-excel"></i> ${t('export')} Excel</button></div>
-            <div class="table-responsive"><table class="table" id="expensesTable"><thead><tr><th>${lang==='ar'?'رقم المصروف':'Expense #'}</th><th>${lang==='ar'?'المورد':'Supplier'}</th><th>${lang==='ar'?'البيان':'Description'}</th><th>${lang==='ar'?'الكمية':'Qty'}</th><th>${lang==='ar'?'النوع':'Type'}</th><th>${t('date')}</th><th>${lang==='ar'?'التكلفة':'Cost'}</th><th>${t('paid')}</th><th>${t('due')}</th><th>${lang==='ar'?'ملاحظات':'Notes'}</th><th>${t('actions')}</th></tr></thead><tbody>${expenses.map(exp=>{const supplier=exp.supplierId?appData.customers.find(c=>c.id===exp.supplierId):null;return`<tr data-search="${exp.description||''} ${supplier?.name||''} ${exp.notes||''} ${exp.expenseNumber||''} ${exp.expenseType||''}"><td><strong>${exp.expenseNumber||'-'}</strong></td><td>${supplier?.name||'-'}</td><td>${exp.description||'-'}</td><td>${exp.quantity||0}</td><td><span class="badge bg-secondary">${exp.expenseType||'مصروفات تشغيلية'}</span></td><td>${exp.date?new Date(exp.date).toLocaleDateString(lang==='ar'?'ar':'en'):'-'}</td><td>${formatCurrency(exp.amount||0)}</td><td style="color:#10b981;">${formatCurrency(exp.paid||0)}</td><td style="color:#e94560;">${formatCurrency(exp.due||0)}</td><td>${exp.notes||'-'}</td><td><div class="action-btns-group"><button class="btn btn-sm btn-outline-info" onclick="editExpense(${exp.id})" title="${t('edit')}"><i class="fas fa-edit"></i></button> <button class="btn btn-sm btn-outline-danger" onclick="deleteExpenseRequest(${exp.id})" title="${t('delete')}"><i class="fas fa-trash"></i></button></div></td></tr>`;}).join('')||`<tr><td colspan="11" class="text-center py-4">${lang==='ar'?'لا توجد مصروفات':'No expenses'}</td></tr>`}</tbody></table></div></div>`;
+            <div class="table-responsive"><table class="table" id="expensesTable"><thead><tr><th>${lang==='ar'?'رقم المصروف':'Expense #'}</th><th>${lang==='ar'?'النوع':'Type'}</th><th>${lang==='ar'?'البيان':'Description'}</th><th>${lang==='ar'?'الكمية':'Qty'}</th><th>${t('date')}</th><th>${lang==='ar'?'التكلفة':'Cost'}</th><th>${t('paid')}</th><th>${t('due')}</th><th>${lang==='ar'?'ملاحظات':'Notes'}</th><th>${t('actions')}</th></tr></thead><tbody>${expenses.map(exp=>{return`<tr data-search="${exp.description||''} ${exp.notes||''} ${exp.expenseNumber||''} ${exp.expenseType||''}"><td><strong>${exp.expenseNumber||'-'}</strong></td><td><span class="badge bg-secondary">${exp.expenseType||'مصروفات تشغيلية'}</span></td><td>${exp.description||'-'}</td><td>${exp.quantity||0}</td><td>${exp.date?new Date(exp.date).toLocaleDateString(lang==='ar'?'ar':'en'):'-'}</td><td>${formatCurrency(exp.amount||0)}</td><td style="color:#10b981;">${formatCurrency(exp.paid||0)}</td><td style="color:#e94560;">${formatCurrency(exp.due||0)}</td><td>${exp.notes||'-'}</td><td><div class="action-btns-group"><button class="btn btn-sm btn-outline-info" onclick="editExpense(${exp.id})" title="${t('edit')}"><i class="fas fa-edit"></i></button> <button class="btn btn-sm btn-outline-danger" onclick="deleteExpenseRequest(${exp.id})" title="${t('delete')}"><i class="fas fa-trash"></i></button></div></td></tr>`;}).join('')||`<tr><td colspan="10" class="text-center py-4">${lang==='ar'?'لا توجد مصروفات':'No expenses'}</td></tr>`}</tbody></table></div></div>`;
             document.getElementById('pageContent').innerHTML = html;
             document.getElementById('pageTitle').innerHTML = '💰 ' + t('purchases');
         }
@@ -1583,18 +1582,15 @@
                 [company],
                 [lang === 'ar' ? 'تقرير المصروفات' : 'Expenses Report'],
                 [''],
-                [lang === 'ar' ? 'رقم المصروف' : 'Expense #', lang === 'ar' ? 'المورد' : 'Supplier', lang === 'ar' ?
-                    'البيان' : 'Description', lang === 'ar' ? 'الكمية' : 'Qty', lang === 'ar' ? 'النوع' : 'Type',
+                [lang === 'ar' ? 'رقم المصروف' : 'Expense #', lang === 'ar' ? 'النوع' : 'Type', lang === 'ar' ?
+                    'البيان' : 'Description', lang === 'ar' ? 'الكمية' : 'Qty',
                     t('date'), lang === 'ar' ? 'التكلفة' : 'Cost', t('paid'), t('due'), lang === 'ar' ? 'ملاحظات' :
                     'Notes'
                 ]
             ];
-            (appData.expenses || []).forEach(exp => { const supplier = exp.supplierId ? appData.customers.find(c => c
-                    .id === exp.supplierId) : null;
-                wsData.push([exp.expenseNumber || '-', supplier?.name || '-', exp.description || '-', exp.quantity ||
-                    0, exp.expenseType || 'مصروفات تشغيلية', exp.date || '', exp.amount || 0, exp.paid || 0, exp
-                    .due || 0, exp.notes || '-'
-                ]); });
+            (appData.expenses || []).forEach(exp => {
+                wsData.push([exp.expenseNumber || '-', exp.expenseType || 'مصروفات تشغيلية', exp.description || '-', exp.quantity || 0, exp.date || '', exp.amount || 0, exp.paid || 0, exp.due || 0, exp.notes || '-']);
+            });
             const ws = XLSX.utils.aoa_to_sheet(wsData);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, lang === 'ar' ? 'المصروفات' : 'Expenses');
@@ -1609,7 +1605,7 @@
             <div class="d-flex justify-content-between mb-4"><h5>🏭 ${t('factory_balances')}</h5><button class="btn btn-primary" onclick="showFactoryBalanceModal()"><i class="fas fa-plus"></i> ${lang==='ar'?'إضافة رصيد':'Add Balance'}</button></div>
             <div class="search-box"><i class="fas fa-search"></i><input type="text" class="form-control" id="factoryBalanceSearch" placeholder="${lang==='ar'?'بحث بالمادة الفعالة...':'Search by active ingredient...'}" onkeyup="filterTableContains('factoryBalancesTable', 'factoryBalanceSearch')"></div>
             <div class="table-card"><div class="d-flex justify-content-end mb-3"><button class="btn btn-success rounded-pill" onclick="exportFactoryBalancesToExcel()"><i class="fas fa-file-excel"></i> ${t('export')} Excel</button></div>
-            <div class="table-responsive"><table class="table" id="factoryBalancesTable"><thead><tr><th>${lang==='ar'?'المادة الفعالة':'Active Ingredient'}</th><th>${lang==='ar'?'الرصيد':'Balance'}</th><th>${lang==='ar'?'وحدة القياس':'Unit'}</th><th>${lang==='ar'?'تاريخ الانتهاء':'Expiry Date'}</th><th>${lang==='ar'?'تاريخ الجرد':'Inventory Date'}</th><th>${t('actions')}</th></tr></thead><tbody>${balances.map(b=>`<tr data-search="${b.activeIngredient}"><td><strong>${b.activeIngredient}</strong></td><td>${b.balance}</td><td><span class="badge bg-info">${b.unit||'Kg'}</span></td><td>${b.expiryDate?new Date(b.expiryDate).toLocaleDateString(lang==='ar'?'ar':'en'):'-'}</td><td>${b.inventoryDate?new Date(b.inventoryDate).toLocaleDateString(lang==='ar'?'ar':'en'):'-'}</td><td><button class="btn btn-sm btn-outline-info" onclick="editFactoryBalance(${b.id})"><i class="fas fa-edit"></i></button> <button class="btn btn-sm btn-outline-danger" onclick="deleteFactoryBalanceRequest(${b.id})"><i class="fas fa-trash"></i></button></td></tr>`).join('')||`<tr><td colspan="6" class="text-center py-4">${lang==='ar'?'لا توجد أرصدة':'No balances'}</td></tr>`}</tbody></table></div></div>`;
+            <div class="table-responsive"><table class="table" id="factoryBalancesTable"><thead><tr><th>${lang==='ar'?'المادة الفعالة':'Active Ingredient'}</th><th>${lang==='ar'?'الرصيد':'Balance'}</th><th>${lang==='ar'?'وحدة القياس':'Unit'}</th><th>${lang==='ar'?'تاريخ الانتهاء':'Expiry Date'}</th><th>${lang==='ar'?'تاريخ الجرد':'Inventory Date'}</th><th>${t('actions')}</th></tr></thead><tbody>${balances.map(b=>`<tr data-search="${b.activeIngredient}"><td><strong>${b.activeIngredient}</strong></td><td>${b.balance}</td><td><span class="badge bg-info">${b.unit||'kg'}</span></td><td>${b.expiryDate?new Date(b.expiryDate).toLocaleDateString(lang==='ar'?'ar':'en'):'-'}</td><td>${b.inventoryDate?new Date(b.inventoryDate).toLocaleDateString(lang==='ar'?'ar':'en'):'-'}</td><td><button class="btn btn-sm btn-outline-info" onclick="editFactoryBalance(${b.id})"><i class="fas fa-edit"></i></button> <button class="btn btn-sm btn-outline-danger" onclick="deleteFactoryBalanceRequest(${b.id})"><i class="fas fa-trash"></i></button></td></tr>`).join('')||`<tr><td colspan="6" class="text-center py-4">${lang==='ar'?'لا توجد أرصدة':'No balances'}</td></tr>`}</tbody></table></div></div>`;
             document.getElementById('pageContent').innerHTML = html;
             document.getElementById('pageTitle').innerHTML = '🏭 ' + t('factory_balances');
         }
@@ -1627,7 +1623,7 @@
                 ]
             ];
             (appData.factoryBalances || []).forEach(b => { wsData.push([b.activeIngredient, b.balance, b.unit ||
-                    'Kg', b.expiryDate || '', b.inventoryDate || '']); });
+                    'kg', b.expiryDate || '', b.inventoryDate || '']); });
             const ws = XLSX.utils.aoa_to_sheet(wsData);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, lang === 'ar' ? 'ارصدة_المصنع' : 'Factory_Balances');
@@ -1637,10 +1633,10 @@
 
         function showFactoryBalanceModal(id = null) {
             const bal = id ? (appData.factoryBalances || []).find(b => b.id === id) : null;
-            const units = ['Kg', 'G', 'Mg', 'Unit'];
+            const units = ['kg', 'gm', 'mg', 'unit'];
             const lang = currentLang;
             const modalHtml = `
-            <div class="modal fade" id="factoryBalanceModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5><i class="fas fa-industry"></i> ${bal?(lang==='ar'?'تعديل رصيد':'Edit Balance'):(lang==='ar'?'رصيد جديد':'New Balance')}</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="hidden" id="factoryBalanceId" value="${bal?.id||''}"><div class="mb-3"><label class="fw-bold">${lang==='ar'?'المادة الفعالة':'Active Ingredient'}</label><input id="factoryActiveIngredient" class="form-control" value="${bal?.activeIngredient||''}"></div><div class="mb-3"><label class="fw-bold">${lang==='ar'?'الرصيد':'Balance'}</label><input id="factoryBalance" type="number" class="form-control" value="${bal?.balance||0}"></div><div class="mb-3"><label class="fw-bold">${lang==='ar'?'وحدة القياس':'Unit'}</label><select id="factoryUnit" class="form-control">${units.map(u=>`<option value="${u}" ${(bal?.unit||'Kg')===u?'selected':''}>${u}</option>`).join('')}</select></div><div class="mb-3"><label class="fw-bold">${lang==='ar'?'تاريخ الانتهاء':'Expiry Date'}</label><input id="factoryExpiryDate" type="date" class="form-control" value="${bal?.expiryDate||''}"></div><div class="mb-3"><label class="fw-bold">${lang==='ar'?'تاريخ الجرد':'Inventory Date'}</label><input id="factoryInventoryDate" type="date" class="form-control" value="${bal?.inventoryDate||''}"></div></div><div class="modal-footer"><button class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">${t('cancel')}</button><button class="btn btn-primary rounded-pill" onclick="saveFactoryBalance()">${t('save')}</button></div></div></div></div>`;
+            <div class="modal fade" id="factoryBalanceModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5><i class="fas fa-industry"></i> ${bal?(lang==='ar'?'تعديل رصيد':'Edit Balance'):(lang==='ar'?'رصيد جديد':'New Balance')}</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="hidden" id="factoryBalanceId" value="${bal?.id||''}"><div class="mb-3"><label class="fw-bold">${lang==='ar'?'المادة الفعالة':'Active Ingredient'}</label><input id="factoryActiveIngredient" class="form-control" value="${bal?.activeIngredient||''}"></div><div class="mb-3"><label class="fw-bold">${lang==='ar'?'الرصيد':'Balance'}</label><input id="factoryBalance" type="number" class="form-control" value="${bal?.balance||0}"></div><div class="mb-3"><label class="fw-bold">${lang==='ar'?'وحدة القياس':'Unit'}</label><select id="factoryUnit" class="form-control">${units.map(u=>`<option value="${u}" ${(bal?.unit||'kg')===u?'selected':''}>${u}</option>`).join('')}</select></div><div class="mb-3"><label class="fw-bold">${lang==='ar'?'تاريخ الانتهاء':'Expiry Date'}</label><input id="factoryExpiryDate" type="date" class="form-control" value="${bal?.expiryDate||''}"></div><div class="mb-3"><label class="fw-bold">${lang==='ar'?'تاريخ الجرد':'Inventory Date'}</label><input id="factoryInventoryDate" type="date" class="form-control" value="${bal?.inventoryDate||''}"></div></div><div class="modal-footer"><button class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">${t('cancel')}</button><button class="btn btn-primary rounded-pill" onclick="saveFactoryBalance()">${t('save')}</button></div></div></div></div>`;
             showModal(modalHtml, 'factoryBalanceModal');
         }
 
@@ -1977,17 +1973,13 @@
 
         function showExpenseModal(id = null) {
             const exp = id ? (appData.expenses || []).find(e => e.id === id) : null;
-            const suppliers = appData.customers.filter(c => c.type === 'supplier');
             const lang = currentLang;
             const expenseTypes = ['مصروفات الانتاج والتصنيع', 'مصروفات تشغيلية', 'مصروفات تسويقية', 'مصروفات تمويلية'];
-            const supplierOptions = suppliers.map(s =>
-                `<option value="${s.id}" ${exp?.supplierId===s.id?'selected':''}>${s.name} (${s.code})</option>`).join(
-                '');
             const typeOptions = expenseTypes.map(et =>
                 `<option value="${et}" ${(exp?.expenseType||'مصروفات تشغيلية')===et?'selected':''}>${et}</option>`).join(
                 '');
             const modalHtml = `
-            <div class="modal fade" id="expenseModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><h5><i class="fas fa-money-bill-wave"></i> ${exp?(lang==='ar'?'تعديل مصروف':'Edit Expense'):(lang==='ar'?'مصروف جديد':'New Expense')}</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="hidden" id="expenseId" value="${exp?.id||''}"><div class="row g-3 mb-4"><div class="col-md-6"><label class="fw-bold mb-2"><i class="fas fa-user-tie"></i> ${lang==='ar'?'المورد':'Supplier'}</label><select class="form-control select2-search" id="expenseSupplierSelect" data-placeholder="${lang==='ar'?'ابحث واختر مورد...':'Search & Select Supplier...'}" style="width:100%;border-radius:12px;"><option value="">-- ${lang==='ar'?'اختر مورد':'Select Supplier'} --</option>${supplierOptions}</select></div><div class="col-md-3"><label class="fw-bold mb-2"><i class="fas fa-calendar"></i> ${t('date')}</label><input type="date" class="form-control" id="expenseDate" value="${exp?.date||new Date().toISOString().split('T')[0]}" style="border-radius:12px;"></div><div class="col-md-3"><label class="fw-bold mb-2"><i class="fas fa-tag"></i> ${lang==='ar'?'نوع المصروف':'Expense Type'}</label><select class="form-control" id="expenseTypeSelect" style="border-radius:12px;">${typeOptions}</select></div></div><div class="row g-3 mb-4"><div class="col-md-8"><label class="fw-bold mb-2"><i class="fas fa-file-alt"></i> ${lang==='ar'?'البيان':'Description'}</label><input type="text" class="form-control" id="expenseDescription" value="${exp?.description||''}" placeholder="${lang==='ar'?'أدخل بيان المصروف':'Enter expense description'}" style="border-radius:12px;"></div><div class="col-md-4"><label class="fw-bold mb-2"><i class="fas fa-cubes"></i> ${lang==='ar'?'الكمية':'Quantity'}</label><input type="number" class="form-control" id="expenseQuantity" value="${exp?.quantity||0}" step="0.01" style="border-radius:12px;"></div></div><div class="row g-3 mb-4"><div class="col-md-4"><label class="fw-bold mb-2"><i class="fas fa-dollar-sign"></i> ${lang==='ar'?'التكلفة':'Cost'}</label><input type="number" class="form-control" id="expenseAmount" value="${exp?.amount||0}" step="0.01" style="border-radius:12px;" onchange="calculateExpenseDue()"></div><div class="col-md-4"><label class="fw-bold mb-2"><i class="fas fa-hand-holding-usd"></i> ${t('paid')}</label><input type="number" class="form-control" id="expensePaid" value="${exp?.paid||0}" step="0.01" style="border-radius:12px;" onchange="calculateExpenseDue()"></div><div class="col-md-4"><label class="fw-bold mb-2"><i class="fas fa-calculator"></i> ${t('due')}</label><input type="text" class="form-control" id="expenseDue" value="${exp?.due||0}" readonly style="background:rgba(233,69,96,0.2);border-radius:12px;color:#e94560;font-weight:bold;"></div></div><div class="row g-3 mb-4"><div class="col-md-12"><label class="fw-bold mb-2"><i class="fas fa-sticky-note"></i> ${lang==='ar'?'ملاحظات':'Notes'}</label><input type="text" class="form-control" id="expenseNotes" value="${exp?.notes||''}" placeholder="${lang==='ar'?'ملاحظات إضافية':'Additional notes'}" style="border-radius:12px;"></div></div></div><div class="modal-footer"><button class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">${t('cancel')}</button><button class="btn btn-primary rounded-pill" onclick="saveExpense()"><i class="fas fa-save"></i> ${lang==='ar'?'حفظ المصروف':'Save Expense'}</button></div></div></div></div>`;
+            <div class="modal fade" id="expenseModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><h5><i class="fas fa-money-bill-wave"></i> ${exp?(lang==='ar'?'تعديل مصروف':'Edit Expense'):(lang==='ar'?'مصروف جديد':'New Expense')}</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="hidden" id="expenseId" value="${exp?.id||''}"><div class="row g-3 mb-4"><div class="col-md-6"><label class="fw-bold mb-2"><i class="fas fa-tag"></i> ${lang==='ar'?'نوع المصروف':'Expense Type'}</label><select class="form-control" id="expenseTypeSelect" style="border-radius:12px;">${typeOptions}</select></div><div class="col-md-3"><label class="fw-bold mb-2"><i class="fas fa-calendar"></i> ${t('date')}</label><input type="date" class="form-control" id="expenseDate" value="${exp?.date||new Date().toISOString().split('T')[0]}" style="border-radius:12px;"></div><div class="col-md-3"><label class="fw-bold mb-2"><i class="fas fa-cubes"></i> ${lang==='ar'?'الكمية':'Quantity'}</label><input type="number" class="form-control" id="expenseQuantity" value="${exp?.quantity||0}" step="0.01" style="border-radius:12px;"></div></div><div class="row g-3 mb-4"><div class="col-md-12"><label class="fw-bold mb-2"><i class="fas fa-file-alt"></i> ${lang==='ar'?'البيان':'Description'}</label><input type="text" class="form-control" id="expenseDescription" value="${exp?.description||''}" placeholder="${lang==='ar'?'أدخل بيان المصروف':'Enter expense description'}" style="border-radius:12px;"></div></div><div class="row g-3 mb-4"><div class="col-md-4"><label class="fw-bold mb-2"><i class="fas fa-dollar-sign"></i> ${lang==='ar'?'التكلفة':'Cost'}</label><input type="number" class="form-control" id="expenseAmount" value="${exp?.amount||0}" step="0.01" style="border-radius:12px;" onchange="calculateExpenseDue()"></div><div class="col-md-4"><label class="fw-bold mb-2"><i class="fas fa-hand-holding-usd"></i> ${t('paid')}</label><input type="number" class="form-control" id="expensePaid" value="${exp?.paid||0}" step="0.01" style="border-radius:12px;" onchange="calculateExpenseDue()"></div><div class="col-md-4"><label class="fw-bold mb-2"><i class="fas fa-calculator"></i> ${t('due')}</label><input type="text" class="form-control" id="expenseDue" value="${exp?.due||0}" readonly style="background:rgba(233,69,96,0.2);border-radius:12px;color:#e94560;font-weight:bold;"></div></div><div class="row g-3 mb-4"><div class="col-md-12"><label class="fw-bold mb-2"><i class="fas fa-sticky-note"></i> ${lang==='ar'?'ملاحظات':'Notes'}</label><input type="text" class="form-control" id="expenseNotes" value="${exp?.notes||''}" placeholder="${lang==='ar'?'ملاحظات إضافية':'Additional notes'}" style="border-radius:12px;"></div></div></div><div class="modal-footer"><button class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">${t('cancel')}</button><button class="btn btn-primary rounded-pill" onclick="saveExpense()"><i class="fas fa-save"></i> ${lang==='ar'?'حفظ المصروف':'Save Expense'}</button></div></div></div></div>`;
             showModal(modalHtml, 'expenseModal');
             setTimeout(() => calculateExpenseDue(), 100);
         }
@@ -2002,7 +1994,6 @@
 
         function saveExpense() {
             const id = document.getElementById('expenseId').value;
-            const supplierId = $('#expenseSupplierSelect').val() ? parseInt($('#expenseSupplierSelect').val()) : null;
             const description = document.getElementById('expenseDescription').value.trim();
             const quantity = parseFloat(document.getElementById('expenseQuantity').value) || 0;
             const amount = parseFloat(document.getElementById('expenseAmount').value) || 0;
@@ -2018,7 +2009,6 @@
                 id: id ? parseInt(id) : Date.now(),
                 expenseNumber: id ? ((appData.expenses || []).find(e => e.id === parseInt(id))?.expenseNumber ||
                     generateExpenseNumber()) : generateExpenseNumber(),
-                supplierId: supplierId,
                 description: description,
                 quantity: quantity,
                 amount: amount,
@@ -2348,10 +2338,12 @@
                         filteredExp = filteredExp.filter(exp => exp.expenseType === filter.expenseTypeFilter);
                     }
                     if (filter.searchTerm) { const term = filter.searchTerm.toLowerCase();
-                        filteredExp = filteredExp.filter(exp => { const s = exp.supplierId ? appData.customers.find(c => c.id === exp.supplierId) : null; return (exp.description || '').toLowerCase().includes(term) || (s?.name || '').toLowerCase().includes(term) || (exp.expenseNumber || '').toLowerCase().includes(term); }); }
+                        filteredExp = filteredExp.filter(exp => { return (exp.description || '').toLowerCase().includes(term) || (exp.expenseNumber || '').toLowerCase().includes(term); }); }
                     if (filter.dateFrom) filteredExp = filteredExp.filter(exp => exp.date >= filter.dateFrom);
                     if (filter.dateTo) filteredExp = filteredExp.filter(exp => exp.date <= filter.dateTo);
                     const totalExp = filteredExp.reduce((s, exp) => s + (exp.amount || 0), 0);
+                    const totalExpPaid = filteredExp.reduce((s, exp) => s + (exp.paid || 0), 0);
+                    const totalExpDue = filteredExp.reduce((s, exp) => s + (exp.due || 0), 0);
                     const prodExp = filteredExp.filter(e => e.expenseType === 'مصروفات الانتاج والتصنيع').reduce((s, exp) => s + (exp.amount || 0), 0);
                     const operExp = filteredExp.filter(e => e.expenseType === 'مصروفات تشغيلية').reduce((s, exp) => s + (exp.amount || 0), 0);
                     const marketExp = filteredExp.filter(e => e.expenseType === 'مصروفات تسويقية').reduce((s, exp) => s + (exp.amount || 0), 0);
@@ -2363,8 +2355,8 @@
                         { icon: 'fa-bullhorn', color: '#14b8a6', label: lang === 'ar' ? 'مصروفات تسويقية' : 'Marketing', value: formatReportCurrency(marketExp), type: 'expMarket', filteredData: filteredExp.filter(e => e.expenseType === 'مصروفات تسويقية') },
                         { icon: 'fa-chart-line', color: '#e94560', label: lang === 'ar' ? 'مصروفات تمويلية' : 'Financing', value: formatReportCurrency(finExp), type: 'expFin', filteredData: filteredExp.filter(e => e.expenseType === 'مصروفات تمويلية') }
                     ];
-                    data.tableHeaders = [lang === 'ar' ? 'رقم المصروف' : 'Expense #', lang === 'ar' ? 'المورد' : 'Supplier', lang === 'ar' ? 'البيان' : 'Description', lang === 'ar' ? 'الكمية' : 'Qty', lang === 'ar' ? 'النوع' : 'Type', t('date'), lang === 'ar' ? 'التكلفة' : 'Cost', t('paid'), t('due')];
-                    data.tableRows = filteredExp.map(exp => { const s = exp.supplierId ? appData.customers.find(c => c.id === exp.supplierId) : null; return [exp.expenseNumber || '-', s?.name || '-', exp.description || '-', exp.quantity || 0, exp.expenseType || 'مصروفات تشغيلية', exp.date ? new Date(exp.date).toLocaleDateString(lang === 'ar' ? 'ar' : 'en') : '-', formatCurrency(exp.amount || 0), `<span style="color:#10b981;">${formatCurrency(exp.paid||0)}</span>`, `<span style="color:#e94560;font-weight:bold;">${formatCurrency(exp.due||0)}</span>`]; });
+                    data.tableHeaders = [lang === 'ar' ? 'رقم المصروف' : 'Expense #', lang === 'ar' ? 'النوع' : 'Type', lang === 'ar' ? 'البيان' : 'Description', lang === 'ar' ? 'الكمية' : 'Qty', t('date'), lang === 'ar' ? 'التكلفة' : 'Cost', t('paid'), t('due')];
+                    data.tableRows = filteredExp.map(exp => { return [exp.expenseNumber || '-', exp.expenseType || 'مصروفات تشغيلية', exp.description || '-', exp.quantity || 0, exp.date ? new Date(exp.date).toLocaleDateString(lang === 'ar' ? 'ar' : 'en') : '-', formatCurrency(exp.amount || 0), `<span style="color:#10b981;">${formatCurrency(exp.paid||0)}</span>`, `<span style="color:#e94560;font-weight:bold;">${formatCurrency(exp.due||0)}</span>`]; });
                     data.filteredData = filteredExp;
                     data.listboxOptions = [
                         { id: 'all', text: lang === 'ar' ? 'كل الأنواع' : 'All Types', type: 'expenseType' },
@@ -2433,9 +2425,14 @@
                     if (filter.status === 'paid') filteredCust = filteredCust.filter(c => getCustomerDue(c.id) <= 0);
                     if (filter.status === 'unpaid') filteredCust = filteredCust.filter(c => getCustomerDue(c.id) > 0);
                     const totalCustDue = filteredCust.reduce((s, c) => s + getCustomerDue(c.id), 0);
+                    const totalCustInvoices = appData.salesInvoices.filter(i => filteredCust.find(c => c.id === i.customerId)).length;
+                    const totalCustTotal = filteredCust.reduce((s, c) => { const invs = appData.salesInvoices.filter(i => i.customerId === c.id); return s + invs.reduce((si, inv) => si + inv.total, 0); }, 0);
+                    const totalCustPaid = filteredCust.reduce((s, c) => { const invs = appData.salesInvoices.filter(i => i.customerId === c.id); return s + invs.reduce((si, inv) => si + inv.paid, 0); }, 0);
                     data.summaryCards = [
                         { icon: 'fa-users', color: '#6366f1', label: lang === 'ar' ? 'عدد العملاء' : 'Customer Count', value: filteredCust.length, type: 'custCount', filteredData: filteredCust },
-                        { icon: 'fa-file-invoice', color: '#f59e0b', label: lang === 'ar' ? 'عدد الفواتير' : 'Invoice Count', value: appData.salesInvoices.filter(i => filteredCust.find(c => c.id === i.customerId)).length, type: 'custInvoices', filteredData: filteredCust },
+                        { icon: 'fa-file-invoice', color: '#f59e0b', label: lang === 'ar' ? 'عدد الفواتير' : 'Invoice Count', value: totalCustInvoices, type: 'custInvoices', filteredData: filteredCust },
+                        { icon: 'fa-dollar-sign', color: '#14b8a6', label: lang === 'ar' ? 'إجمالي المبيعات' : 'Total Sales', value: formatReportCurrency(totalCustTotal), type: 'custTotal', filteredData: filteredCust },
+                        { icon: 'fa-check-circle', color: '#10b981', label: t('paid'), value: formatReportCurrency(totalCustPaid), type: 'custPaid', filteredData: filteredCust },
                         { icon: 'fa-credit-card', color: '#e94560', label: lang === 'ar' ? 'إجمالي الديون' : 'Total Debts', value: formatReportCurrency(totalCustDue), type: 'custDue', filteredData: filteredCust }
                     ];
                     data.hasFilter = true;
@@ -2481,7 +2478,7 @@
                     ];
                     data.tableHeaders = [lang === 'ar' ? 'المادة الفعالة' : 'Active Ingredient', lang === 'ar' ? 'الرصيد' : 'Balance', lang === 'ar' ? 'وحدة القياس' : 'Unit', lang === 'ar' ? 'تاريخ الانتهاء' : 'Expiry Date', lang === 'ar' ? 'تاريخ الجرد' : 'Inventory Date'];
                     data.hasFilter = true;
-                    data.tableRows = filteredFB.map(b => [b.activeIngredient, b.balance, b.unit || 'Kg', b.expiryDate ? new Date(b.expiryDate).toLocaleDateString(lang === 'ar' ? 'ar' : 'en') : '-', b.inventoryDate ? new Date(b.inventoryDate).toLocaleDateString(lang === 'ar' ? 'ar' : 'en') : '-']);
+                    data.tableRows = filteredFB.map(b => [b.activeIngredient, b.balance, b.unit || 'kg', b.expiryDate ? new Date(b.expiryDate).toLocaleDateString(lang === 'ar' ? 'ar' : 'en') : '-', b.inventoryDate ? new Date(b.inventoryDate).toLocaleDateString(lang === 'ar' ? 'ar' : 'en') : '-']);
                     data.filteredData = filteredFB;
                     data.listboxOptions = fbs.map(b => ({ id: b.id, text: b.activeIngredient, type: 'factoryBalance' }));
                     break;
@@ -2514,15 +2511,14 @@
                     data.title = lang === 'ar' ? 'نظرة عامة' : 'Overview';
                     const ts = appData.salesInvoices.reduce((s, inv) => s + inv.total, 0);
                     const te = (appData.expenses || []).reduce((s, exp) => s + (exp.amount || 0), 0);
-                    const tsp = appData.salesInvoices.reduce((s, inv) => s + inv.paid, 0);
-                    const balance = tsp - te;
+                    const balance = ts - te;
                     const totalSoldQtyOverall = appData.products.reduce((s, p) => s + ((p.initialQuantity || p.quantity) - p.quantity), 0);
                     const totalInvoicesCount = appData.salesInvoices.length;
                     const totalCustomersCount = appData.customers.filter(c => c.type === 'customer' || !c.type).length;
                     data.summaryCards = [
                         { icon: 'fa-shopping-cart', color: '#6366f1', label: lang === 'ar' ? 'إجمالي المبيعات' : 'Total Sales', value: formatReportCurrency(ts), type: 'overSales', filteredData: appData.salesInvoices },
                         { icon: 'fa-money-bill-wave', color: '#f59e0b', label: lang === 'ar' ? 'إجمالي المصروفات' : 'Total Expenses', value: formatReportCurrency(te), type: 'overExp', filteredData: appData.expenses || [] },
-                        { icon: 'fa-balance-scale', color: '#10b981', label: lang === 'ar' ? 'صافي الرصيد' : 'Net Balance', value: formatReportCurrency(balance), type: 'overBalance', filteredData: [] },
+                        { icon: 'fa-balance-scale', color: '#10b981', label: lang === 'ar' ? 'الربح' : 'Profit', value: formatReportCurrency(balance), type: 'overBalance', filteredData: [] },
                         { icon: 'fa-truck', color: '#14b8a6', label: lang === 'ar' ? 'المباع' : 'Sold', value: formatReportNumber(totalSoldQtyOverall), type: 'overSold', filteredData: appData.products },
                         { icon: 'fa-file-invoice', color: '#8b5cf6', label: lang === 'ar' ? 'عدد الفواتير' : 'Invoice Count', value: formatReportNumber(totalInvoicesCount), type: 'overInvoices', filteredData: appData.salesInvoices },
                         { icon: 'fa-users', color: '#f97316', label: lang === 'ar' ? 'عدد العملاء' : 'Customer Count', value: formatReportNumber(totalCustomersCount), type: 'overCust', filteredData: appData.customers.filter(c => c.type === 'customer' || !c.type) }
@@ -2538,16 +2534,19 @@
             let title = '',
                 contentHtml = '';
             const lang = currentLang;
-            if (type.includes('sales') || type.includes('overSales') || type.includes('overInvoices') || type.includes('prodTotal') || type.includes('prodPaid') || type.includes('prodDue')) {
+            if (type.includes('overCust')) {
+                title = lang === 'ar' ? 'تفاصيل العملاء' : 'Customer Details';
+                contentHtml = filteredData && filteredData.length > 0 ? `<table class="table"><thead><tr><th>${lang==='ar'?'الكود':'Code'}</th><th>${lang==='ar'?'الاسم':'Name'}</th><th>${t('phone')}</th><th>${t('address')}</th><th>${lang==='ar'?'عدد الفواتير':'Invoice Count'}</th><th>${lang==='ar'?'إجمالي المبيعات':'Total Sales'}</th><th>${t('due')}</th></tr></thead><tbody>${filteredData.map(c=>{const invs=appData.salesInvoices.filter(i=>i.customerId===c.id);const totalSales=invs.reduce((s,i)=>s+i.total,0);return`<tr><td>${c.code}</td><td>${c.name}</td><td>${c.phone}</td><td>${c.address||'-'}</td><td>${invs.length}</td><td>${formatCurrency(totalSales)}</td><td style="color:#e94560;">${formatCurrency(getCustomerDue(c.id))}</td></tr>`;}).join('')}</tbody></table>` : `<p class="text-center py-4">${lang==='ar'?'لا توجد بيانات':'No data'}</p>`;
+            } else if (type.includes('sales') || type.includes('overSales') || type.includes('overInvoices') || type.includes('prodTotal') || type.includes('prodPaid') || type.includes('prodDue') || type.includes('custTotal') || type.includes('custPaid')) {
                 title = lang === 'ar' ? 'تفاصيل المبيعات' : 'Sales Details';
                 const invoicesData = Array.isArray(filteredData) && filteredData.length > 0 && filteredData[0].invoiceNumber ? filteredData : [];
                 contentHtml = invoicesData.length > 0 ? `<table class="table"><thead><tr><th>${lang==='ar'?'رقم الفاتورة':'Invoice #'}</th><th>${lang==='ar'?'العميل':'Customer'}</th><th>${t('date')}</th><th>${t('total')}</th><th>${t('paid')}</th><th>${t('due')}</th></tr></thead><tbody>${invoicesData.map(inv=>{const c=appData.customers.find(c=>c.id===inv.customerId);return`<tr><td>${inv.invoiceNumber}</td><td>${c?.name||'-'}</td><td>${new Date(inv.date).toLocaleDateString(lang==='ar'?'ar':'en')}</td><td>${formatCurrency(inv.total)}</td><td>${formatCurrency(inv.paid)}</td><td style="color:#e94560;">${formatCurrency(inv.due)}</td></tr>`;}).join('')}</tbody></table>` : `<p class="text-center py-4">${lang==='ar'?'لا توجد بيانات':'No data'}</p>`;
-            } else if (type.includes('exp')) {
+            } else if (type.includes('exp') || type.includes('overExp')) {
                 title = lang === 'ar' ? 'تفاصيل المصروفات' : 'Expense Details';
-                contentHtml = filteredData && filteredData.length > 0 ? `<table class="table"><thead><tr><th>${lang==='ar'?'رقم المصروف':'Expense #'}</th><th>${lang==='ar'?'المورد':'Supplier'}</th><th>${lang==='ar'?'البيان':'Description'}</th><th>${t('date')}</th><th>${lang==='ar'?'التكلفة':'Cost'}</th><th>${t('paid')}</th><th>${t('due')}</th></tr></thead><tbody>${filteredData.map(exp=>{const s=exp.supplierId?appData.customers.find(c=>c.id===exp.supplierId):null;return`<tr><td>${exp.expenseNumber||'-'}</td><td>${s?.name||'-'}</td><td>${exp.description||'-'}</td><td>${exp.date?new Date(exp.date).toLocaleDateString(lang==='ar'?'ar':'en'):'-'}</td><td>${formatCurrency(exp.amount||0)}</td><td style="color:#10b981;">${formatCurrency(exp.paid||0)}</td><td style="color:#e94560;">${formatCurrency(exp.due||0)}</td></tr>`;}).join('')}</tbody></table>` : `<p class="text-center py-4">${lang==='ar'?'لا توجد بيانات':'No data'}</p>`;
+                contentHtml = filteredData && filteredData.length > 0 ? `<table class="table"><thead><tr><th>${lang==='ar'?'رقم المصروف':'Expense #'}</th><th>${lang==='ar'?'النوع':'Type'}</th><th>${lang==='ar'?'البيان':'Description'}</th><th>${t('date')}</th><th>${lang==='ar'?'التكلفة':'Cost'}</th><th>${t('paid')}</th><th>${t('due')}</th></tr></thead><tbody>${filteredData.map(exp=>{return`<tr><td>${exp.expenseNumber||'-'}</td><td>${exp.expenseType||'مصروفات تشغيلية'}</td><td>${exp.description||'-'}</td><td>${exp.date?new Date(exp.date).toLocaleDateString(lang==='ar'?'ar':'en'):'-'}</td><td>${formatCurrency(exp.amount||0)}</td><td style="color:#10b981;">${formatCurrency(exp.paid||0)}</td><td style="color:#e94560;">${formatCurrency(exp.due||0)}</td></tr>`;}).join('')}</tbody></table>` : `<p class="text-center py-4">${lang==='ar'?'لا توجد بيانات':'No data'}</p>`;
             } else if (type.includes('cust')) {
                 title = lang === 'ar' ? 'تفاصيل العملاء' : 'Customer Details';
-                contentHtml = filteredData && filteredData.length > 0 ? `<table class="table"><thead><tr><th>${lang==='ar'?'الكود':'Code'}</th><th>${lang==='ar'?'الاسم':'Name'}</th><th>${t('phone')}</th><th>${t('due')}</th></tr></thead><tbody>${filteredData.map(c=>`<tr><td>${c.code}</td><td>${c.name}</td><td>${c.phone}</td><td style="color:#e94560;">${formatCurrency(getCustomerDue(c.id))}</td></tr>`).join('')}</tbody></table>` : `<p class="text-center py-4">${lang==='ar'?'لا توجد بيانات':'No data'}</p>`;
+                contentHtml = filteredData && filteredData.length > 0 ? `<table class="table"><thead><tr><th>${lang==='ar'?'الكود':'Code'}</th><th>${lang==='ar'?'الاسم':'Name'}</th><th>${t('phone')}</th><th>${t('address')}</th><th>${lang==='ar'?'عدد الفواتير':'Invoice Count'}</th><th>${lang==='ar'?'إجمالي المبيعات':'Total Sales'}</th><th>${t('due')}</th></tr></thead><tbody>${filteredData.map(c=>{const invs=appData.salesInvoices.filter(i=>i.customerId===c.id);const totalSales=invs.reduce((s,i)=>s+i.total,0);return`<tr><td>${c.code}</td><td>${c.name}</td><td>${c.phone}</td><td>${c.address||'-'}</td><td>${invs.length}</td><td>${formatCurrency(totalSales)}</td><td style="color:#e94560;">${formatCurrency(getCustomerDue(c.id))}</td></tr>`;}).join('')}</tbody></table>` : `<p class="text-center py-4">${lang==='ar'?'لا توجد بيانات':'No data'}</p>`;
             } else if (type.includes('prodStock') || type.includes('prodSold') || type.includes('overSold')) {
                 title = lang === 'ar' ? 'تفاصيل المنتجات' : 'Product Details';
                 const prodData = Array.isArray(filteredData) && filteredData.length > 0 && filteredData[0].name ? filteredData : [];
@@ -2557,17 +2556,16 @@
                 contentHtml = filteredData && filteredData.length > 0 ? `<table class="table"><thead><tr><th>${lang==='ar'?'الموظف':'Employee'}</th><th>${lang==='ar'?'الكود':'Code'}</th><th>${lang==='ar'?'الوظيفة':'Position'}</th><th>${lang==='ar'?'عدد الفواتير':'Invoice Count'}</th><th>${lang==='ar'?'إجمالي المبيعات':'Total Sales'}</th></tr></thead><tbody>${filteredData.map(ep=>`<tr><td>${ep.emp.name}</td><td>${ep.emp.code}</td><td>${ep.emp.position}</td><td>${ep.totalInvoices}</td><td>${formatReportCurrency(ep.totalSales)}</td></tr>`).join('')}</tbody></table>` : `<p class="text-center py-4">${lang==='ar'?'لا توجد بيانات':'No data'}</p>`;
             } else if (type.includes('fb')) {
                 title = lang === 'ar' ? 'تفاصيل أرصدة المصنع' : 'Factory Balance Details';
-                contentHtml = filteredData && filteredData.length > 0 ? `<table class="table"><thead><tr><th>${lang==='ar'?'المادة الفعالة':'Active Ingredient'}</th><th>${lang==='ar'?'الرصيد':'Balance'}</th><th>${lang==='ar'?'وحدة القياس':'Unit'}</th><th>${lang==='ar'?'تاريخ الانتهاء':'Expiry Date'}</th></tr></thead><tbody>${filteredData.map(b=>`<tr><td>${b.activeIngredient}</td><td>${b.balance}</td><td>${b.unit||'Kg'}</td><td>${b.expiryDate?new Date(b.expiryDate).toLocaleDateString(lang==='ar'?'ar':'en'):'-'}</td></tr>`).join('')}</tbody></table>` : `<p class="text-center py-4">${lang==='ar'?'لا توجد بيانات':'No data'}</p>`;
+                contentHtml = filteredData && filteredData.length > 0 ? `<table class="table"><thead><tr><th>${lang==='ar'?'المادة الفعالة':'Active Ingredient'}</th><th>${lang==='ar'?'الرصيد':'Balance'}</th><th>${lang==='ar'?'وحدة القياس':'Unit'}</th><th>${lang==='ar'?'تاريخ الانتهاء':'Expiry Date'}</th></tr></thead><tbody>${filteredData.map(b=>`<tr><td>${b.activeIngredient}</td><td>${b.balance}</td><td>${b.unit||'kg'}</td><td>${b.expiryDate?new Date(b.expiryDate).toLocaleDateString(lang==='ar'?'ar':'en'):'-'}</td></tr>`).join('')}</tbody></table>` : `<p class="text-center py-4">${lang==='ar'?'لا توجد بيانات':'No data'}</p>`;
             } else if (type.includes('pay')) {
                 title = lang === 'ar' ? 'تفاصيل الدفعات' : 'Payment Details';
                 contentHtml = filteredData && filteredData.length > 0 ? `<table class="table"><thead><tr><th>${t('date')}</th><th>${lang==='ar'?'الفاتورة':'Invoice'}</th><th>${lang==='ar'?'العميل':'Customer'}</th><th>${t('amount')}</th></tr></thead><tbody>${filteredData.map(p=>{const inv=appData.salesInvoices.find(i=>i.id===p.referenceId);const c=inv?appData.customers.find(c=>c.id===inv.customerId):null;return`<tr><td>${p.date?new Date(p.date).toLocaleDateString(lang==='ar'?'ar':'en'):'-'}</td><td>${inv?.invoiceNumber||'-'}</td><td>${c?.name||'-'}</td><td style="color:#10b981;">${formatReportCurrency(p.amount)}</td></tr>`;}).join('')}</tbody></table>` : `<p class="text-center py-4">${lang==='ar'?'لا توجد بيانات':'No data'}</p>`;
             } else if (type.includes('over')) {
                 title = lang === 'ar' ? 'تفاصيل النظرة العامة' : 'Overview Details';
                 const ts = appData.salesInvoices.reduce((s, inv) => s + inv.total, 0);
-                const tsp = appData.salesInvoices.reduce((s, inv) => s + inv.paid, 0);
                 const te = (appData.expenses || []).reduce((s, exp) => s + (exp.amount || 0), 0);
-                const balance = tsp - te;
-                contentHtml = `<div class="row text-center"><div class="col-md-4 mb-3"><div class="p-3 rounded" style="background:rgba(99,102,241,0.2);"><h6>${lang==='ar'?'إجمالي المبيعات':'Total Sales'}</h6><h3>${formatReportCurrency(ts)}</h3></div></div><div class="col-md-4 mb-3"><div class="p-3 rounded" style="background:rgba(245,158,11,0.2);"><h6>${lang==='ar'?'إجمالي المصروفات':'Total Expenses'}</h6><h3>${formatReportCurrency(te)}</h3></div></div><div class="col-md-4 mb-3"><div class="p-3 rounded" style="background:rgba(16,185,129,0.2);"><h6>${lang==='ar'?'صافي الرصيد':'Net Balance'}</h6><h3>${formatReportCurrency(balance)}</h3></div></div></div>`;
+                const balance = ts - te;
+                contentHtml = `<div class="row text-center"><div class="col-md-4 mb-3"><div class="p-3 rounded" style="background:rgba(99,102,241,0.2);"><h6>${lang==='ar'?'إجمالي المبيعات':'Total Sales'}</h6><h3>${formatReportCurrency(ts)}</h3></div></div><div class="col-md-4 mb-3"><div class="p-3 rounded" style="background:rgba(245,158,11,0.2);"><h6>${lang==='ar'?'إجمالي المصروفات':'Total Expenses'}</h6><h3>${formatReportCurrency(te)}</h3></div></div><div class="col-md-4 mb-3"><div class="p-3 rounded" style="background:rgba(16,185,129,0.2);"><h6>${lang==='ar'?'الربح':'Profit'}</h6><h3>${formatReportCurrency(balance)}</h3></div></div></div>`;
             }
             const modalHtml = `
             <div class="modal fade" id="reportDetailModal" tabindex="-1"><div class="modal-dialog modal-xl"><div class="modal-content"><div class="modal-header"><h5>${title}</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body">${contentHtml}</div></div></div></div>`;
@@ -2649,8 +2647,10 @@
                 summaryHtml = `<div class="row g-2 justify-content-center mb-4">${data.summaryCards.map((card,i)=>`<div class="col-xl col-lg-2 col-md-4 col-6"><div class="stat-card stat-card-sm" style="border-right:3px solid ${card.color};animation-delay:${0.1+i*0.1}s;" onclick="handleReportCardClick('${card.type||'exp'}')"><i class="fas ${card.icon} icon" style="color:${card.color};font-size:1.6rem;"></i><div><small class="label" style="font-size:0.7rem;">${card.label}</small><div class="value" style="color:${card.color};font-size:1.1rem;">${card.value}</div></div></div></div>`).join('')}</div>`;
             } else if (currentReportTab === 'inventory' && data.summaryCards.length === 5) {
                 summaryHtml = `<div class="row g-2 justify-content-center mb-4">${data.summaryCards.map((card,i)=>`<div class="col-xl col-lg-2 col-md-4 col-6"><div class="stat-card stat-card-sm" style="border-right:3px solid ${card.color};animation-delay:${0.1+i*0.1}s;" onclick="handleReportCardClick('${card.type||'prod'}')"><i class="fas ${card.icon} icon" style="color:${card.color};font-size:1.6rem;"></i><div><small class="label" style="font-size:0.7rem;">${card.label}</small><div class="value" style="color:${card.color};font-size:1.1rem;">${card.value}</div></div></div></div>`).join('')}</div>`;
-                        } else if (currentReportTab === 'sales' && data.summaryCards.length === 5) {
+            } else if (currentReportTab === 'sales' && data.summaryCards.length === 5) {
                 summaryHtml = `<div class="row g-2 justify-content-center mb-4">${data.summaryCards.map((card,i)=>`<div class="col"><div class="stat-card stat-card-sm" style="border-right:3px solid ${card.color};animation-delay:${0.1+i*0.1}s;" onclick="handleReportCardClick('${card.type||'over'}')"><i class="fas ${card.icon} icon" style="color:${card.color};font-size:1.6rem;"></i><div><small class="label" style="font-size:0.7rem;">${card.label}</small><div class="value" style="color:${card.color};font-size:1.1rem;">${card.value}</div></div></div></div>`).join('')}</div>`;
+            } else if (currentReportTab === 'customers' && data.summaryCards.length === 5) {
+                summaryHtml = `<div class="row g-2 justify-content-center mb-4">${data.summaryCards.map((card,i)=>`<div class="col"><div class="stat-card stat-card-sm" style="border-right:3px solid ${card.color};animation-delay:${0.1+i*0.1}s;" onclick="handleReportCardClick('${card.type||'cust'}')"><i class="fas ${card.icon} icon" style="color:${card.color};font-size:1.6rem;"></i><div><small class="label" style="font-size:0.7rem;">${card.label}</small><div class="value" style="color:${card.color};font-size:1.1rem;">${card.value}</div></div></div></div>`).join('')}</div>`;
             } else {
                 summaryHtml = `<div class="row g-3 justify-content-center mb-4">${data.summaryCards.map((card,i)=>`<div class="col-xl-3 col-lg-4 col-md-6"><div class="stat-card" style="border-right:5px solid ${card.color};animation-delay:${0.1+i*0.1}s;" onclick="handleReportCardClick('${card.type||'over'}')"><i class="fas ${card.icon} icon" style="color:${card.color};"></i><div><small class="label">${card.label}</small><div class="value" style="color:${card.color};">${card.value}</div></div></div></div>`).join('')}</div>`;
             }
@@ -2792,10 +2792,11 @@
                 [company],
                 [lang === 'ar' ? 'المصروفات' : 'Expenses'],
                 [''],
-                [lang === 'ar' ? 'رقم المصروف' : 'Expense #', lang === 'ar' ? 'المورد' : 'Supplier', lang === 'ar' ? 'البيان' : 'Description', lang === 'ar' ? 'الكمية' : 'Qty', lang === 'ar' ? 'النوع' : 'Type', t('date'), lang === 'ar' ? 'التكلفة' : 'Cost', t('paid'), t('due'), lang === 'ar' ? 'ملاحظات' : 'Notes']
+                [lang === 'ar' ? 'رقم المصروف' : 'Expense #', lang === 'ar' ? 'النوع' : 'Type', lang === 'ar' ? 'البيان' : 'Description', lang === 'ar' ? 'الكمية' : 'Qty', t('date'), lang === 'ar' ? 'التكلفة' : 'Cost', t('paid'), t('due'), lang === 'ar' ? 'ملاحظات' : 'Notes']
             ];
-            (appData.expenses || []).forEach(exp => { const s = exp.supplierId ? appData.customers.find(c => c.id === exp.supplierId) : null;
-                expData.push([exp.expenseNumber || '', s?.name || '', exp.description || '', exp.quantity || 0, exp.expenseType || 'مصروفات تشغيلية', exp.date, exp.amount || 0, exp.paid || 0, exp.due || 0, exp.notes || '']); });
+            (appData.expenses || []).forEach(exp => {
+                expData.push([exp.expenseNumber || '', exp.expenseType || 'مصروفات تشغيلية', exp.description || '', exp.quantity || 0, exp.date, exp.amount || 0, exp.paid || 0, exp.due || 0, exp.notes || '']);
+            });
             XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(expData), lang === 'ar' ? 'المصروفات' : 'Expenses');
             const custData = [
                 [company],
@@ -2820,7 +2821,7 @@
                 [''],
                 [lang === 'ar' ? 'المادة الفعالة' : 'Active Ingredient', lang === 'ar' ? 'الرصيد' : 'Balance', lang === 'ar' ? 'وحدة القياس' : 'Unit', lang === 'ar' ? 'تاريخ الانتهاء' : 'Expiry Date', lang === 'ar' ? 'تاريخ الجرد' : 'Inventory Date']
             ];
-            (appData.factoryBalances || []).forEach(b => { fbData.push([b.activeIngredient, b.balance, b.unit || 'Kg', b.expiryDate || '', b.inventoryDate || '']); });
+            (appData.factoryBalances || []).forEach(b => { fbData.push([b.activeIngredient, b.balance, b.unit || 'kg', b.expiryDate || '', b.inventoryDate || '']); });
             XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(fbData), lang === 'ar' ? 'أرصدة المصنع' : 'Factory Balances');
             const empData = [
                 [company],
